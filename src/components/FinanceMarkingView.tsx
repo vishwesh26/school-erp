@@ -130,7 +130,7 @@ const FinanceMarkingView = ({ classId }: { classId: number }) => {
                     onChange={(e) => setSelectedCategoryId(Number(e.target.value))}
                 >
                     {categories.map(cat => (
-                        <option key={cat.id} value={cat.id}>{cat.name} (₹{cat.amount})</option>
+                        <option key={cat.id} value={cat.id}>{cat.name} (₹{cat.baseAmount})</option>
                     ))}
                     {categories.length === 0 && <option value="">No categories assigned to this class</option>}
                 </select>

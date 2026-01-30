@@ -310,9 +310,8 @@ export type GeneralRegistrationSchema = z.infer<typeof generalRegistrationSchema
 export const feeCategorySchema = z.object({
   id: z.coerce.number().optional(),
   name: z.string().min(1, { message: "Name is required!" }),
-  amount: z.coerce.number().min(1, { message: "Amount is required!" }),
-  description: z.string().optional(),
-  gradeId: z.coerce.number().optional(),
+  baseAmount: z.coerce.number().min(1, { message: "Amount is required!" }),
+  gradeId: z.coerce.number().optional().nullable().transform(val => val === 0 || !val ? null : val),
 });
 export type FeeCategorySchema = z.infer<typeof feeCategorySchema>;
 

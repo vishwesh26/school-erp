@@ -164,10 +164,10 @@ export const getActiveCategoriesForClass = async (classId: string | number) => {
     const { data: cls } = await supabase.from('Class').select('gradeId').eq('id', classId).single();
     if (!cls) return [];
 
-    // 2. Find all FeeCategories for this grade
+    // 2. Find all FeeCategories for this grade OR global categories (gradeId is null)
     const { data: categories } = await supabase.from('FeeCategory')
         .select('*')
-        .eq('gradeId', cls.gradeId)
+        .or(`gradeId.eq.${cls.gradeId},gradeId.is.null`)
         .order('name', { ascending: true });
 
     return categories || [];
@@ -379,7 +379,7 @@ export const createFeeCategory = async (currentState: CurrentState, data: FeeCat
         console.error("Create FeeCategory Error:", error);
         return { success: false, error: true };
     }
-    revalidatePath("/accountant/fees/categories");
+    revalidatePath("/list/finance/categories");
     return { success: true, error: false };
 };
 
@@ -391,7 +391,7 @@ export const updateFeeCategory = async (currentState: CurrentState, data: FeeCat
     const { id, ...updateData } = data;
     const { error } = await supabase.from('FeeCategory').update(updateData).eq('id', id);
     if (error) return { success: false, error: true };
-    revalidatePath("/accountant/fees/categories");
+    revalidatePath("/list/finance/categories");
     return { success: true, error: false };
 };
 
@@ -403,7 +403,7 @@ export const deleteFeeCategory = async (currentState: CurrentState, data: FormDa
     );
     const { error } = await supabase.from('FeeCategory').delete().eq('id', id);
     if (error) return { success: false, error: true };
-    revalidatePath("/accountant/fees/categories");
+    revalidatePath("/list/finance/categories");
     return { success: true, error: false };
 };
 
@@ -645,7 +645,7 @@ export const bulkUpdateFees = async (
                 .eq('feeCategoryId', categoryId)
                 .single();
 
-            const netAmount = Number(category.amount) - 0; // Assuming 0 discount if new record created via bulk update
+            const netAmount = Number(category.baseAmount) - 0; // Assuming 0 discount if new record created via bulk update
 
             if (fee) {
                 let paidAmount = fee.paidAmount;
@@ -672,7 +672,7 @@ export const bulkUpdateFees = async (
                 return supabase.from('StudentFee').insert({
                     studentId: update.studentId,
                     feeCategoryId: categoryId,
-                    totalAmount: category.amount,
+                    totalAmount: category.baseAmount,
                     discount: 0,
                     paidAmount: paidAmount,
                     pendingAmount: netAmount - paidAmount,
