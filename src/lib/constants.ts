@@ -93,6 +93,12 @@ export const menuItems = [
                 visible: ["admin", "teacher", "student", "parent"],
             },
             {
+                icon: "/result.png",
+                label: "Fees",
+                href: "/list/finance",
+                visible: ["admin", "teacher"],
+            },
+            {
                 icon: "/view.png",
                 label: "Documents",
                 href: "/admin/documents",

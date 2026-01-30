@@ -600,3 +600,53 @@ export const bulkAssignFeeToGrade = async (currentState: CurrentState, data: Bul
 
     return { success: true, error: false };
 };
+
+export const bulkUpdateFees = async (
+    categoryId: number,
+    studentUpdates: { studentId: string; status: 'PAID' | 'PARTIAL' | 'PENDING' }[]
+) => {
+    const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    try {
+        const updates = studentUpdates.map(async (update) => {
+            // Find the fee record for this student and category
+            const { data: fee } = await supabase
+                .from('StudentFee')
+                .select('id, totalAmount, discount, paidAmount')
+                .eq('studentId', update.studentId)
+                .eq('feeCategoryId', categoryId)
+                .single();
+
+            if (fee) {
+                let paidAmount = fee.paidAmount;
+                const netAmount = Number(fee.totalAmount) - Number(fee.discount || 0);
+
+                if (update.status === 'PAID') {
+                    paidAmount = netAmount;
+                } else if (update.status === 'PENDING') {
+                    paidAmount = 0;
+                }
+                // For PARTIAL, we keep existing paidAmount or set to half? 
+                // Let's assume for this simple toggle: PAID = Full, PENDING = 0, PARTIAL = Unchanged or keep as is.
+
+                return supabase.from('StudentFee').update({
+                    status: update.status,
+                    paidAmount: paidAmount,
+                    pendingAmount: netAmount - paidAmount
+                }).eq('id', fee.id);
+            }
+            return null;
+        });
+
+        await Promise.all(updates);
+
+        revalidatePath("/list/finance");
+        return { success: true };
+    } catch (err) {
+        console.error("Bulk Fee Update Error:", err);
+        return { success: false, error: true };
+    }
+};
