@@ -99,7 +99,7 @@ export const getStudentsWithFeeSummary = async (classId: string | number, page: 
     );
 
     const ITEM_PER_PAGE = 10;
-    
+
     // 1. Fetch Students (No range yet if we need to filter by derived status)
     let studentQuery = supabase.from('Student')
         .select('*')
@@ -128,7 +128,7 @@ export const getStudentsWithFeeSummary = async (classId: string | number, page: 
         const totalNet = totalAmount - discount;
         const paidAmount = studentFees.reduce((sum, f) => sum + Number(f.paidAmount), 0);
         const pendingAmount = studentFees.reduce((sum, f) => sum + Number(f.pendingAmount), 0);
-        
+
         let status = 'PAID';
         if (pendingAmount > 0) {
             status = paidAmount > 0 ? 'PARTIAL' : 'PENDING';
@@ -574,7 +574,7 @@ export const bulkAssignFeeToGrade = async (currentState: CurrentState, data: Bul
         const allInstallments: any[] = [];
 
         insertedFees.forEach(fee => {
-            data.installments?.forEach(inst => {
+            data.installments?.forEach((inst: any) => {
                 allInstallments.push({
                     studentFeeId: fee.id,
                     amount: inst.amount,

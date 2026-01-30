@@ -279,6 +279,8 @@ export const bookSchema = z.object({
   available_copies: z.coerce.number().optional(), // Usually set to total on create
 });
 
+export type BookSchema = z.infer<typeof bookSchema>;
+
 export const adminSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, { message: "First name is required!" }),
@@ -304,3 +306,45 @@ export const generalRegistrationSchema = z.object({
 });
 
 export type GeneralRegistrationSchema = z.infer<typeof generalRegistrationSchema>;
+
+export const feeCategorySchema = z.object({
+  id: z.coerce.number().optional(),
+  name: z.string().min(1, { message: "Name is required!" }),
+  amount: z.coerce.number().min(1, { message: "Amount is required!" }),
+  description: z.string().optional(),
+  gradeId: z.coerce.number().optional(),
+});
+export type FeeCategorySchema = z.infer<typeof feeCategorySchema>;
+
+export const studentFeeSchema = z.object({
+  id: z.coerce.number().optional(),
+  studentId: z.string().min(1, { message: "Student is required!" }),
+  feeCategoryId: z.coerce.number().min(1, { message: "Category is required!" }),
+  totalAmount: z.coerce.number().min(1, { message: "Amount is required!" }),
+  discount: z.coerce.number().optional(),
+  dueDate: z.coerce.date().optional(),
+});
+export type StudentFeeSchema = z.infer<typeof studentFeeSchema>;
+
+export const expenseSchema = z.object({
+  id: z.coerce.number().optional(),
+  title: z.string().min(1, { message: "Title is required!" }),
+  amount: z.coerce.number().min(1, { message: "Amount is required!" }),
+  category: z.string().min(1, { message: "Category is required!" }),
+  date: z.coerce.date({ message: "Date is required!" }),
+});
+export type ExpenseSchema = z.infer<typeof expenseSchema>;
+
+export const bulkFeeSchema = z.object({
+  gradeId: z.coerce.number().min(1, { message: "Grade is required!" }),
+  feeCategoryId: z.coerce.number().min(1, { message: "Category is required!" }),
+  totalAmount: z.coerce.number().min(1, { message: "Amount is required!" }),
+  discount: z.coerce.number().optional(),
+  dueDate: z.coerce.date().optional(),
+  installments: z.array(z.object({
+    amount: z.coerce.number(),
+    dueDate: z.coerce.date(),
+    installmentOrder: z.coerce.number(),
+  })).optional(),
+});
+export type BulkFeeSchema = z.infer<typeof bulkFeeSchema>;

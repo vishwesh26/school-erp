@@ -23,7 +23,7 @@ const AssignmentView = ({ assignment }: { assignment: any }) => {
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        html2pdf().from(contentRef.current).set(opt).save();
+        html2pdf().from(contentRef.current).set(opt as any).save();
     };
 
     return (
