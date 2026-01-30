@@ -16,40 +16,84 @@ const StudentListPage = async ({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
-  const { gradeId, classId, page, ...queryParams } = searchParams;
+  const { gradeId, classId, view, academicYearId, page, ...queryParams } = searchParams;
 
-  if (!gradeId) {
+  const isAlumniView = view === "alumni";
+  const supabase = createClient();
+
+  // If Alumni View and no Year selected, show Year Selection
+  if (isAlumniView && !academicYearId) {
+    const { data: years } = await supabase.from('AcademicYear').select('*').order('startDate', { ascending: false });
+    return (
+      <div className="p-4 bg-white rounded-md m-4 mt-0">
+        <div className="flex items-center gap-4 mb-4">
+          <Link href="?" className="text-blue-500 hover:underline">← Back to Grades</Link>
+          <h1 className="text-xl font-semibold uppercase tracking-tight font-black">Select Graduation Year</h1>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {years?.map((year) => (
+            <Link
+              key={year.id}
+              href={`?view=alumni&academicYearId=${year.id}`}
+              className="p-6 bg-purple-50 rounded-md hover:bg-purple-100 transition-colors flex flex-col items-center justify-center cursor-pointer shadow-sm border border-purple-100 group"
+            >
+              <span className="text-2xl font-black text-purple-700">{year.name.replace('-', '/')}</span>
+              <span className="text-xs text-purple-400 font-bold mt-1 group-hover:text-purple-500">View passed out students</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!gradeId && !isAlumniView) {
     return <GradeSelect />;
   }
 
-  if (!classId) {
+  if (!isAlumniView && gradeId && !classId) {
     return <ClassSelect gradeId={gradeId} />;
   }
 
-  const supabase = createClient();
   const p = page ? parseInt(page) : 1;
 
   // URL Params Condition
-  let query = supabase.from('Student').select('*, Class(*)', { count: 'exact' });
-
-  // STRICT FILTER: Filter by the selected Class ID
-  query = query.eq('classId', classId);
-
-  if (queryParams.search) {
-    query = query.ilike('name', `%${queryParams.search}%`);
+  // For Alumni, we fetch from StudentHistory since we need year-specific passing status
+  let query: any;
+  if (isAlumniView) {
+    query = supabase
+      .from('StudentHistory')
+      .select('*, Student(*), Class(*)', { count: 'exact' })
+      .eq('status', 'Passed Out')
+      .eq('academicYearId', academicYearId);
+  } else {
+    query = supabase.from('Student').select('*, Class(*)', { count: 'exact' }).eq('classId', classId);
   }
 
-  if (queryParams.teacherId) {
-    // Complex relation filter skipped for direct migration
+  if (queryParams.search) {
+    if (isAlumniView) {
+      // Search in the joined Student table
+      query = query.ilike('Student.name', `%${queryParams.search}%`);
+    } else {
+      query = query.ilike('name', `%${queryParams.search}%`);
+    }
   }
 
   const from = (p - 1) * ITEM_PER_PAGE;
   const to = from + ITEM_PER_PAGE - 1;
 
-  const [userRes, { data, count, error }] = await Promise.all([
+  const [userRes, { data: rawData, count, error }] = await Promise.all([
     supabase.auth.getUser(),
     query.range(from, to)
   ]);
+
+  // Normalize data shape for renderRow
+  const data = isAlumniView
+    ? (rawData as any[])?.map(history => ({
+      ...history.Student,
+      Class: history.Class,
+      status: history.status
+    }))
+    : rawData;
 
   const role = userRes.data.user?.user_metadata?.role;
 
@@ -130,30 +174,55 @@ const StudentListPage = async ({
   );
 
   // Fetch ALL students for the selected class (for Export)
-  const { data: allStudentsInClass } = await supabase
-    .from('Student')
-    .select('id, name, surname, rollNumber')
-    .eq('classId', classId)
-    .order('name', { ascending: true });
+  let exportQuery: any;
+  if (isAlumniView) {
+    exportQuery = supabase
+      .from('StudentHistory')
+      .select('*, Student(id, name, surname, rollNumber)')
+      .eq('status', 'Passed Out')
+      .eq('academicYearId', academicYearId);
+  } else {
+    exportQuery = supabase.from('Student').select('id, name, surname, rollNumber').eq('classId', classId);
+  }
 
-  // Fetch Class Name for the heading/export
-  const { data: classData } = await supabase
-    .from('Class')
-    .select('name')
-    .eq('id', classId)
-    .single();
+  const { data: exportRaw } = await exportQuery.order('Student(name)', { ascending: true });
 
-  const classNameForDisplay = classData?.name || "Class";
+  const allStudentsInClass = isAlumniView
+    ? (exportRaw as any[])?.map(h => ({ ...h.Student }))
+    : exportRaw;
+
+  // Fetch Session/Class Name for the heading/export
+  let classNameForDisplay = "Class";
+  if (!isAlumniView) {
+    const { data: classData } = await supabase
+      .from('Class')
+      .select('name')
+      .eq('id', classId)
+      .single();
+    classNameForDisplay = classData?.name || "Class";
+  } else {
+    const { data: yearData } = await supabase
+      .from('AcademicYear')
+      .select('name')
+      .eq('id', academicYearId)
+      .single();
+    classNameForDisplay = `Alumni ${yearData?.name.replace('-', '/') || ""}`;
+  }
 
   return (
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
       {/* TOP */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href={`?gradeId=${gradeId}`} className="text-blue-500 hover:underline text-sm md:text-base">
-            ← Change Class
+          <Link
+            href={isAlumniView ? (academicYearId ? "?view=alumni" : "?") : `?gradeId=${gradeId}`}
+            className="text-blue-500 hover:underline text-sm md:text-base font-bold"
+          >
+            ← {isAlumniView ? (academicYearId ? "Change Year" : "Back to Grades") : "Change Class"}
           </Link>
-          <h1 className="hidden md:block text-lg font-semibold">All Students</h1>
+          <h1 className="hidden md:block text-lg font-black uppercase tracking-tight">
+            {isAlumniView ? `${classNameForDisplay}` : "All Students"}
+          </h1>
         </div>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
           <TableSearch />

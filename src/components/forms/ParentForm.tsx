@@ -52,14 +52,14 @@ const ParentForm = ({
     }, [state, router, type, setOpen]);
 
     return (
-        <form className="flex flex-col gap-8" onSubmit={onSubmit}>
+        <form className="flex flex-col gap-6" onSubmit={onSubmit}>
             <h1 className="text-xl font-semibold">
                 {type === "create" ? "Create a new parent" : "Update the parent"}
             </h1>
-            <span className="text-xs text-gray-400 font-medium">
+            <span className="text-sm text-blue-600 font-bold border-b pb-2 mb-2">
                 Authentication
             </span>
-            <div className="flex justify-between flex-wrap gap-4">
+            <div className="flex justify-between flex-wrap gap-x-4 gap-y-2">
                 <InputField
                     label="Username"
                     name="username"
@@ -83,10 +83,10 @@ const ParentForm = ({
                     error={errors?.password}
                 />
             </div>
-            <span className="text-xs text-gray-400 font-medium">
+            <span className="text-sm text-blue-600 font-bold border-b pb-2 mb-2">
                 Personal Information
             </span>
-            <div className="flex justify-between flex-wrap gap-4">
+            <div className="flex justify-between flex-wrap gap-x-4 gap-y-2">
                 <InputField
                     label="First Name"
                     name="name"

@@ -105,6 +105,12 @@ export const menuItems = [
                 visible: ["admin"],
             },
             {
+                icon: "/calendar.png",
+                label: "Promotion",
+                href: "/list/promotion",
+                visible: ["admin"],
+            },
+            {
                 icon: "/student.png",
                 label: "Register",
                 href: "/register",

@@ -347,3 +347,28 @@ export const bulkFeeSchema = z.object({
   })).optional(),
 });
 export type BulkFeeSchema = z.infer<typeof bulkFeeSchema>;
+
+export const academicYearSchema = z.object({
+  id: z.coerce.number().optional(),
+  name: z.string().min(1, { message: "Academic Year name is required!" }),
+  startDate: z.coerce.date({ message: "Start Date is required!" }),
+  endDate: z.coerce.date({ message: "End Date is required!" }),
+  isCurrent: z.boolean().default(false),
+});
+export type AcademicYearSchema = z.infer<typeof academicYearSchema>;
+
+export const studentPromotionSchema = z.object({
+  previousYearId: z.coerce.number(),
+  nextYearId: z.coerce.number(),
+  classId: z.coerce.number().optional().nullable(), // Source class (optional for all)
+  students: z.array(z.object({
+    studentId: z.string(),
+    status: z.enum(['Promoted', 'Repeat', 'Passed Out', 'Transferred']),
+    nextGradeId: z.coerce.number().optional().nullable(),
+    nextClassId: z.coerce.number().optional().nullable(),
+    nextRollNumber: z.string().optional().nullable(),
+    nextUsername: z.string().optional().nullable(),
+    remarks: z.string().optional(),
+  })),
+});
+export type StudentPromotionSchema = z.infer<typeof studentPromotionSchema>;

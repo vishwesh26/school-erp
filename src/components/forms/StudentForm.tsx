@@ -85,14 +85,14 @@ const StudentForm = ({
 
 
   return (
-    <form className="flex flex-col gap-8" onSubmit={onSubmit}>
+    <form className="flex flex-col gap-6" onSubmit={onSubmit}>
       <h1 className="text-xl font-semibold">
         {type === "create" ? "Create a new student" : "Update the student"}
       </h1>
-      <span className="text-xs text-gray-400 font-medium">
+      <span className="text-sm text-blue-600 font-bold border-b pb-2 mb-2">
         Authentication Information
       </span>
-      <div className="flex justify-between flex-wrap gap-4">
+      <div className="flex justify-between flex-wrap gap-x-4 gap-y-2">
         <InputField
           label="Username"
           name="username"
@@ -124,7 +124,7 @@ const StudentForm = ({
           error={errors?.password}
         />
       </div>
-      <span className="text-xs text-gray-400 font-medium">
+      <span className="text-sm text-blue-600 font-bold border-b pb-2 mb-2">
         Personal Information
       </span>
       {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME && (
@@ -138,17 +138,17 @@ const StudentForm = ({
           {({ open }) => {
             return (
               <div
-                className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer"
+                className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300 w-max"
                 onClick={() => open()}
               >
-                <Image src="/upload.png" alt="" width={28} height={28} />
-                <span>Upload a photo</span>
+                <Image src="/upload.png" alt="" width={24} height={24} />
+                <span>{img ? "Photo uploaded!" : "Upload a photo"}</span>
               </div>
             );
           }}
         </CldUploadWidget>
       )}
-      <div className="flex justify-between flex-wrap gap-4">
+      <div className="flex justify-between flex-wrap gap-x-4 gap-y-2">
         <InputField
           label="First Name"
           name="name"
@@ -279,11 +279,11 @@ const StudentForm = ({
         </div>
       </div>
 
-      <span className="text-xs text-gray-400 font-medium flex items-center gap-2">
+      <span className="text-sm text-blue-600 font-bold border-b pb-2 mb-2 flex items-center gap-2">
         Official Identifiers
         <span className="text-[10px] font-normal text-gray-400 border border-gray-200 px-1 rounded uppercase tracking-tighter">Optional</span>
       </span>
-      <div className="flex justify-between flex-wrap gap-4">
+      <div className="flex justify-between flex-wrap gap-x-4 gap-y-2">
         <InputField
           label="Student Id"
           name="stateStudentId"
@@ -309,10 +309,10 @@ const StudentForm = ({
         />
       </div>
 
-      <span className="text-xs text-gray-400 font-medium">
+      <span className="text-sm text-blue-600 font-bold border-b pb-2 mb-2">
         Identity & Background (For Certificate)
       </span>
-      <div className="flex justify-between flex-wrap gap-4">
+      <div className="flex justify-between flex-wrap gap-x-4 gap-y-2">
         <InputField
           label="Mother&apos;s Name"
           name="motherName"
