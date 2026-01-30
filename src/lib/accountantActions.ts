@@ -160,18 +160,14 @@ export const getActiveCategoriesForClass = async (classId: string | number) => {
         process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // Find all FeeCategories that have at least one StudentFee for a student in this class
-    const { data: feeRes } = await supabase.from('StudentFee')
-        .select('feeCategoryId, student:Student!inner(classId)')
-        .eq('student.classId', classId);
+    // 1. Get the gradeId of the class
+    const { data: cls } = await supabase.from('Class').select('gradeId').eq('id', classId).single();
+    if (!cls) return [];
 
-    if (!feeRes) return [];
-
-    const uniqueCatIds = Array.from(new Set(feeRes.map(f => f.feeCategoryId)));
-
+    // 2. Find all FeeCategories for this grade
     const { data: categories } = await supabase.from('FeeCategory')
         .select('*')
-        .in('id', uniqueCatIds)
+        .eq('gradeId', cls.gradeId)
         .order('name', { ascending: true });
 
     return categories || [];
@@ -185,24 +181,49 @@ export const getStudentsByFeeCategory = async (classId: string | number, categor
 
     const ITEM_PER_PAGE = 10;
 
-    let query = supabase.from('StudentFee')
-        .select('*, student:Student!inner(name, surname, rollNumber, classId), feeCategory:FeeCategory(name)', { count: 'exact' })
-        .eq('student.classId', classId)
-        .eq('feeCategoryId', categoryId);
+    // 1. Fetch ALL students in the class
+    let studentQuery = supabase.from('Student')
+        .select('id, name, surname, rollNumber')
+        .eq('classId', classId);
 
     if (search) {
-        query = query.or(`name.ilike.%${search}%,surname.ilike.%${search}%,rollNumber.ilike.%${search}%`, { foreignTable: 'student' });
+        studentQuery = studentQuery.or(`name.ilike.%${search}%,surname.ilike.%${search}%,rollNumber.ilike.%${search}%`);
     }
 
+    const { data: allStudents, count: totalCount } = await studentQuery
+        .order('name', { ascending: true })
+        .range((page - 1) * ITEM_PER_PAGE, page * ITEM_PER_PAGE - 1);
+
+    if (!allStudents) return { data: [], count: 0, error: null };
+
+    // 2. Fetch existing StudentFee records for these students and this category
+    const studentIds = allStudents.map(s => s.id);
+    const { data: fees } = await supabase.from('StudentFee')
+        .select('*')
+        .in('studentId', studentIds)
+        .eq('feeCategoryId', categoryId);
+
+    // 3. Map students to their fee status or default to PENDING
+    let data = allStudents.map(student => {
+        const fee = fees?.find(f => f.studentId === student.id);
+        return {
+            id: fee?.id || `new-${student.id}`,
+            studentId: student.id,
+            status: fee?.status || 'PENDING',
+            student: {
+                name: student.name,
+                surname: student.surname,
+                rollNumber: student.rollNumber
+            }
+        };
+    });
+
+    // 4. Client-side status filter (since we joined in memory for simplicity)
     if (statusFilter) {
-        query = query.eq('status', statusFilter);
+        data = data.filter(d => d.status === statusFilter);
     }
 
-    const { data, count, error } = await query
-        .range((page - 1) * ITEM_PER_PAGE, page * ITEM_PER_PAGE - 1)
-        .order('id', { ascending: false });
-
-    return { data, count, error };
+    return { data, count: totalCount, error: null };
 };
 
 export const getFeeFilterData = async () => {
@@ -611,8 +632,12 @@ export const bulkUpdateFees = async (
     );
 
     try {
+        // Fetch Category Info once
+        const { data: category } = await supabase.from('FeeCategory').select('*').eq('id', categoryId).single();
+        if (!category) return { success: false, message: "Category not found" };
+
         const updates = studentUpdates.map(async (update) => {
-            // Find the fee record for this student and category
+            // Find existing
             const { data: fee } = await supabase
                 .from('StudentFee')
                 .select('id, totalAmount, discount, paidAmount')
@@ -620,25 +645,41 @@ export const bulkUpdateFees = async (
                 .eq('feeCategoryId', categoryId)
                 .single();
 
+            const netAmount = Number(category.amount) - 0; // Assuming 0 discount if new record created via bulk update
+
             if (fee) {
                 let paidAmount = fee.paidAmount;
-                const netAmount = Number(fee.totalAmount) - Number(fee.discount || 0);
+                const currentNet = Number(fee.totalAmount) - Number(fee.discount || 0);
 
                 if (update.status === 'PAID') {
-                    paidAmount = netAmount;
+                    paidAmount = currentNet;
                 } else if (update.status === 'PENDING') {
                     paidAmount = 0;
                 }
-                // For PARTIAL, we keep existing paidAmount or set to half? 
-                // Let's assume for this simple toggle: PAID = Full, PENDING = 0, PARTIAL = Unchanged or keep as is.
 
                 return supabase.from('StudentFee').update({
                     status: update.status,
                     paidAmount: paidAmount,
-                    pendingAmount: netAmount - paidAmount
+                    pendingAmount: currentNet - paidAmount
                 }).eq('id', fee.id);
+            } else {
+                // CREATE NEW RECORD if marking as PAID or keeping status
+                let paidAmount = 0;
+                if (update.status === 'PAID') {
+                    paidAmount = netAmount;
+                }
+
+                return supabase.from('StudentFee').insert({
+                    studentId: update.studentId,
+                    feeCategoryId: categoryId,
+                    totalAmount: category.amount,
+                    discount: 0,
+                    paidAmount: paidAmount,
+                    pendingAmount: netAmount - paidAmount,
+                    status: update.status,
+                    dueDate: new Date().toISOString() // Default to today
+                });
             }
-            return null;
         });
 
         await Promise.all(updates);
