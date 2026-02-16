@@ -17,7 +17,8 @@ export type FormContainerProps = {
   | "announcement"
   | "librarian"
   | "book"
-  | "feeCategory";
+  | "feeCategory"
+  | "inquiry";
   type: "create" | "update" | "delete";
   data?: any;
   id?: number | string;
