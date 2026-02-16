@@ -372,3 +372,17 @@ export const studentPromotionSchema = z.object({
   })),
 });
 export type StudentPromotionSchema = z.infer<typeof studentPromotionSchema>;
+
+export const admissionInquirySchema = z.object({
+  id: z.string().optional(),
+  fullName: z.string().min(1, { message: "Full Name is required!" }),
+  motherName: z.string().min(1, { message: "Mother's Name is required!" }),
+  city: z.string().min(1, { message: "City is required!" }),
+  currentClass: z.string().min(1, { message: "Current Class is required!" }),
+  targetClass: z.string().min(1, { message: "Target Class is required!" }),
+  parentPhone: z.string().min(1, { message: "Parent Phone is required!" }),
+  emailId: z.string().email({ message: "Invalid email address!" }),
+  additionalInfo: z.string().optional(),
+  status: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
+});
+export type AdmissionInquirySchema = z.infer<typeof admissionInquirySchema>;

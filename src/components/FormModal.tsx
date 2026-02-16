@@ -14,6 +14,7 @@ import {
   deleteAssignment,
   deleteLibrarian,
   deleteBook,
+  deleteAdmissionInquiry,
 } from "@/lib/actions";
 import { deleteFeeCategory } from "@/lib/accountantActions";
 import dynamic from "next/dynamic";
@@ -40,6 +41,7 @@ const deleteActionMap: { [key: string]: (currentState: any, data: FormData) => P
   librarian: deleteLibrarian,
   book: deleteBook,
   feeCategory: deleteFeeCategory,
+  inquiry: deleteAdmissionInquiry,
 };
 
 // USE LAZY LOADING
@@ -88,6 +90,9 @@ const BookForm = dynamic(() => import("./forms/BookForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 const FeeCategoryForm = dynamic(() => import("./forms/FeeCategoryForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const InquiryForm = dynamic(() => import("./forms/InquiryForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 
@@ -209,6 +214,13 @@ const forms: {
       data={data}
       setOpen={setOpen}
       relatedData={relatedData}
+    />
+  ),
+  inquiry: (setOpen, type, data, relatedData) => (
+    <InquiryForm
+      type={type}
+      data={data}
+      setOpen={setOpen}
     />
   ),
 };

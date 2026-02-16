@@ -14,6 +14,7 @@ import {
   ParentSchema,
   AssignmentSchema,
   LibrarianSchema,
+  AdmissionInquirySchema,
 } from "./formValidationSchemas";
 import { createClient } from "@supabase/supabase-js";
 import { sendNotificationEmail } from "./mail";
@@ -1761,6 +1762,96 @@ export const deleteAssignment = async (
     return { success: true, error: false };
   } catch (err) {
     console.log(err);
+    return { success: false, error: true };
+  }
+};
+
+export const createAdmissionInquiry = async (
+  currentState: CurrentState,
+  data: AdmissionInquirySchema
+) => {
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    const { error } = await supabase.from("AdmissionInquiry").insert({
+      fullName: data.fullName,
+      motherName: data.motherName,
+      city: data.city,
+      currentClass: data.currentClass,
+      targetClass: data.targetClass,
+      parentPhone: data.parentPhone,
+      emailId: data.emailId,
+      additionalInfo: data.additionalInfo,
+      status: data.status || "PENDING",
+    });
+
+    if (error) throw error;
+
+    return { success: true, error: false };
+  } catch (err) {
+    console.error("[CREATE_INQUIRY_ERROR]", err);
+    return { success: false, error: true };
+  }
+};
+
+export const updateAdmissionInquiry = async (
+  currentState: CurrentState,
+  data: AdmissionInquirySchema
+) => {
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    const { error } = await supabase
+      .from("AdmissionInquiry")
+      .update({
+        fullName: data.fullName,
+        motherName: data.motherName,
+        city: data.city,
+        currentClass: data.currentClass,
+        targetClass: data.targetClass,
+        parentPhone: data.parentPhone,
+        emailId: data.emailId,
+        additionalInfo: data.additionalInfo,
+        status: data.status,
+      })
+      .eq("id", data.id);
+
+    if (error) throw error;
+
+    return { success: true, error: false };
+  } catch (err) {
+    console.error("[UPDATE_INQUIRY_ERROR]", err);
+    return { success: false, error: true };
+  }
+};
+
+export const deleteAdmissionInquiry = async (
+  currentState: CurrentState,
+  data: FormData
+) => {
+  const id = data.get("id") as string;
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    const { error } = await supabase
+      .from("AdmissionInquiry")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
+    return { success: true, error: false };
+  } catch (err) {
+    console.error("[DELETE_INQUIRY_ERROR]", err);
     return { success: false, error: true };
   }
 };

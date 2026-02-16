@@ -4,7 +4,7 @@ import Image from "next/image";
 const UserCard = async ({
   type,
 }: {
-  type: "admin" | "teacher" | "student" | "parent" | "librarian";
+  type: "admin" | "teacher" | "student" | "parent" | "librarian" | "inquiry";
 }) => {
   const supabase = createClient();
 
@@ -15,8 +15,10 @@ const UserCard = async ({
     .eq('isCurrent', true)
     .single();
 
+  const tableName = type === "inquiry" ? "AdmissionInquiry" : type.charAt(0).toUpperCase() + type.slice(1);
+
   const { count } = await supabase
-    .from(type.charAt(0).toUpperCase() + type.slice(1))
+    .from(tableName)
     .select('*', { count: 'exact', head: true });
 
   return (

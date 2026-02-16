@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { useFormStatus } from "react-dom";
 
 export default function RegisterPage() {
     const [role, setRole] = useState("student");
@@ -39,7 +40,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="mb-8 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                    {["student", "teacher", "librarian", "accountant", "admin"].map((r) => (
+                    {["student", "teacher", "reception", "librarian", "accountant", "admin"].map((r) => (
                         <button
                             key={r}
                             onClick={() => setRole(r)}
@@ -135,7 +136,7 @@ export default function RegisterPage() {
                         </>
                     )}
 
-                    {(role === "teacher" || role === "librarian" || role === "accountant") && (
+                    {(role === "teacher" || role === "librarian" || role === "accountant" || role === "reception") && (
                         <div className="space-y-6">
                             <div className="flex items-center gap-2">
                                 <div className="w-1 h-6 bg-lamaPurple rounded-full"></div>
@@ -150,9 +151,7 @@ export default function RegisterPage() {
                     )}
 
                     <div className="pt-6 border-t flex justify-end">
-                        <button type="submit" className="bg-lamaSky text-white px-8 py-3 rounded-lg font-bold hover:bg-opacity-90 transition-all shadow-md active:scale-95">
-                            Complete {role} Registration
-                        </button>
+                        <SubmitButton role={role} />
                     </div>
                 </form>
             </div>
@@ -184,3 +183,16 @@ const SelectField = ({ label, name, options, error }: any) => (
         {error && <span className="text-red-500 text-[10px] font-bold">{error}</span>}
     </div>
 );
+
+const SubmitButton = ({ role }: { role: string }) => {
+    const { pending } = useFormStatus();
+    return (
+        <button
+            type="submit"
+            disabled={pending}
+            className={`px-8 py-3 rounded-lg font-bold transition-all shadow-md active:scale-95 text-white ${pending ? "bg-gray-400 cursor-not-allowed" : "bg-lamaSky hover:bg-opacity-90"}`}
+        >
+            {pending ? "Processing..." : `Complete ${role} Registration`}
+        </button>
+    );
+};

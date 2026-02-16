@@ -273,7 +273,7 @@ export async function registerUser(prevState: any, formData: FormData) {
     // For Student, we use the existing specialized logic if needed, 
     // or we can generalize. Let's try to handle Admin and Accountant first as requested.
 
-    if (role === "admin" || role === "accountant" || role === "teacher" || role === "librarian") {
+    if (role === "admin" || role === "accountant" || role === "teacher" || role === "librarian" || role === "reception") {
         // Simple User Creation
         const { email, name, surname, phone, address } = rawData;
 
@@ -298,6 +298,7 @@ export async function registerUser(prevState: any, formData: FormData) {
         else if (role === "accountant") table = "Accountant";
         else if (role === "teacher") table = "Teacher";
         else if (role === "librarian") table = "Librarian";
+        else if (role === "reception") table = "Receptionist";
 
         if (table) {
             const payload: any = { id: userId };
@@ -313,7 +314,7 @@ export async function registerUser(prevState: any, formData: FormData) {
                 payload.address = address;
             }
 
-            if (role === "teacher" || role === "accountant" || role === "librarian") {
+            if (role === "teacher" || role === "accountant" || role === "librarian" || role === "reception") {
                 payload.bloodType = "O";
                 payload.sex = "MALE";
                 payload.birthday = new Date().toISOString();

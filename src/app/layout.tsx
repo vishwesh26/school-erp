@@ -9,6 +9,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "DCPEMS School ERP | Management Dashboard",
   description: "Official Enterprise Resource Planning portal for Dr Cyrus Poonawalla English Medium School.",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({
