@@ -16,7 +16,7 @@ const FinancePage = async ({
     const role = user?.user_metadata?.role;
 
     // Check permissions (redundant with middleware but safe)
-    if (role !== "admin" && role !== "teacher") {
+    if (role !== "admin" && role !== "teacher" && role !== "accountant") {
         return <div className="p-4">Unauthorized access.</div>;
     }
 
