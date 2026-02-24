@@ -401,6 +401,14 @@ export const deleteFeeCategory = async (currentState: CurrentState, data: FormDa
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
+    const { data: fees } = await supabase.from('StudentFee').select('id').eq('feeCategoryId', id);
+    if (fees && fees.length > 0) {
+        const feeIds = fees.map(f => f.id);
+        await supabase.from('Payment').delete().in('studentFeeId', feeIds);
+        await supabase.from('Installment').delete().in('studentFeeId', feeIds);
+        await supabase.from('StudentFee').delete().in('id', feeIds);
+    }
+
     const { error } = await supabase.from('FeeCategory').delete().eq('id', id);
     if (error) return { success: false, error: true };
     revalidatePath("/list/finance/categories");
@@ -459,6 +467,9 @@ export const deleteStudentFee = async (currentState: CurrentState, data: FormDat
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
+    await supabase.from('Payment').delete().eq('studentFeeId', id);
+    await supabase.from('Installment').delete().eq('studentFeeId', id);
+
     const { error } = await supabase.from('StudentFee').delete().eq('id', id);
     if (error) return { success: false, error: true };
     return { success: true, error: false };

@@ -112,9 +112,13 @@ export const deleteSubject = async (
     );
 
     // 1. Delete Assignments linked to this Subject
-    // This resolves "Assignment_subjectId_fkey" constraint immediately.
-    const { error: assignmentDeleteError } = await supabase.from('Assignment').delete().eq('subjectId', parseInt(id));
-    if (assignmentDeleteError) throw assignmentDeleteError;
+    // We must delete Results first
+    const { data: assignments } = await supabase.from('Assignment').select('id').eq('subjectId', parseInt(id));
+    if (assignments && assignments.length > 0) {
+      const assignmentIds = assignments.map(a => a.id);
+      await supabase.from('Result').delete().in('assignmentId', assignmentIds);
+      await supabase.from('Assignment').delete().in('id', assignmentIds);
+    }
 
     // 2. Fetch Lessons to Identify Dependencies
     const { data: lessons, error: lessonFetchError } = await supabase.from('Lesson').select('id').eq('subjectId', parseInt(id));
@@ -146,7 +150,10 @@ export const deleteSubject = async (
       if (lessonDeleteError) throw lessonDeleteError;
     }
 
-    // 5. Delete Subject
+    // 5. Delete Subject to Teacher relations
+    await supabase.from('_SubjectToTeacher').delete().eq('A', parseInt(id));
+
+    // 6. Delete Subject
     const { error } = await supabase.from('Subject').delete().eq('id', parseInt(id));
     if (error) throw error;
 
@@ -243,6 +250,15 @@ export const deleteClass = async (
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
+
+    // Conflict cleanup
+    // 1. Academic relations
+    await supabase.from('Lesson').delete().eq('classId', parseInt(id));
+    await supabase.from('Event').delete().eq('classId', parseInt(id));
+    await supabase.from('Announcement').delete().eq('classId', parseInt(id));
+
+    // 2. Unlink Students
+    await supabase.from('Student').update({ classId: null }).eq('classId', parseInt(id));
 
     const { error } = await supabase.from('Class').delete().eq('id', parseInt(id));
 
@@ -407,6 +423,19 @@ export const deleteTeacher = async (
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
     await supabase.auth.admin.deleteUser(id);
+
+    // Conflict cleanup
+    await supabase.from('Lesson').delete().eq('teacherId', id);
+    await supabase.from('Class').update({ supervisorId: null }).eq('supervisorId', id);
+    await supabase.from('_SubjectToTeacher').delete().eq('B', id);
+
+    // Delete Assignments (and their results)
+    const { data: teacherAssignments } = await supabase.from('Assignment').select('id').eq('teacherId', id);
+    if (teacherAssignments && teacherAssignments.length > 0) {
+      const taIds = teacherAssignments.map(a => a.id);
+      await supabase.from('Result').delete().in('assignmentId', taIds);
+      await supabase.from('Assignment').delete().in('id', taIds);
+    }
 
     const { error } = await supabase.from('Teacher').delete().eq('id', id);
 
@@ -637,8 +666,22 @@ export const deleteStudent = async (
     await supabase.auth.admin.deleteUser(id);
 
     // Conflict cleanup: Delete related records first
+    // 1. Finance related
+    const { data: fees } = await supabase.from('StudentFee').select('id').eq('studentId', id);
+    if (fees && fees.length > 0) {
+      const feeIds = fees.map(f => f.id);
+      await supabase.from('Payment').delete().in('studentFeeId', feeIds);
+      await supabase.from('Installment').delete().in('studentFeeId', feeIds);
+      await supabase.from('StudentFee').delete().in('id', feeIds);
+    }
+
+    // 2. Academic related
     await supabase.from('Attendance').delete().eq('studentId', id);
     await supabase.from('Result').delete().eq('studentId', id);
+    await supabase.from('StudentHistory').delete().eq('studentId', id);
+
+    // 3. Library related
+    await supabase.from('BookIssue').delete().eq('studentId', id);
 
     const { error } = await supabase.from('Student').delete().eq('id', id);
 
@@ -713,8 +756,23 @@ export const deleteBook = async (
   data: FormData
 ) => {
   const id = data.get("id") as string;
-  // TODO: Implement actual delete logic when needed
-  return { success: true, error: false };
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // Conflict cleanup
+    await supabase.from('BookIssue').delete().eq('bookId', parseInt(id));
+
+    const { error } = await supabase.from('Book').delete().eq('id', parseInt(id));
+    if (error) throw error;
+
+    return { success: true, error: false };
+  } catch (err) {
+    console.log(err);
+    return { success: false, error: true };
+  }
 };
 
 export const createLibrarian = async (
@@ -961,7 +1019,29 @@ export const deleteLesson = async (
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const { error } = await supabase.from('Lesson').delete().eq('id', parseInt(id));
+    const lessonId = parseInt(id);
+
+    // Conflict cleanup
+    // 1. Attendance
+    await supabase.from('Attendance').delete().eq('lessonId', lessonId);
+
+    // 2. Exams and Results
+    const { data: exams } = await supabase.from('Exam').select('id').eq('lessonId', lessonId);
+    if (exams && exams.length > 0) {
+      const examIds = exams.map(e => e.id);
+      await supabase.from('Result').delete().in('examId', examIds);
+      await supabase.from('Exam').delete().in('id', examIds);
+    }
+
+    // 3. Assignments and Results
+    const { data: assignments } = await supabase.from('Assignment').select('id').eq('lessonId', lessonId);
+    if (assignments && assignments.length > 0) {
+      const assignmentIds = assignments.map(a => a.id);
+      await supabase.from('Result').delete().in('assignmentId', assignmentIds);
+      await supabase.from('Assignment').delete().in('id', assignmentIds);
+    }
+
+    const { error } = await supabase.from('Lesson').delete().eq('id', lessonId);
 
     if (error) throw error;
 
@@ -1042,7 +1122,10 @@ export const deleteResult = async (
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const { error } = await supabase.from('Result').delete().eq('id', parseInt(id));
+    // Conflict cleanup
+    await supabase.from('Result').delete().eq('examId', parseInt(id));
+
+    const { error } = await supabase.from('Exam').delete().eq('id', parseInt(id));
 
     if (error) throw error;
 
@@ -1652,6 +1735,9 @@ export const deleteParent = async (
 
     await supabase.auth.admin.deleteUser(id);
 
+    // Conflict cleanup
+    await supabase.from('Student').update({ parentId: null }).eq('parentId', id);
+
     const { error } = await supabase.from('Parent').delete().eq('id', id);
 
     if (error) throw error;
@@ -1756,6 +1842,10 @@ export const deleteAssignment = async (
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
+
+    // Conflict cleanup
+    await supabase.from('Result').delete().eq('assignmentId', parseInt(id));
+
     const { error } = await supabase.from('Assignment').delete().eq('id', parseInt(id));
     if (error) throw error;
     // revalidatePath("/list/assignments");

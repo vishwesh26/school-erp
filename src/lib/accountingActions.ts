@@ -379,6 +379,8 @@ export const deleteVoucher = async (id: number) => {
         process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
+    await supabase.from('VoucherEntry').delete().eq('voucherId', id);
+
     const { error } = await supabase.from('Voucher').delete().eq('id', id);
 
     if (error) return { success: false, message: error.message };
