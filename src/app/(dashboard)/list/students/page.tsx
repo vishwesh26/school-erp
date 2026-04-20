@@ -126,7 +126,7 @@ const StudentListPage = async ({
       accessor: "address",
       className: "hidden lg:table-cell",
     },
-    ...(role === "admin"
+    ...(["admin", "teacher"].includes(role)
       ? [
         {
           header: "Actions",
@@ -165,11 +165,11 @@ const StudentListPage = async ({
               <Image src="/view.png" alt="" width={16} height={16} />
             </button>
           </Link>
+          {["admin", "teacher"].includes(role) && (
+            <FormContainer table="student" type="transfer" data={{ id: item.id, gradeId: item.gradeId, classId: item.classId }} />
+          )}
           {role === "admin" && (
-            <>
-              <FormContainer table="student" type="transfer" data={{ id: item.id, gradeId: item.gradeId, classId: item.classId }} />
-              <FormContainer table="student" type="delete" id={item.id} />
-            </>
+            <FormContainer table="student" type="delete" id={item.id} />
           )}
         </div>
       </td>
