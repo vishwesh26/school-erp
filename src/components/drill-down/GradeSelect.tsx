@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import { formatGrade } from "@/lib/utils";
 
 const GradeSelect = async () => {
     const supabase = createClient();
@@ -19,7 +20,9 @@ const GradeSelect = async () => {
                         href={`?gradeId=${grade.id}`}
                         className="p-6 bg-lamaSkyLight rounded-md hover:bg-lamaSky transition-colors flex items-center justify-center cursor-pointer shadow-sm border border-gray-100"
                     >
-                        <span className="text-2xl font-bold text-gray-700">Grade {grade.level}</span>
+                        <span className="text-2xl font-bold text-gray-700">
+                           {grade.level <= 0 ? formatGrade(grade.level) : `Grade ${grade.level}`}
+                        </span>
                     </Link>
                 ))}
             </div>

@@ -373,23 +373,7 @@ const LeavingCertificateForm = ({ student }: { student: any }) => {
                             lineHeight: "1.25"
                         }}
                     >
-                        {/* HEADER MATCHING IMAGE */}
-                        <div className="flex items-center gap-4 mb-1">
-                            <Image src="/logo.png" alt="logo" width={64} height={64} className="object-contain" />
-                            <div className="flex-1 text-center">
-                                <p className="text-[10px] font-bold m-0" style={{ color: '#800000' }}>Mahatma Gandhi Sarvodaya Sangh&apos;s</p>
-                                <h1 className="text-2xl font-extrabold italic m-0" style={{
-                                    color: '#800000',
-                                    fontFamily: "'Brush Script MT', cursive, serif"
-                                }}>
-                                    Dr. Cyrus Poonawalla English Medium School
-                                </h1>
-                                <p className="text-[8px] font-bold m-0 mt-0.5">CBSE : 1130365 / 2012 / Uruli Kanchan, Pune. Reg.No.PTRR E 31 Dt.18.11.1952</p>
-                                <p className="text-[8px] font-bold m-0">Uruli Kanchan, Tal-Haveli,Dist - Pune 412202. Ph. : 020-26927272 E-mail : dcpems@gmail.com</p>
-                            </div>
-                        </div>
 
-                        <div className="w-full h-[1px] bg-black mb-1"></div>
 
                         {/* ROW 1: SR NO, TITLE, GR NO */}
                         <div className="flex justify-between items-center mb-1">

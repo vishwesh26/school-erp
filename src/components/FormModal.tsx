@@ -55,6 +55,9 @@ const TeacherForm = dynamic(() => import("./forms/TeacherForm"), {
 const StudentForm = dynamic(() => import("./forms/StudentForm"), {
   loading: () => <h1>Loading...</h1>,
 });
+const TransferStudentForm = dynamic(() => import("./forms/TransferStudentForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
 const SubjectForm = dynamic(() => import("./forms/SubjectForm"), {
   loading: () => <h1>Loading...</h1>,
 });
@@ -99,14 +102,14 @@ const InquiryForm = dynamic(() => import("./forms/InquiryForm"), {
 const forms: {
   [key: string]: (
     setOpen: Dispatch<SetStateAction<boolean>>,
-    type: "create" | "update",
+    type: "create" | "update" | "transfer",
     data?: any,
     relatedData?: any
   ) => JSX.Element;
 } = {
   librarian: (setOpen, type, data, relatedData) => (
     <LibrarianForm
-      type={type}
+      type={type as "create" | "update"}
       data={data}
       setOpen={setOpen}
       relatedData={relatedData}
@@ -114,7 +117,7 @@ const forms: {
   ),
   book: (setOpen, type, data, relatedData) => (
     <BookForm
-      type={type}
+      type={type as "create" | "update"}
       data={data}
       setOpen={setOpen}
       relatedData={relatedData}
@@ -122,7 +125,7 @@ const forms: {
   ),
   subject: (setOpen, type, data, relatedData) => (
     <SubjectForm
-      type={type}
+      type={type as "create" | "update"}
       data={data}
       setOpen={setOpen}
       relatedData={relatedData}
@@ -130,7 +133,7 @@ const forms: {
   ),
   class: (setOpen, type, data, relatedData) => (
     <ClassForm
-      type={type}
+      type={type as "create" | "update"}
       data={data}
       setOpen={setOpen}
       relatedData={relatedData}
@@ -138,23 +141,32 @@ const forms: {
   ),
   teacher: (setOpen, type, data, relatedData) => (
     <TeacherForm
-      type={type}
+      type={type as "create" | "update"}
       data={data}
       setOpen={setOpen}
       relatedData={relatedData}
     />
   ),
   student: (setOpen, type, data, relatedData) => (
-    <StudentForm
-      type={type}
-      data={data}
-      setOpen={setOpen}
-      relatedData={relatedData}
-    />
+    type === "transfer" ? (
+      <TransferStudentForm
+        type={type as "transfer"}
+        data={data}
+        setOpen={setOpen}
+        relatedData={relatedData}
+      />
+    ) : (
+      <StudentForm
+        type={type as "create" | "update"}
+        data={data}
+        setOpen={setOpen}
+        relatedData={relatedData}
+      />
+    )
   ),
   exam: (setOpen, type, data, relatedData) => (
     <ExamForm
-      type={type}
+      type={type as "create" | "update"}
       data={data}
       setOpen={setOpen}
       relatedData={relatedData}
@@ -162,7 +174,7 @@ const forms: {
   ),
   lesson: (setOpen, type, data, relatedData) => (
     <LessonForm
-      type={type}
+      type={type as "create" | "update"}
       data={data}
       setOpen={setOpen}
       relatedData={relatedData}
@@ -170,7 +182,7 @@ const forms: {
   ),
   result: (setOpen, type, data, relatedData) => (
     <ResultForm
-      type={type}
+      type={type as "create" | "update"}
       data={data}
       setOpen={setOpen}
       relatedData={relatedData}
@@ -178,7 +190,7 @@ const forms: {
   ),
   event: (setOpen, type, data, relatedData) => (
     <EventForm
-      type={type}
+      type={type as "create" | "update"}
       data={data}
       setOpen={setOpen}
       relatedData={relatedData}
@@ -186,7 +198,7 @@ const forms: {
   ),
   announcement: (setOpen, type, data, relatedData) => (
     <AnnouncementForm
-      type={type}
+      type={type as "create" | "update"}
       data={data}
       setOpen={setOpen}
       relatedData={relatedData}
@@ -194,7 +206,7 @@ const forms: {
   ),
   parent: (setOpen, type, data, relatedData) => (
     <ParentForm
-      type={type}
+      type={type as "create" | "update"}
       data={data}
       setOpen={setOpen}
       relatedData={relatedData}
@@ -202,7 +214,7 @@ const forms: {
   ),
   assignment: (setOpen, type, data, relatedData) => (
     <AssignmentForm
-      type={type}
+      type={type as "create" | "update"}
       data={data}
       setOpen={setOpen}
       relatedData={relatedData}
@@ -210,7 +222,7 @@ const forms: {
   ),
   feeCategory: (setOpen, type, data, relatedData) => (
     <FeeCategoryForm
-      type={type}
+      type={type as "create" | "update"}
       data={data}
       setOpen={setOpen}
       relatedData={relatedData}
@@ -218,7 +230,7 @@ const forms: {
   ),
   inquiry: (setOpen, type, data, relatedData) => (
     <InquiryForm
-      type={type}
+      type={type as "create" | "update"}
       data={data}
       setOpen={setOpen}
     />
@@ -238,7 +250,7 @@ const FormModal = ({
       ? "bg-lamaYellow"
       : type === "update"
         ? "bg-lamaSky"
-        : "bg-lamaPurple";
+        : type === "transfer" ? "bg-orange-300" : "bg-lamaPurple";
 
   const [open, setOpen] = useState(false);
 
@@ -268,7 +280,7 @@ const FormModal = ({
           Delete
         </button>
       </form>
-    ) : (type === "create" || type === "update") && forms[table] ? (
+    ) : (type === "create" || type === "update" || type === "transfer") && forms[table] ? (
       forms[table](setOpen, type, data, relatedData)
     ) : (
       "Form not found!"
@@ -281,7 +293,7 @@ const FormModal = ({
         className={`${size} flex items-center justify-center rounded-full ${bgColor}`}
         onClick={() => setOpen(true)}
       >
-        <Image src={`/${type}.png`} alt="" width={16} height={16} />
+        <Image src={`/${type === 'transfer' ? 'update' : type}.png`} alt="" width={16} height={16} />
       </button>
       {open && (
         <div className="fixed inset-0 bg-black bg-opacity-60 z-[999] flex items-center justify-center p-4">

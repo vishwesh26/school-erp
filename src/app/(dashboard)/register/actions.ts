@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "crypto";
 import { studentRegistrationSchema, StudentRegistrationSchema } from "@/lib/formValidationSchemas";
 import { sendWelcomeEmail } from "@/lib/mail";
+import { formatGrade } from "@/lib/utils";
 
 export async function registerStudent(prevState: any, formData: FormData) {
     const supabase = createClient(
@@ -24,7 +25,6 @@ export async function registerStudent(prevState: any, formData: FormData) {
     // Validate
     const validatedFields = studentRegistrationSchema.safeParse({
         ...rawData,
-        grade: Number(rawData.grade),
         img: (imgFile && imgFile.size > 0) ? imgFile : undefined,
     });
 
@@ -133,15 +133,17 @@ export async function registerStudent(prevState: any, formData: FormData) {
             .eq("gradeId", gradeData.id);
 
         if (classError || !classesData || classesData.length === 0) {
+            const gradePrefix = gradeData.level <= 0 ? formatGrade(gradeData.level).replace(' ', '') : gradeData.level;
+
             const { data: classA } = await supabase
                 .from("Class")
-                .insert({ name: `${gradeData.level}A`, capacity: 20, gradeId: gradeData.id })
+                .insert({ name: `${gradePrefix}A`, capacity: 20, gradeId: gradeData.id })
                 .select("id, name")
                 .single();
 
             const { data: classB } = await supabase
                 .from("Class")
-                .insert({ name: `${gradeData.level}B`, capacity: 20, gradeId: gradeData.id })
+                .insert({ name: `${gradePrefix}B`, capacity: 20, gradeId: gradeData.id })
                 .select("id, name")
                 .single();
 

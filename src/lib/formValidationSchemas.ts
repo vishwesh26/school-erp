@@ -137,6 +137,14 @@ export const studentSchema = z.object({
 
 export type StudentSchema = z.infer<typeof studentSchema>;
 
+export const transferStudentSchema = z.object({
+  id: z.string(),
+  gradeId: z.coerce.number().min(1, { message: "Grade is required!" }),
+  classId: z.coerce.number().min(1, { message: "Class is required!" }),
+});
+
+export type TransferStudentSchema = z.infer<typeof transferStudentSchema>;
+
 export const examSchema = z.object({
   id: z.coerce.number().optional(),
   title: z.string().min(1, { message: "Title name is required!" }),
@@ -250,7 +258,13 @@ export const studentRegistrationSchema = z.object({
   img: z.instanceof(File, { message: "Image is required" }).optional(),
 
   // Academic
-  grade: z.coerce.number().min(1, { message: "Grade is required!" }),
+  grade: z.union([z.string(), z.number()]).transform((val) => {
+    if (val === "Nursery") return -2;
+    if (val === "Junior KG" || val === "Jr KG") return -1;
+    if (val === "Senior KG" || val === "Sr KG") return 0;
+    const num = typeof val === 'string' ? Number(val) : val;
+    return isNaN(num) ? val : num;
+  }).refine((val) => typeof val === "number" && !isNaN(val), { message: "Invalid grade!" }),
 
   // Official Identifiers
   aadharNo: z.string().optional(),

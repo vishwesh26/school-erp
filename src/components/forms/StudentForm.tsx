@@ -21,6 +21,7 @@ import {
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { CldUploadWidget } from "next-cloudinary";
+import { formatGrade } from "@/lib/utils";
 
 const StudentForm = ({
   type,
@@ -99,7 +100,6 @@ const StudentForm = ({
           defaultValue={data?.username}
           register={register}
           error={errors?.username}
-          inputProps={{ readOnly: type === "update", className: type === "update" ? "bg-gray-100 cursor-not-allowed" : "" }}
         />
         <InputField
           label="Roll Number"
@@ -229,15 +229,13 @@ const StudentForm = ({
         <div className="flex flex-col gap-2 w-full md:w-1/4">
           <label className="text-xs text-gray-500">Grade</label>
           <select
-            className={`ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full ${type === "update" ? "bg-gray-100 pointer-events-none" : ""}`}
+            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
             {...register("gradeId")}
             defaultValue={data?.gradeId}
-            tabIndex={type === "update" ? -1 : 0}
-            aria-disabled={type === "update"}
           >
             {grades.map((grade: { id: number; level: number }) => (
               <option value={grade.id} key={grade.id}>
-                {grade.level}
+                {formatGrade(grade.level)}
               </option>
             ))}
           </select>
@@ -250,11 +248,9 @@ const StudentForm = ({
         <div className="flex flex-col gap-2 w-full md:w-1/4">
           <label className="text-xs text-gray-500">Class</label>
           <select
-            className={`ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full ${type === "update" ? "bg-gray-100 pointer-events-none" : ""}`}
+            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
             {...register("classId")}
             defaultValue={data?.classId}
-            tabIndex={type === "update" ? -1 : 0}
-            aria-disabled={type === "update"}
           >
             {classes.map(
               (classItem: {

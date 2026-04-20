@@ -15,6 +15,7 @@ import {
   AssignmentSchema,
   LibrarianSchema,
   AdmissionInquirySchema,
+  TransferStudentSchema,
 } from "./formValidationSchemas";
 import { createClient } from "@supabase/supabase-js";
 import { sendNotificationEmail } from "./mail";
@@ -642,6 +643,51 @@ export const updateStudent = async (
     if (error) throw error;
 
     // revalidatePath("/list/students");
+    return { success: true, error: false };
+  } catch (err) {
+    console.log(err);
+    return { success: false, error: true };
+  }
+};
+
+export const transferStudent = async (
+  currentState: CurrentState,
+  data: TransferStudentSchema
+) => {
+  if (!data.id) {
+    return { success: false, error: true };
+  }
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    
+    // Capacity Check
+    const { data: classData, error: classError } = await supabase
+      .from('Class')
+      .select('capacity')
+      .eq('id', data.classId)
+      .single();
+
+    if (classData) {
+      const { count } = await supabase
+        .from('Student')
+        .select('*', { count: 'exact', head: true })
+        .eq('classId', data.classId);
+
+      if (count != null && count >= classData.capacity) {
+        return { success: false, error: true };
+      }
+    }
+
+    const { error } = await supabase.from('Student').update({
+      gradeId: data.gradeId,
+      classId: data.classId,
+    }).eq('id', data.id);
+
+    if (error) throw error;
+
     return { success: true, error: false };
   } catch (err) {
     console.log(err);

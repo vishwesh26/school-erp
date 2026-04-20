@@ -166,7 +166,10 @@ const StudentListPage = async ({
             </button>
           </Link>
           {role === "admin" && (
-            <FormContainer table="student" type="delete" id={item.id} />
+            <>
+              <FormContainer table="student" type="transfer" data={{ id: item.id, gradeId: item.gradeId, classId: item.classId }} />
+              <FormContainer table="student" type="delete" id={item.id} />
+            </>
           )}
         </div>
       </td>

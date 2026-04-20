@@ -63,3 +63,10 @@ export const adjustScheduleToCurrentWeek = (
     };
   });
 };
+
+export const formatGrade = (level: number): string => {
+  if (level === 0) return "Senior KG";
+  if (level === -1) return "Junior KG";
+  if (level === -2) return "Nursery";
+  return level.toString();
+};

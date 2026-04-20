@@ -19,7 +19,7 @@ export type FormContainerProps = {
   | "book"
   | "feeCategory"
   | "inquiry";
-  type: "create" | "update" | "delete";
+  type: "create" | "update" | "delete" | "transfer";
   data?: any;
   id?: number | string;
 };

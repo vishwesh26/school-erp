@@ -85,8 +85,12 @@ export default function RegisterPage() {
                                     <InputField label="Birthday" name="birthday" type="date" error={errors.birthday} />
                                     <SelectField label="Sex" name="sex" options={["MALE", "FEMALE"]} error={errors.sex} />
                                     <div className="flex flex-col gap-1">
-                                        <InputField label="Grade / Standard" name="grade" type="number" error={errors.grade} placeholder="e.g. 10" />
-                                        <span className="text-[10px] text-gray-400 ml-1">Two digits (e.g. 05, 10)</span>
+                                        <SelectField 
+                                            label="Grade / Standard" 
+                                            name="grade" 
+                                            options={["", "Nursery", "Junior KG", "Senior KG", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]} 
+                                            error={errors.grade} 
+                                        />
                                     </div>
                                     <div className="md:col-span-2">
                                         <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">Local Residential Address</label>
