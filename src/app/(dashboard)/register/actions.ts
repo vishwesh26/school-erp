@@ -122,6 +122,7 @@ export async function registerStudent(prevState: any, formData: FormData) {
     let isNewRegistration = !existingStudent;
     const password = randomUUID().slice(0, 8);
     let authUserId = "";
+    let finalDbEmail = data.email;
 
     if (existingStudent) {
         rollNumber = existingStudent.rollNumber;
@@ -210,6 +211,18 @@ export async function registerStudent(prevState: any, formData: FormData) {
             } else if (authData.user) {
                 authUserId = authData.user.id;
                 authCreated = true;
+
+                // Check for email conflict in Student table
+                const { data: emailConflict } = await supabase
+                    .from('Student')
+                    .select('id')
+                    .eq('email', data.email)
+                    .limit(1)
+                    .single();
+                
+                if (emailConflict) {
+                    finalDbEmail = authEmail;
+                }
             }
         }
     }
@@ -221,7 +234,7 @@ export async function registerStudent(prevState: any, formData: FormData) {
         rollNumber: rollNumber,
         name: data.name,
         surname: data.surname,
-        email: data.email,
+        email: finalDbEmail,
         phone: data.phone,
         address: data.address,
         img: imgUrl,
