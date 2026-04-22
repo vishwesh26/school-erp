@@ -118,13 +118,20 @@ export async function registerStudent(prevState: any, formData: FormData) {
     let rollNumber = "";
     let username = "";
     let finalClassId = 0;
+    let className = "";
     let isNewRegistration = !existingStudent;
+    const password = randomUUID().slice(0, 8);
+    let authUserId = "";
 
     if (existingStudent) {
         rollNumber = existingStudent.rollNumber;
         username = existingStudent.username;
         finalClassId = existingStudent.classId;
-        console.log("Reusing existing student credentials:", { rollNumber, username });
+        authUserId = existingStudent.id;
+        console.log("Reusing existing student credentials:", { rollNumber, username, authUserId });
+        
+        // Ensure their Auth password is updated so we can resend it or keep them synced
+        await supabase.auth.admin.updateUserById(authUserId, { password: password });
     } else {
         // Generate NEW credentials
         let { data: classesData, error: classError } = await supabase
@@ -154,52 +161,57 @@ export async function registerStudent(prevState: any, formData: FormData) {
 
         const randomClass = classesData[Math.floor(Math.random() * classesData.length)];
         finalClassId = randomClass.id;
+        className = randomClass.name;
 
-        const { count: studentCount } = await supabase
+        // Get max roll number in the class to prevent duplicates across deletions
+        const { data: maxStudentData } = await supabase
             .from("Student")
-            .select("*", { count: "exact", head: true })
-            .eq("classId", randomClass.id);
+            .select("rollNumber")
+            .eq("classId", finalClassId)
+            .order("rollNumber", { ascending: false })
+            .limit(1)
+            .single();
 
-        rollNumber = ((studentCount || 0) + 1).toString().padStart(3, '0');
-        username = `${randomClass.name}-${rollNumber}`;
-    }
-
-    // Generate strictly random password (8 chars) - always generated but only used for new users
-    const password = randomUUID().slice(0, 8);
-
-    // 4. Create or Recover Auth User for Student
-    let authUserId = "";
-    // We use a unique internal email for Supabase Auth because Supabase 
-    // requires unique emails, but students might share a parent's email.
-    const authEmail = `${username.toLowerCase()}@dcpems.internal`;
-
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: authEmail,
-        password: password,
-        email_confirm: true,
-        user_metadata: { role: "student", actual_email: data.email }
-    });
-
-    if (authError) {
-        if (authError.message.toLowerCase().includes("already") || authError.status === 422) {
-            // Recover: Find existing user id
-            const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
-            if (listError) return { success: false, message: "Recovery failed: " + listError.message, errors: {} };
-
-            const existingUser = users.find(u => u.email === authEmail);
-            if (existingUser) {
-                authUserId = existingUser.id;
-                // Force update password to match the one we'll send in the email
-                await supabase.auth.admin.updateUserById(authUserId, { password: password });
-                console.log("Updated/Synced password for existing user:", authUserId);
-            } else {
-                return { success: false, message: "User exists in Auth but not found in list: " + authError.message, errors: {} };
-            }
+        let rollNumberInt = 1;
+        if (maxStudentData && maxStudentData.rollNumber) {
+            rollNumberInt = parseInt(maxStudentData.rollNumber, 10) + 1;
         } else {
-            return { success: false, message: "Registration failed (Auth): " + authError?.message, errors: {} };
+            const { count: studentCount } = await supabase
+                .from("Student")
+                .select("*", { count: "exact", head: true })
+                .eq("classId", finalClassId);
+            rollNumberInt = (studentCount || 0) + 1;
         }
-    } else if (authData.user) {
-        authUserId = authData.user.id;
+
+        let authCreated = false;
+
+        // 4. Create Auth User for Student (retry generating if conflict)
+        while (!authCreated) {
+            rollNumber = rollNumberInt.toString().padStart(3, '0');
+            username = `${className}-${rollNumber}`;
+            const authEmail = `${username.toLowerCase()}@dcpems.internal`;
+
+            const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+                email: authEmail,
+                password: password,
+                email_confirm: true,
+                user_metadata: { role: "student", actual_email: data.email }
+            });
+
+            if (authError) {
+                if (authError.message.toLowerCase().includes("already") || authError.status === 422) {
+                    rollNumberInt++; // Conflicts with an orphaned user, move to next roll number
+                    if (rollNumberInt > 999) {
+                        return { success: false, message: "Failed to generate unique username.", errors: {} };
+                    }
+                } else {
+                    return { success: false, message: "Registration failed (Auth): " + authError.message, errors: {} };
+                }
+            } else if (authData.user) {
+                authUserId = authData.user.id;
+                authCreated = true;
+            }
+        }
     }
 
     // 5. Create or Update Student Record
