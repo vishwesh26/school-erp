@@ -391,7 +391,7 @@ const LeavingCertificateForm = ({ student }: { student: any }) => {
                                 <p className="m-0 font-bold min-w-[120px]">1) School Udise :</p>
                                 <div className="flex">
                                     {(formValues.udise.padEnd(11, ' ').split('')).map((char: string, i: number) => (
-                                        <span key={i} className="border border-black w-5 h-6 flex items-center justify-center font-bold text-xs bg-white">
+                                        <span key={i} className="border border-black w-5 h-6 inline-block text-center leading-[24px] font-bold text-xs bg-white">
                                             {char}
                                         </span>
                                     ))}
@@ -408,7 +408,7 @@ const LeavingCertificateForm = ({ student }: { student: any }) => {
                                 <p className="m-0 font-bold min-w-[120px]">5) Aadhar No.</p>
                                 <div className="flex">
                                     {(formValues.aadharNo.padEnd(12, ' ').split('')).map((char: string, i: number) => (
-                                        <span key={i} className="border border-black w-5 h-6 flex items-center justify-center text-xs bg-white">
+                                        <span key={i} className="border border-black w-5 h-6 inline-block text-center leading-[24px] text-xs bg-white">
                                             {char}
                                         </span>
                                     ))}
@@ -416,79 +416,79 @@ const LeavingCertificateForm = ({ student }: { student: any }) => {
                             </div>
 
                             {/* 6 DOB */}
-                            <p className="m-0 flex items-baseline leading-relaxed">6) Date Of Birth (in Figures) <span className="border-b border-black px-4 font-bold ml-2 pb-[4px]">{formValues.dobFigures}</span></p>
+                            <p className="m-0 flex items-baseline leading-relaxed">6) Date Of Birth (in Figures) <span className="border-b border-black inline-block px-4 font-bold ml-2 pb-[4px]">{formValues.dobFigures}</span></p>
                             <p className="m-0 pl-6 flex items-baseline leading-relaxed">(in words) <span className="border-b border-black inline-block min-w-[500px] italic pb-[4px]">{formValues.dobWords || "......................................................................................."}</span></p>
 
                             {/* 7 Place of Birth */}
                             <div className="flex gap-8">
-                                <p className="m-0 flex items-baseline leading-relaxed">7) Place Of Birth <span className="border-b border-black px-4 font-bold pb-[4px]">{formValues.placeOfBirth}</span></p>
-                                <p className="m-0 flex items-baseline leading-relaxed">Dist. <span className="border-b border-black px-4 font-bold pb-[4px]">{formValues.district}</span></p>
-                                <p className="m-0 flex items-baseline leading-relaxed">Tal. <span className="border-b border-black px-4 font-bold pb-[4px]">{formValues.taluka}</span></p>
+                                <p className="m-0 flex items-baseline leading-relaxed">7) Place Of Birth <span className="border-b border-black inline-block px-4 font-bold ml-2 pb-[4px]">{formValues.placeOfBirth}</span></p>
+                                <p className="m-0 flex items-baseline leading-relaxed">Dist. <span className="border-b border-black inline-block px-4 font-bold ml-2 pb-[4px]">{formValues.district}</span></p>
+                                <p className="m-0 flex items-baseline leading-relaxed">Tal. <span className="border-b border-black inline-block px-4 font-bold ml-2 pb-[4px]">{formValues.taluka}</span></p>
                             </div>
 
                             {/* 8 Nationality etc */}
                             <div className="flex gap-8">
-                                <p className="m-0 flex items-baseline leading-relaxed">8) Nationality <span className="border-b border-black px-4 font-bold pb-[4px]">{formValues.nationality}</span></p>
-                                <p className="m-0 flex items-baseline leading-relaxed">Religion <span className="border-b border-black px-4 font-bold pb-[4px]">{formValues.religion}</span></p>
-                                <p className="m-0 flex items-baseline leading-relaxed">Caste <span className="border-b border-black px-4 font-bold pb-[4px]">{formValues.caste}</span></p>
+                                <p className="m-0 flex items-baseline leading-relaxed">8) Nationality <span className="border-b border-black inline-block px-4 font-bold ml-2 pb-[4px]">{formValues.nationality}</span></p>
+                                <p className="m-0 flex items-baseline leading-relaxed">Religion <span className="border-b border-black inline-block px-4 font-bold ml-2 pb-[4px]">{formValues.religion}</span></p>
+                                <p className="m-0 flex items-baseline leading-relaxed">Caste <span className="border-b border-black inline-block px-4 font-bold ml-2 pb-[4px]">{formValues.caste}</span></p>
                             </div>
 
                             {/* 9 ST */}
-                            <p className="m-0 flex items-baseline leading-relaxed">9) Whether The Pupil Belong To ST <span className="border-b border-black px-4 font-bold ml-2 pb-[4px]">{formValues.isST}</span></p>
+                            <p className="m-0 flex items-baseline leading-relaxed">9) Whether The Pupil Belong To Schedule Tribe <span className="border-b border-black inline-block px-4 font-bold ml-2 pb-[4px]">{formValues.isST}</span></p>
 
                             {/* 10-12 Career */}
-                            <p className="m-0 flex items-baseline leading-relaxed">10) Class in which admitted <span className="border-b border-black px-4 font-bold ml-2 pb-[4px]">{formValues.classAdmitted}</span></p>
-                            <p className="m-0 flex items-baseline leading-relaxed">11) Class In which Leaving <span className="border-b border-black px-4 font-bold ml-2 pb-[4px]">{formValues.classLeaving}</span></p>
-                            <p className="m-0 flex items-baseline leading-relaxed">12) Last Date Of Attendance <span className="border-b border-black px-4 font-bold ml-2 pb-[4px]">{formValues.lastDateAttendance}</span></p>
+                            <p className="m-0 flex items-baseline leading-relaxed">10) Class in which the pupil was admitted <span className="border-b border-black inline-block px-4 font-bold ml-2 pb-[4px]">{formValues.classAdmitted}</span></p>
+                            <p className="m-0 flex items-baseline leading-relaxed">11) Class In which pupil is Leaving <span className="border-b border-black inline-block px-4 font-bold ml-2 pb-[4px]">{formValues.classLeaving}</span></p>
+                            <p className="m-0 flex items-baseline leading-relaxed">12) Last Date Of Attendace In the School <span className="border-b border-black inline-block px-4 font-bold ml-2 pb-[4px]">{formValues.lastDateAttendance}</span></p>
 
                             {/* 13 Exam */}
-                            <p className="m-0 flex items-baseline leading-relaxed">13) School / Board Exam Last Taken <span className="border-b border-black px-4 font-bold ml-2 pb-[4px]">{formValues.examTaken} - {formValues.examResult}</span></p>
+                            <p className="m-0 flex items-baseline leading-relaxed">13) School / Board Annual Examination Last Taken With Result <span className="border-b border-black inline-block px-4 font-bold ml-2 pb-[4px]">{formValues.examTaken} - {formValues.examResult}</span></p>
 
                             {/* 14 Failed */}
-                            <p className="m-0 flex items-baseline leading-relaxed">14) Whether Failed, If So Once / Twice <span className="border-b border-black px-4 font-bold ml-2 pb-[4px]">{formValues.isFailed}</span></p>
+                            <p className="m-0 flex items-baseline leading-relaxed">14) Whether Failed, If So Once / Twice In the Same Calss <span className="border-b border-black inline-block px-4 font-bold ml-2 pb-[4px]">{formValues.isFailed}</span></p>
 
                             {/* 15 Subjects */}
-                            <p className="m-0 flex items-baseline leading-relaxed">15) Subject Studied : <span className="border-b border-black px-2 italic text-[10px] ml-2 pb-[4px]">{formValues.subjectsStudied}</span></p>
+                            <p className="m-0 flex items-baseline leading-relaxed">15) Subject Studied : <span className="border-b border-black inline-block px-2 italic text-[10px] ml-2 pb-[4px]">{formValues.subjectsStudied}</span></p>
 
                             {/* 16 Promotion */}
-                            <p className="m-0 flex items-baseline leading-relaxed">16) Promotion To Higher Class <span className="border-b border-black px-4 font-bold ml-2 pb-[4px]">{formValues.qualifiedPromotion}</span></p>
+                            <p className="m-0 flex items-baseline leading-relaxed">16) Whether Qualified For Promotion To Higher Class <span className="border-b border-black inline-block px-4 font-bold ml-2 pb-[4px]">{formValues.qualifiedPromotion}</span></p>
 
                             {/* 17 Dues */}
-                            <p className="m-0 flex items-baseline leading-relaxed">17) School Dues Paid Up To : <span className="border-b border-black px-4 font-bold ml-2 pb-[4px]">{formValues.duesPaidUpTo}</span></p>
+                            <p className="m-0 flex items-baseline leading-relaxed">17) Month / Year Up To Which the School Dues Paid : <span className="border-b border-black inline-block px-4 font-bold ml-2 pb-[4px]">{formValues.duesPaidUpTo}</span></p>
 
                             {/* 18 Concession */}
-                            <p className="m-0 flex items-baseline leading-relaxed">18) Any Fee Concession Availed Of <span className="border-b border-black px-4 font-bold ml-2 pb-[4px]">{formValues.feeConcession}</span></p>
+                            <p className="m-0 flex items-baseline leading-relaxed">18) Any Fee Concession Availed Of <span className="border-b border-black inline-block px-4 font-bold ml-2 pb-[4px]">{formValues.feeConcession}</span></p>
 
                             {/* 19 Attendance */}
-                            <p className="m-0 flex items-baseline leading-relaxed">19) Working Days / Present Days : <span className="font-bold border-b border-black px-2 pb-[4px]">{formValues.workingDays}</span> / <span className="font-bold border-b border-black px-2 pb-[4px]">{formValues.presentDays}</span></p>
+                            <p className="m-0 flex items-baseline leading-relaxed">19) Total No. Of Working Days Of School / Total No Of Working Days Present : <span className="font-bold border-b border-black inline-block px-2 ml-2 pb-[4px]">{formValues.workingDays}</span> / <span className="font-bold border-b border-black inline-block px-2 ml-2 pb-[4px]">{formValues.presentDays}</span></p>
 
                             {/* 20 NCC */}
-                            <p className="m-0 flex items-baseline leading-relaxed">20) NCC Cadet / Boy Scout / Girl Guide : <span className="border-b border-black px-4 font-bold ml-2 pb-[4px]">{formValues.isNcc}</span></p>
+                            <p className="m-0 flex items-baseline leading-relaxed">20) Whether Of Ncc Cadet / Boy Scout / Girl Guide : <span className="border-b border-black inline-block px-4 font-bold ml-2 pb-[4px]">{formValues.isNcc}</span></p>
 
                             {/* 21 Extra Activities */}
-                            <p className="m-0 flex items-baseline leading-relaxed">21) Extra - Curricular Activities : <span className="border-b border-black px-2 italic ml-2 pb-[4px] flex-1">{formValues.extraCurricular || "Not Specified"}</span></p>
+                            <p className="m-0 flex items-baseline leading-relaxed">21) Extra - Curricular Activities In Which the Pupil Usually Takes Part : <span className="border-b border-black inline-block px-2 italic ml-2 pb-[4px] flex-1">{formValues.extraCurricular || "Not Specified"}</span></p>
 
                             {/* 22 Conduct */}
-                            <p className="m-0 flex items-baseline leading-relaxed">22) General Conduct : <span className="border-b border-black px-4 font-bold ml-2 pb-[4px]">{formValues.conduct}</span></p>
+                            <p className="m-0 flex items-baseline leading-relaxed">22) General Conduct : <span className="border-b border-black inline-block px-4 font-bold ml-2 pb-[4px]">{formValues.conduct}</span></p>
 
                             {/* 23 Application/Issue Date */}
                             <div className="flex gap-16">
-                                <p className="m-0 flex items-baseline leading-relaxed">23) Date Of Application <span className="border-b border-black px-4 font-bold ml-2 pb-[4px]">{formValues.dateApplication}</span></p>
-                                <p className="m-0 flex items-baseline leading-relaxed">Date Issue <span className="border-b border-black px-4 font-bold ml-2 pb-[4px]">{formValues.dateIssue}</span></p>
+                                <p className="m-0 flex items-baseline leading-relaxed">23) Date Of Application Of L.c <span className="border-b border-black inline-block px-4 font-bold ml-2 pb-[4px]">{formValues.dateApplication}</span></p>
+                                <p className="m-0 flex items-baseline leading-relaxed">Date Issue Of L.C <span className="border-b border-black inline-block px-4 font-bold ml-2 pb-[4px]">{formValues.dateIssue}</span></p>
                             </div>
 
                             {/* 24 Reason */}
-                            <p className="m-0 flex items-baseline leading-relaxed">24) Reason Of Leaving <span className="border-b border-black px-4 font-bold ml-2 pb-[4px] flex-1">{formValues.reasonLeaving}</span></p>
+                            <p className="m-0 flex items-baseline leading-relaxed">24) Reason Of Leaving The School <span className="border-b border-black inline-block px-4 font-bold ml-2 pb-[4px] flex-1">{formValues.reasonLeaving}</span></p>
 
                             {/* 25 Remarks */}
-                            <p className="m-0 flex items-baseline leading-relaxed">25) Any Other Remarks : <span className="border-b border-black px-4 italic ml-2 pb-[4px] flex-1">{formValues.remarks || "No Remarks"}</span></p>
+                            <p className="m-0 flex items-baseline leading-relaxed">25) Any Other Remarks : <span className="border-b border-black inline-block px-4 italic ml-2 pb-[4px] flex-1">{formValues.remarks || "No Remarks"}</span></p>
 
                             {/* 26-28 Digits */}
                             <div className="flex items-center gap-2 pt-0.5">
                                 <p className="m-0 font-bold min-w-[120px]">26) Student Id :</p>
                                 <div className="flex">
-                                    {(formValues.studentId.padEnd(20, ' ').split('')).map((char: string, i: number) => (
-                                        <span key={i} className="border border-black w-4.5 h-5.5 flex items-center justify-center text-[9px] bg-white">
+                                    {(formValues.studentId.padEnd(19, ' ').split('')).map((char: string, i: number) => (
+                                        <span key={i} className="border border-black w-[18px] h-[22px] inline-block text-center leading-[22px] text-[10px] bg-white">
                                             {char}
                                         </span>
                                     ))}
@@ -497,9 +497,9 @@ const LeavingCertificateForm = ({ student }: { student: any }) => {
 
                             <div className="flex items-center gap-2">
                                 <p className="m-0 font-bold min-w-[120px]">27) PEN :</p>
-                                <div className="flex">
+                                <div className="flex mt-1">
                                     {(formValues.pen.padEnd(11, ' ').split('')).map((char: string, i: number) => (
-                                        <span key={i} className="border border-black w-5 h-6 flex items-center justify-center text-xs font-bold bg-white">
+                                        <span key={i} className="border border-black w-5 h-6 inline-block text-center leading-[24px] text-xs font-bold bg-white">
                                             {char}
                                         </span>
                                     ))}
@@ -508,9 +508,9 @@ const LeavingCertificateForm = ({ student }: { student: any }) => {
 
                             <div className="flex items-center gap-2">
                                 <p className="m-0 font-bold min-w-[120px]">28) APAAR ID :</p>
-                                <div className="flex">
+                                <div className="flex mt-1">
                                     {(formValues.apaarId.padEnd(12, ' ').split('')).map((char: string, i: number) => (
-                                        <span key={i} className="border border-black w-5 h-6 flex items-center justify-center text-xs bg-white">
+                                        <span key={i} className="border border-black w-5 h-6 inline-block text-center leading-[24px] text-xs bg-white">
                                             {char}
                                         </span>
                                     ))}
