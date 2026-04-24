@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import TableSearch from "@/components/TableSearch";
 
 const ClassSelect = async ({ gradeId }: { gradeId: string | number }) => {
     const supabase = createClient();
@@ -15,9 +16,12 @@ const ClassSelect = async ({ gradeId }: { gradeId: string | number }) => {
 
     return (
         <div className="p-4 bg-white rounded-md m-4 mt-0">
-            <div className="flex items-center gap-4 mb-4">
-                <Link href="?" className="text-blue-500 hover:underline">← Back to Grades</Link>
-                <h1 className="text-xl font-semibold">Select Class</h1>
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
+                <div className="flex items-center gap-4">
+                    <Link href="?" className="text-blue-500 hover:underline">← Back to Grades</Link>
+                    <h1 className="text-xl font-semibold">Select Class</h1>
+                </div>
+                <TableSearch />
             </div>
 
             {classes?.length === 0 ? (

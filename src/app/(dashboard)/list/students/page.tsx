@@ -46,11 +46,11 @@ const StudentListPage = async ({
     );
   }
 
-  if (!gradeId && !isAlumniView) {
+  if (!gradeId && !isAlumniView && !queryParams.search) {
     return <GradeSelect />;
   }
 
-  if (!isAlumniView && gradeId && !classId) {
+  if (!isAlumniView && gradeId && !classId && !queryParams.search) {
     return <ClassSelect gradeId={gradeId} />;
   }
 
@@ -66,7 +66,10 @@ const StudentListPage = async ({
       .eq('status', 'Passed Out')
       .eq('academicYearId', academicYearId);
   } else {
-    query = supabase.from('Student').select('*, Class(*)', { count: 'exact' }).eq('classId', classId);
+    query = supabase.from('Student').select('*, Class(*)', { count: 'exact' });
+    if (classId) {
+      query = query.eq('classId', classId);
+    }
   }
 
   if (queryParams.search) {
@@ -185,7 +188,13 @@ const StudentListPage = async ({
       .eq('status', 'Passed Out')
       .eq('academicYearId', academicYearId);
   } else {
-    exportQuery = supabase.from('Student').select('id, name, surname, rollNumber').eq('classId', classId);
+    exportQuery = supabase.from('Student').select('id, name, surname, rollNumber');
+    if (classId) {
+      exportQuery = exportQuery.eq('classId', classId);
+    }
+    if (queryParams.search) {
+      exportQuery = exportQuery.ilike('name', `%${queryParams.search}%`);
+    }
   }
 
   const { data: exportRaw } = await exportQuery.order('Student(name)', { ascending: true });
@@ -195,21 +204,25 @@ const StudentListPage = async ({
     : exportRaw;
 
   // Fetch Session/Class Name for the heading/export
-  let classNameForDisplay = "Class";
+  let classNameForDisplay = "Global Search Results";
   if (!isAlumniView) {
-    const { data: classData } = await supabase
-      .from('Class')
-      .select('name')
-      .eq('id', classId)
-      .single();
-    classNameForDisplay = classData?.name || "Class";
+    if (classId) {
+      const { data: classData } = await supabase
+        .from('Class')
+        .select('name')
+        .eq('id', classId)
+        .single();
+      classNameForDisplay = classData?.name || "Class";
+    } else {
+      classNameForDisplay = "All Classes";
+    }
   } else {
     const { data: yearData } = await supabase
       .from('AcademicYear')
       .select('name')
       .eq('id', academicYearId)
       .single();
-    classNameForDisplay = `Alumni ${yearData?.name.replace('-', '/') || ""}`;
+    classNameForDisplay = `Alumni ${yearData?.name?.replace('-', '/') || ""}`;
   }
 
   return (
@@ -218,10 +231,10 @@ const StudentListPage = async ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link
-            href={isAlumniView ? (academicYearId ? "?view=alumni" : "?") : `?gradeId=${gradeId}`}
+            href={isAlumniView ? (academicYearId ? "?view=alumni" : "?") : (gradeId ? `?gradeId=${gradeId}` : `?`)}
             className="text-blue-500 hover:underline text-sm md:text-base font-bold"
           >
-            ← {isAlumniView ? (academicYearId ? "Change Year" : "Back to Grades") : "Change Class"}
+            ← {isAlumniView ? (academicYearId ? "Change Year" : "Back to Grades") : (gradeId && classId ? "Change Class" : "Back to Grades")}
           </Link>
           <h1 className="hidden md:block text-lg font-black uppercase tracking-tight">
             {isAlumniView ? `${classNameForDisplay}` : "All Students"}
