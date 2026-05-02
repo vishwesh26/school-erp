@@ -68,10 +68,20 @@ const StudentForm = ({
     }
   );
 
-  const onSubmit = handleSubmit((data) => {
-    console.log("hello");
-    console.log(data);
-    formAction({ ...data, img: img?.secure_url });
+  const onSubmit = handleSubmit((formData) => {
+    let finalName = formData.name;
+    let finalSurname = formData.surname || "-";
+
+    // Split the full name into first name and surname if there are multiple words
+    const parts = finalName.trim().split(" ");
+    if (parts.length > 1) {
+      finalSurname = parts.slice(1).join(" ");
+      finalName = parts[0];
+    } else {
+      finalSurname = "-";
+    }
+
+    formAction({ ...formData, name: finalName, surname: finalSurname, img: img?.secure_url });
   });
 
   const router = useRouter();
@@ -150,18 +160,11 @@ const StudentForm = ({
       )}
       <div className="flex justify-between flex-wrap gap-x-4 gap-y-2">
         <InputField
-          label="First Name"
+          label="Full Name"
           name="name"
-          defaultValue={data?.name}
+          defaultValue={data?.name ? (data?.surname && data?.surname !== "-" ? `${data.name} ${data.surname}` : data.name) : ""}
           register={register}
           error={errors.name}
-        />
-        <InputField
-          label="Last Name"
-          name="surname"
-          defaultValue={data?.surname}
-          register={register}
-          error={errors.surname}
         />
         <InputField
           label="Phone"

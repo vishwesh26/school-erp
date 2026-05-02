@@ -87,7 +87,7 @@ export const studentSchema = z.object({
     .optional()
     .or(z.literal("")),
   name: z.string().min(1, { message: "First name is required!" }),
-  surname: z.string().min(1, { message: "Last name is required!" }),
+  surname: z.string().optional(),
   email: z
     .string()
     .email({ message: "Invalid email address!" })
@@ -248,7 +248,7 @@ export type ParentSchema = z.infer<typeof parentSchema>;
 export const studentRegistrationSchema = z.object({
   // Student Info
   name: z.string().min(1, { message: "First name is required!" }),
-  surname: z.string().min(1, { message: "Last name is required!" }),
+  surname: z.string().optional(),
   email: z.string().email({ message: "Invalid email address!" }),
   phone: z.string().min(1, { message: "Phone is required!" }),
   address: z.string().min(1, { message: "Address is required!" }),

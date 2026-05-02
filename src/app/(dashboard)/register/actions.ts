@@ -290,6 +290,21 @@ export async function registerUser(prevState: any, formData: FormData) {
         process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
+    let rawName = formData.get("name")?.toString() || "";
+    let rawSurname = formData.get("surname")?.toString() || "";
+
+    if (!rawSurname && rawName) {
+         const parts = rawName.trim().split(" ");
+         if (parts.length > 1) {
+              rawSurname = parts.slice(1).join(" ");
+              rawName = parts[0];
+         } else {
+              rawSurname = "-";
+         }
+         formData.set("name", rawName);
+         formData.set("surname", rawSurname);
+    }
+
     const rawData: Record<string, any> = {};
     formData.forEach((value, key) => {
         rawData[key] = value;

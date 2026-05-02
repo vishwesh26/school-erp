@@ -62,9 +62,8 @@ export default function RegisterPage() {
                             <div className="w-1 h-6 bg-lamaSky rounded-full"></div>
                             <h2 className="text-lg font-bold text-gray-800">Account Details</h2>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <InputField label="First Name" name="name" error={errors.name} />
-                            <InputField label="Last Name" name="surname" error={errors.surname} />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <InputField label="Full Name" name="name" error={errors.name} />
                             <InputField label="Email Address" name="email" type="email" error={errors.email} placeholder="example@email.com" />
                             {role !== "admin" && (
                                 <InputField label="Phone Number" name="phone" error={errors.phone} placeholder="+1 234 567 890" />
