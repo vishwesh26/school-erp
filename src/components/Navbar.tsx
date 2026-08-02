@@ -17,30 +17,35 @@ const Navbar = async () => {
   }
 
   return (
-    <div className="flex items-center justify-between p-4">
+    <div className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-md rounded-2xl shadow-xs border border-gray-100 transition-all duration-300">
       {/* SEARCH BAR */}
-      <div className="hidden md:flex items-center gap-2 text-xs rounded-full ring-[1.5px] ring-gray-300 px-2">
-        <Image src="/search.png" alt="" width={14} height={14} />
+      <div className="hidden md:flex items-center gap-2 text-xs rounded-full ring-[1.5px] ring-gray-200 focus-within:ring-lamaSky focus-within:ring-2 px-3 py-1 transition-all duration-200 bg-gray-50/50">
+        <Image src="/search.png" alt="" width={14} height={14} className="opacity-60" />
         <input
           type="text"
           placeholder="Search..."
-          className="w-[200px] p-2 bg-transparent outline-none"
+          className="w-[200px] p-1.5 bg-transparent outline-none text-gray-700 placeholder-gray-400"
         />
       </div>
       {/* ICONS AND USER */}
-      <div className="flex items-center gap-6 justify-end w-full">
-        <div className="bg-white rounded-full w-7 h-7 flex items-center justify-center cursor-pointer relative">
-          <Link rel="stylesheet" href="/list/announcements"> <Image src="/announcement.png" alt="" width={20} height={20} /> </Link>
-          <div className="absolute -top-3 -right-3 w-5 h-5 flex items-center justify-center bg-purple-500 text-white rounded-full text-xs">
+      <div className="flex items-center gap-5 justify-end w-full">
+        <div className="bg-gray-50 hover:bg-gray-100 transition-all duration-200 rounded-full w-9 h-9 flex items-center justify-center cursor-pointer relative border border-gray-200/60 hover-lift">
+          <Link href="/list/announcements"> 
+            <Image src="/announcement.png" alt="Announcements" width={18} height={18} /> 
+          </Link>
+          <div className="absolute -top-1 -right-1 w-4 h-4 flex items-center justify-center bg-lamaPurple text-white rounded-full text-[10px] font-bold shadow-xs animate-pulse">
             1
           </div>
         </div>
         <div className="flex flex-col">
-          <span className="text-xs leading-3 font-medium">{name}</span>
+          <span className="text-xs leading-3 font-semibold text-gray-800">{name}</span>
         </div>
-        {/* <Image src="/avatar.png" alt="" width={36} height={36} className="rounded-full"/> */}
-        {/* <UserButton /> */}
-        <Link href="/logout" className="text-xs bg-red-100 p-2 rounded-md">Logout</Link>
+        <Link 
+          href="/logout" 
+          className="text-xs font-semibold bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg border border-red-200/60 transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs"
+        >
+          Logout
+        </Link>
       </div>
     </div>
   );

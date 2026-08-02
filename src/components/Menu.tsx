@@ -48,10 +48,10 @@ const Menu = ({ role }: { role: string }) => {
                     href={item.href}
                     key={item.label}
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center justify-start gap-4 text-gray-500 py-3 px-3 rounded-xl hover:bg-lamaSkyLight active:bg-lamaSky transition-all"
+                    className="flex items-center justify-start gap-3.5 text-gray-600 py-2.5 px-3 rounded-xl hover:bg-lamaSkyLight hover:text-lamaSky hover:translate-x-1 active:scale-95 transition-all duration-200 group font-medium"
                   >
-                    <Image src={item.icon} alt="" width={22} height={22} />
-                    <span className="">{item.label}</span>
+                    <Image src={item.icon} alt="" width={20} height={20} className="group-hover:scale-110 transition-transform duration-200" />
+                    <span className="text-xs sm:text-sm">{item.label}</span>
                   </Link>
                 );
               }
