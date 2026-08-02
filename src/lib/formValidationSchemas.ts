@@ -210,6 +210,7 @@ export const assignmentSchema = z.object({
   classId: z.coerce.number().min(1, { message: "Class is required!" }),
   subjectId: z.coerce.number().min(1, { message: "Subject is required!" }),
   description: z.string().optional(),
+  pdfUrl: z.string().optional(),
 });
 
 export type AssignmentSchema = z.infer<typeof assignmentSchema>;

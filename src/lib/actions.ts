@@ -1818,6 +1818,7 @@ export const createAssignment = async (
       subjectId: data.subjectId,
       teacherId: user?.id, // Auto-assign creator
       description: data.description,
+      pdfUrl: data.pdfUrl || null,
     });
     if (error) throw error;
 
@@ -1868,6 +1869,7 @@ export const updateAssignment = async (
       classId: data.classId,
       subjectId: data.subjectId,
       description: data.description,
+      pdfUrl: data.pdfUrl || null,
     }).eq("id", data.id);
     if (error) throw error;
     // revalidatePath("/list/assignments");
