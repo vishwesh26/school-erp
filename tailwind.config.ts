@@ -21,6 +21,9 @@ const config: Config = {
         lamaYellow: "#FAE27C", // Keep Yellow as auxiliary
         lamaYellowLight: "#FEFCE8",
       },
+      fontFamily: {
+        sans: ["var(--font-inter)"],
+      },
     },
   },
   plugins: [],
