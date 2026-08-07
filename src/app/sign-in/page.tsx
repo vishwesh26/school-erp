@@ -105,7 +105,7 @@ export default function LoginPage() {
                   placeholder="e.g. 10A-001 or name@email.com"
                   required
                   autoComplete="username"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl bg-gray-50/80 border border-gray-200 text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-[#f16122] focus:border-transparent focus:bg-white transition-all"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl bg-gray-50/80 border border-gray-200 text-gray-900 placeholder-gray-400 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#f16122] focus:border-transparent focus:bg-white transition-all"
                 />
               </div>
             </div>
@@ -130,7 +130,7 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   required
                   autoComplete="current-password"
-                  className="w-full pl-11 pr-11 py-3 rounded-xl bg-gray-50/80 border border-gray-200 text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-[#f16122] focus:border-transparent focus:bg-white transition-all"
+                  className="w-full pl-11 pr-11 py-3 rounded-xl bg-gray-50/80 border border-gray-200 text-gray-900 placeholder-gray-400 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#f16122] focus:border-transparent focus:bg-white transition-all"
                 />
                 <button
                   type="button"
