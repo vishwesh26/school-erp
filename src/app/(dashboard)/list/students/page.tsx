@@ -256,7 +256,7 @@ const StudentListPage = async ({
               students={allStudentsInClass || []}
               className={classNameForDisplay}
             />
-            {role === "admin" && (
+            {["admin", "teacher"].includes(role) && (
               <FormContainer table="student" type="create" />
             )}
           </div>
