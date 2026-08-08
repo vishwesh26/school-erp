@@ -190,24 +190,22 @@ export const getStudentsByFeeCategory = async (classId: string | number, categor
         studentQuery = studentQuery.or(`name.ilike.%${search}%,surname.ilike.%${search}%,rollNumber.ilike.%${search}%`);
     }
 
-    let queryExec: any = studentQuery.order('name', { ascending: true });
-    if (page) {
-        queryExec = queryExec.range((page - 1) * ITEM_PER_PAGE, page * ITEM_PER_PAGE - 1);
-    }
-
-    const { data: allStudents, count: totalCount } = await queryExec;
+    const orderedQuery = studentQuery.order('name', { ascending: true });
+    const { data: allStudents, count: totalCount } = page
+        ? await orderedQuery.range((page - 1) * ITEM_PER_PAGE, page * ITEM_PER_PAGE - 1)
+        : await orderedQuery;
 
     if (!allStudents) return { data: [], count: 0, error: null };
 
     // 2. Fetch existing StudentFee records for these students and this category
-    const studentIds = allStudents.map(s => s.id);
+    const studentIds = allStudents.map((s: { id: string }) => s.id);
     const { data: fees } = await supabase.from('StudentFee')
         .select('*')
         .in('studentId', studentIds)
         .eq('feeCategoryId', categoryId);
 
     // 3. Map students to their fee status or default to PENDING
-    let data = allStudents.map(student => {
+    let data = allStudents.map((student: { id: string; name: string; surname: string; rollNumber: string }) => {
         const fee = fees?.find(f => f.studentId === student.id);
         return {
             id: fee?.id || `new-${student.id}`,
@@ -223,7 +221,7 @@ export const getStudentsByFeeCategory = async (classId: string | number, categor
 
     // 4. Client-side status filter (since we joined in memory for simplicity)
     if (statusFilter) {
-        data = data.filter(d => d.status === statusFilter);
+        data = data.filter((d: { status: string }) => d.status === statusFilter);
     }
 
     return { data, count: totalCount, error: null };
