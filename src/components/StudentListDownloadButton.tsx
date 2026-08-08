@@ -64,7 +64,7 @@ const StudentListDownloadButton = ({
             </button>
 
             {/* Hidden PDF Template */}
-            <div className="hidden">
+            <div style={{ position: "absolute", left: "-9999px", top: "-9999px" }}>
                 <div
                     ref={pdfExportComponent}
                     className="pt-2 px-10 pb-10 text-black bg-white"
