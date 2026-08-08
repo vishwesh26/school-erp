@@ -6,7 +6,7 @@ const ClassSelect = async ({ gradeId }: { gradeId: string | number }) => {
     const supabase = createClient();
     const { data: classes, error } = await supabase
         .from('Class')
-        .select('*')
+        .select('*, _count:Student(count)')
         .eq('gradeId', gradeId)
         .order('name', { ascending: true });
 
@@ -35,7 +35,9 @@ const ClassSelect = async ({ gradeId }: { gradeId: string | number }) => {
                             className="p-6 bg-lamaYellowLight rounded-md hover:bg-lamaYellow transition-colors flex flex-col items-center justify-center cursor-pointer shadow-sm border border-gray-100"
                         >
                             <span className="text-2xl font-bold text-gray-700">{cls.name}</span>
-                            <span className="text-sm text-gray-500 mt-2">Capacity: {cls.capacity}</span>
+                            <span className="text-sm font-semibold text-gray-600 mt-2">
+                                Students: {(cls as any)._count?.[0]?.count || 0} / {cls.capacity}
+                            </span>
                         </Link>
                     ))}
                 </div>
