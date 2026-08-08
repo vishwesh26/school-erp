@@ -115,19 +115,19 @@ export const getStudentsWithFeeSummary = async (classId: string | number, page: 
     if (sError || !allStudents) return { data: [], count: 0, error: sError };
 
     // 2. Fetch all fees for these students to aggregate
-    const studentIds = allStudents.map(s => s.id);
+    const studentIds = (allStudents as any[]).map((s: any) => s.id);
     const { data: fees } = await supabase.from('StudentFee')
         .select('studentId, totalAmount, paidAmount, pendingAmount, status, discount')
         .in('studentId', studentIds);
 
     // 3. Aggregate
-    let summarizedData = allStudents.map(student => {
-        const studentFees = fees?.filter(f => f.studentId === student.id) || [];
-        const totalAmount = studentFees.reduce((sum, f) => sum + Number(f.totalAmount), 0);
-        const discount = studentFees.reduce((sum, f) => sum + Number(f.discount || 0), 0);
+    let summarizedData = (allStudents as any[]).map((student: any) => {
+        const studentFees = (fees as any[])?.filter((f: any) => f.studentId === student.id) || [];
+        const totalAmount = studentFees.reduce((sum: number, f: any) => sum + Number(f.totalAmount), 0);
+        const discount = studentFees.reduce((sum: number, f: any) => sum + Number(f.discount || 0), 0);
         const totalNet = totalAmount - discount;
-        const paidAmount = studentFees.reduce((sum, f) => sum + Number(f.paidAmount), 0);
-        const pendingAmount = studentFees.reduce((sum, f) => sum + Number(f.pendingAmount), 0);
+        const paidAmount = studentFees.reduce((sum: number, f: any) => sum + Number(f.paidAmount), 0);
+        const pendingAmount = studentFees.reduce((sum: number, f: any) => sum + Number(f.pendingAmount), 0);
 
         let status = 'PAID';
         if (pendingAmount > 0) {
@@ -145,7 +145,7 @@ export const getStudentsWithFeeSummary = async (classId: string | number, page: 
 
     // 4. Apply status filter if provided
     if (statusFilter) {
-        summarizedData = summarizedData.filter(s => s.status === statusFilter);
+        summarizedData = summarizedData.filter((s: any) => s.status === statusFilter);
     }
 
     const totalCount = summarizedData.length;
