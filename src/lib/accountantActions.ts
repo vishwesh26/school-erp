@@ -183,7 +183,7 @@ export const getStudentsByFeeCategory = async (classId: string | number, categor
 
     // 1. Fetch ALL students in the class
     let studentQuery = supabase.from('Student')
-        .select('id, name, surname, rollNumber')
+        .select('id, name, surname, rollNumber, email, phone, bloodType, parent:Parent(name, surname)')
         .eq('classId', classId);
 
     if (search) {
@@ -205,8 +205,9 @@ export const getStudentsByFeeCategory = async (classId: string | number, categor
         .eq('feeCategoryId', categoryId);
 
     // 3. Map students to their fee status or default to PENDING
-    let data = allStudents.map((student: { id: string; name: string; surname: string; rollNumber: string }) => {
+    let data = allStudents.map((student: any) => {
         const fee = fees?.find(f => f.studentId === student.id);
+        const parentName = student.parent ? `${student.parent.name || ''} ${student.parent.surname || ''}`.trim() : 'N/A';
         return {
             id: fee?.id || `new-${student.id}`,
             studentId: student.id,
@@ -214,7 +215,11 @@ export const getStudentsByFeeCategory = async (classId: string | number, categor
             student: {
                 name: student.name,
                 surname: student.surname,
-                rollNumber: student.rollNumber
+                rollNumber: student.rollNumber,
+                email: student.email || 'N/A',
+                phone: student.phone || 'N/A',
+                bloodType: student.bloodType || 'N/A',
+                parentName: parentName || 'N/A'
             }
         };
     });

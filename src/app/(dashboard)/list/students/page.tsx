@@ -190,11 +190,11 @@ const StudentListPage = async ({
   if (isAlumniView) {
     exportQuery = supabase
       .from('StudentHistory')
-      .select('*, Student(id, name, surname, rollNumber)')
+      .select('*, Student(id, name, surname, rollNumber, email, phone, bloodType, parent:Parent(name, surname))')
       .eq('status', 'Passed Out')
       .eq('academicYearId', academicYearId);
   } else {
-    exportQuery = supabase.from('Student').select('id, name, surname, rollNumber');
+    exportQuery = supabase.from('Student').select('id, name, surname, rollNumber, email, phone, bloodType, parent:Parent(name, surname)');
     if (classId) {
       exportQuery = exportQuery.eq('classId', classId);
     }
@@ -212,8 +212,14 @@ const StudentListPage = async ({
   }
 
   const allStudentsInClass = isAlumniView
-    ? (exportRaw as any[])?.map(h => ({ ...h.Student }))
-    : exportRaw;
+    ? (exportRaw as any[])?.map(h => ({
+        ...h.Student,
+        parentName: h.Student?.parent ? `${h.Student.parent.name || ''} ${h.Student.parent.surname || ''}`.trim() : 'N/A'
+      }))
+    : (exportRaw as any[])?.map(s => ({
+        ...s,
+        parentName: s.parent ? `${s.parent.name || ''} ${s.parent.surname || ''}`.trim() : 'N/A'
+      }));
 
   // Fetch Session/Class Name for the heading/export
   let classNameForDisplay = "Global Search Results";

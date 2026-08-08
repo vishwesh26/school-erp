@@ -5,6 +5,8 @@ import { getClassStudents } from "@/lib/actions";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import FeeDownloadButton from "@/components/FeeDownloadButton";
+import { createClient } from "@/lib/supabase/client";
 
 type StudentType = {
     id: string;
@@ -20,10 +22,25 @@ const FinanceMarkingView = ({ classId }: { classId: number }) => {
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
     const [students, setStudents] = useState<any[]>([]);
     const [statuses, setStatuses] = useState<{ [studentId: string]: 'PAID' | 'PARTIAL' | 'PENDING' }>({});
+    const [className, setClassName] = useState<string>("");
     const [loading, setLoading] = useState(false);
     const [showQR, setShowQR] = useState(false);
 
     const router = useRouter();
+
+    // Fetch Class Name
+    useEffect(() => {
+        if (classId) {
+            const fetchClassName = async () => {
+                const supabase = createClient();
+                const { data } = await supabase.from('Class').select('name').eq('id', classId).single();
+                if (data?.name) {
+                    setClassName(data.name);
+                }
+            };
+            fetchClassName();
+        }
+    }, [classId]);
 
     // 1. Fetch Categories for this class
     useEffect(() => {
@@ -81,6 +98,8 @@ const FinanceMarkingView = ({ classId }: { classId: number }) => {
         setLoading(false);
     };
 
+    const selectedCategory = categories.find(c => c.id === selectedCategoryId);
+
     return (
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-full">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
@@ -89,7 +108,14 @@ const FinanceMarkingView = ({ classId }: { classId: number }) => {
                     <p className="text-sm text-gray-500 mt-1 font-medium italic">Mark manual payments for the class</p>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
+                    <FeeDownloadButton
+                        students={students}
+                        statuses={statuses}
+                        className={className || `${classId}`}
+                        categoryName={selectedCategory?.name}
+                        categoryAmount={selectedCategory?.baseAmount}
+                    />
                     <button
                         onClick={() => setShowQR(!showQR)}
                         className="flex items-center gap-2 bg-lamaSkyLight text-lamaSky px-4 py-2.5 rounded-lg text-sm font-bold hover:bg-lamaSky hover:text-white transition-all shadow-sm active:scale-95"
