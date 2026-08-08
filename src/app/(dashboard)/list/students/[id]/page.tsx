@@ -41,43 +41,58 @@ const SingleStudentPage = async ({
         {/* TOP */}
         <div className="flex flex-col lg:flex-row gap-4">
           {/* USER INFO CARD */}
-          <div className="bg-lamaSky py-6 px-4 rounded-md flex-1 flex gap-4">
-            <div className="w-1/3">
-              <Image
-                src={student.img || "/noAvatar.png"}
-                alt=""
-                width={144}
-                height={144}
-                className="w-36 h-36 rounded-full object-cover"
-              />
+          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6 rounded-2xl flex-1 flex flex-col sm:flex-row gap-6 shadow-xl border border-white/10 relative overflow-hidden group animate-slide-up hover-lift">
+            {/* Decorative ambient background glow */}
+            <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-lamaPurple/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700 pointer-events-none" />
+
+            <div className="flex-shrink-0 flex items-center justify-center">
+              <div className="relative p-1 rounded-full bg-gradient-to-br from-white/30 to-white/5 border border-white/20 shadow-lg">
+                <Image
+                  src={student.img || "/noAvatar.png"}
+                  alt=""
+                  width={128}
+                  height={128}
+                  className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover shadow-inner"
+                />
+              </div>
             </div>
-            <div className="w-2/3 flex flex-col justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <h1 className="text-xl font-semibold">
-                  {student.name + " " + student.surname}
-                </h1>
+
+            <div className="flex-1 flex flex-col justify-between gap-4 min-w-0 z-10">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white leading-snug">
+                    {student.name + " " + student.surname}
+                  </h1>
+                  <span className="text-xs font-bold text-amber-400 uppercase tracking-wider mt-0.5 inline-block">
+                    Student Profile
+                  </span>
+                </div>
                 {["admin", "teacher"].includes(role) && (
                   <FormContainer table="student" type="update" data={student} />
                 )}
               </div>
-              <div className="flex items-center justify-between gap-2 flex-wrap text-xs font-medium">
-                <div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
-                  <Image src="/blood.png" alt="" width={14} height={14} />
-                  <span>{student.bloodType}</span>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs font-semibold">
+                <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 hover:bg-white/20 transition-all duration-200 min-w-0">
+                  <Image src="/blood.png" alt="" width={15} height={15} className="invert brightness-200 flex-shrink-0" />
+                  <span className="truncate text-white/90">{student.bloodType || "-"}</span>
                 </div>
-                <div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
-                  <Image src="/date.png" alt="" width={14} height={14} />
-                  <span>
+
+                <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 hover:bg-white/20 transition-all duration-200 min-w-0">
+                  <Image src="/date.png" alt="" width={15} height={15} className="invert brightness-200 flex-shrink-0" />
+                  <span className="truncate text-white/90">
                     {new Intl.DateTimeFormat("en-GB").format(new Date(student.birthday))}
                   </span>
                 </div>
-                <div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
-                  <Image src="/mail.png" alt="" width={14} height={14} />
-                  <span>{student.email || "-"}</span>
+
+                <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 hover:bg-white/20 transition-all duration-200 min-w-0 col-span-1 sm:col-span-2" title={student.email || "-"}>
+                  <Image src="/mail.png" alt="" width={15} height={15} className="invert brightness-200 flex-shrink-0" />
+                  <span className="truncate text-white/90">{student.email || "-"}</span>
                 </div>
-                <div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
-                  <Image src="/phone.png" alt="" width={14} height={14} />
-                  <span>{student.phone || "-"}</span>
+
+                <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 hover:bg-white/20 transition-all duration-200 min-w-0 col-span-1 sm:col-span-2">
+                  <Image src="/phone.png" alt="" width={15} height={15} className="invert brightness-200 flex-shrink-0" />
+                  <span className="truncate text-white/90">{student.phone || "-"}</span>
                 </div>
               </div>
             </div>
