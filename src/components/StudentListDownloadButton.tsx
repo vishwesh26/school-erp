@@ -28,15 +28,20 @@ const StudentListDownloadButton = ({
         const element = pdfExportComponent.current;
         if (!element) return;
 
+        const wrapper = element.parentElement;
+        if (wrapper) wrapper.style.display = "block";
+
         const opt = {
             margin: 10,
             filename: `${className}_Student_List.pdf`,
             image: { type: "jpeg" as const, quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
+            html2canvas: { scale: 2, useCORS: true, windowWidth: 1200 },
             jsPDF: { unit: "mm" as const, format: "a4" as const, orientation: "portrait" as const },
         };
 
-        html2pdf().set(opt).from(element).save();
+        await html2pdf().set(opt).from(element).save();
+
+        if (wrapper) wrapper.style.display = "none";
     };
 
     return (
@@ -64,7 +69,7 @@ const StudentListDownloadButton = ({
             </button>
 
             {/* Hidden PDF Template */}
-            <div style={{ position: "absolute", left: "-9999px", top: "-9999px" }}>
+            <div style={{ display: "none" }}>
                 <div
                     ref={pdfExportComponent}
                     className="pt-2 px-10 pb-10 text-black bg-white"
