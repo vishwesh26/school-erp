@@ -169,7 +169,10 @@ const StudentListPage = async ({
             </button>
           </Link>
           {["admin", "teacher"].includes(role) && (
-            <FormContainer table="student" type="transfer" data={{ id: item.id, gradeId: item.gradeId, classId: item.classId }} />
+            <>
+              <FormContainer table="student" type="update" data={item} />
+              <FormContainer table="student" type="transfer" data={{ id: item.id, gradeId: item.gradeId, classId: item.classId }} />
+            </>
           )}
           {role === "admin" && (
             <FormContainer table="student" type="delete" id={item.id} />

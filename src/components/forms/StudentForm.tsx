@@ -44,7 +44,18 @@ const StudentForm = ({
     resolver: zodResolver(studentSchema),
   });
 
-  const [img, setImg] = useState<any>();
+  const [imgUrl, setImgUrl] = useState<string>(data?.img || "");
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImgUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const selectedClassId = watch("classId");
   const rollNumberValue = watch("rollNumber");
@@ -81,7 +92,9 @@ const StudentForm = ({
       finalSurname = "-";
     }
 
-    formAction({ ...formData, name: finalName, surname: finalSurname, img: img?.secure_url });
+    const photoToSave = imgUrl || data?.img || null;
+
+    formAction({ ...formData, name: finalName, surname: finalSurname, img: photoToSave });
   });
 
   const router = useRouter();
@@ -137,27 +150,63 @@ const StudentForm = ({
       <span className="text-sm text-blue-600 font-bold border-b pb-2 mb-2">
         Personal Information
       </span>
-      {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME && (
-        <CldUploadWidget
-          uploadPreset="school"
-          onSuccess={(result, { widget }) => {
-            setImg(result.info);
-            widget.close();
-          }}
-        >
-          {({ open }) => {
-            return (
-              <div
-                className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300 w-max"
-                onClick={() => open()}
+
+      {/* Profile Photo Uploader */}
+      <div className="flex flex-col gap-2 p-4 bg-slate-50 border border-gray-200 rounded-xl">
+        <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+          Profile Photo
+        </label>
+        <div className="flex items-center gap-4 flex-wrap">
+          {imgUrl || data?.img ? (
+            <Image
+              src={imgUrl || data?.img}
+              alt="Student Photo"
+              width={64}
+              height={64}
+              className="w-16 h-16 rounded-full object-cover border-2 border-lamaSky shadow-sm"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs font-bold border border-gray-300">
+              No Photo
+            </div>
+          )}
+
+          <div className="flex flex-col gap-2">
+            <label className="text-xs text-gray-700 flex items-center gap-2 cursor-pointer bg-white hover:bg-gray-100 px-3 py-2 rounded-lg border border-gray-300 transition-colors w-max font-semibold shadow-sm active:scale-95">
+              <Image src="/upload.png" alt="" width={18} height={18} />
+              <span>{imgUrl || data?.img ? "Change Photo" : "Upload Photo"}</span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+            </label>
+
+            {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME && (
+              <CldUploadWidget
+                uploadPreset="school"
+                onSuccess={(result, { widget }) => {
+                  if ((result.info as any)?.secure_url) {
+                    setImgUrl((result.info as any).secure_url);
+                  }
+                  widget.close();
+                }}
               >
-                <Image src="/upload.png" alt="" width={24} height={24} />
-                <span>{img ? "Photo uploaded!" : "Upload a photo"}</span>
-              </div>
-            );
-          }}
-        </CldUploadWidget>
-      )}
+                {({ open }) => (
+                  <button
+                    type="button"
+                    className="text-xs text-blue-600 hover:underline text-left font-medium"
+                    onClick={() => open()}
+                  >
+                    Upload via Cloudinary
+                  </button>
+                )}
+              </CldUploadWidget>
+            )}
+          </div>
+        </div>
+      </div>
       <div className="flex justify-between flex-wrap gap-x-4 gap-y-2">
         <InputField
           label="Full Name"
