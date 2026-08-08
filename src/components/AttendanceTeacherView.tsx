@@ -45,10 +45,10 @@ const AttendanceTeacherView = ({
     const [loading, setLoading] = useState(false);
 
     const router = useRouter();
-    const supabase = createClient();
 
     // Fetch Class Name, Students and Attendance when Class or Date changes
     useEffect(() => {
+        const supabase = createClient();
         if (classId && date) {
             const fetchData = async () => {
                 setLoading(true);
@@ -58,15 +58,23 @@ const AttendanceTeacherView = ({
                     setClassName(clsData.name);
                 }
 
-                // 1. Fetch Students
-                const studentsRes = await getClassStudents(classId);
-                setStudents(studentsRes || []);
+                // Fetch Students in this class
+                const { data: stdData } = await supabase
+                    .from("Student")
+                    .select("id, name, surname, rollNumber")
+                    .eq("classId", classId)
+                    .order("rollNumber", { ascending: true });
 
-                // 2. Fetch Existing Attendance (Daily Attendance -> lessonId = null)
-                const attendanceRes = await getAttendance(null, date);
+                setStudents(stdData || []);
 
-                // Map existing attendance to state
-                const initialAttendance: { [key: string]: boolean } = {};
+                // Fetch existing attendance for this class and date
+                const { data: attendanceRes } = await supabase
+                    .from("Attendance")
+                    .select("*")
+                    .eq("date", date)
+                    .eq("classId", classId);
+
+                const initialAttendance: { [studentId: string]: boolean } = {};
                 if (attendanceRes) {
                     attendanceRes.forEach((rec: any) => {
                         initialAttendance[rec.studentId] = rec.present;

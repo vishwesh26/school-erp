@@ -74,6 +74,9 @@ const FormContainer = async ({ table, type, data, id }: FormContainerProps) => {
         const { data: lessonClasses } = await supabase.from("Class").select("id, name");
         const { data: lessonTeachers } = await supabase.from("Teacher").select("id, name, surname");
         relatedData = { subjects: lessonSubjects || [], classes: lessonClasses || [], teachers: lessonTeachers || [] };
+        if (role === "teacher" && type === "create" && currentUserId && !data?.teacherId) {
+          data = { ...data, teacherId: currentUserId };
+        }
         break;
       case "result":
         const { data: resultExams } = await supabase.from("Exam").select("id, title");

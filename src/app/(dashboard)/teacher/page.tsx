@@ -1,5 +1,6 @@
 import Announcements from "@/components/Announcements";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
+import FormContainer from "@/components/FormContainer";
 import { createClient } from "@/lib/supabase/server";
 
 const TeacherPage = async () => {
@@ -12,7 +13,15 @@ const TeacherPage = async () => {
       {/* LEFT */}
       <div className="w-full xl:w-2/3">
         <div className="h-full bg-white p-4 rounded-md">
-          <h1 className="text-xl font-semibold">Schedule</h1>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-xl font-semibold">Schedule</h1>
+              <p className="text-xs text-gray-500 mt-0.5">View and edit your class schedule</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <FormContainer table="lesson" type="create" data={{ teacherId: userId }} />
+            </div>
+          </div>
           <BigCalendarContainer type="teacherId" id={userId!} />
         </div>
       </div>
