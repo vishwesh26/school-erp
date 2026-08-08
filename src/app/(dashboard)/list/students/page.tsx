@@ -197,7 +197,13 @@ const StudentListPage = async ({
     }
   }
 
-  const { data: exportRaw } = await exportQuery.order('Student(name)', { ascending: true });
+  const { data: exportRaw, error: exportErr } = isAlumniView
+    ? await exportQuery.order('Student(name)', { ascending: true })
+    : await exportQuery.order('name', { ascending: true });
+
+  if (exportErr) {
+    console.error("Export Query Error:", exportErr);
+  }
 
   const allStudentsInClass = isAlumniView
     ? (exportRaw as any[])?.map(h => ({ ...h.Student }))
