@@ -173,7 +173,7 @@ export const getActiveCategoriesForClass = async (classId: string | number) => {
     return categories || [];
 };
 
-export const getStudentsByFeeCategory = async (classId: string | number, categoryId: string | number, page: number, search?: string, statusFilter?: string) => {
+export const getStudentsByFeeCategory = async (classId: string | number, categoryId: string | number, page?: number, search?: string, statusFilter?: string) => {
     const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -190,9 +190,12 @@ export const getStudentsByFeeCategory = async (classId: string | number, categor
         studentQuery = studentQuery.or(`name.ilike.%${search}%,surname.ilike.%${search}%,rollNumber.ilike.%${search}%`);
     }
 
-    const { data: allStudents, count: totalCount } = await studentQuery
-        .order('name', { ascending: true })
-        .range((page - 1) * ITEM_PER_PAGE, page * ITEM_PER_PAGE - 1);
+    let queryExec: any = studentQuery.order('name', { ascending: true });
+    if (page) {
+        queryExec = queryExec.range((page - 1) * ITEM_PER_PAGE, page * ITEM_PER_PAGE - 1);
+    }
+
+    const { data: allStudents, count: totalCount } = await queryExec;
 
     if (!allStudents) return { data: [], count: 0, error: null };
 

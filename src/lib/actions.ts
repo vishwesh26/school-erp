@@ -560,6 +560,33 @@ export const createStudent = async (
 
     if (dbError) throw dbError;
 
+    // Auto-assign active Fee Categories for the student's grade
+    if (data.gradeId) {
+      try {
+        const { data: categories } = await supabase
+          .from('FeeCategory')
+          .select('*')
+          .or(`gradeId.eq.${data.gradeId},gradeId.is.null`);
+
+        if (categories && categories.length > 0) {
+          const feeInserts = categories.map((cat: any) => ({
+            studentId: userId,
+            feeCategoryId: cat.id,
+            totalAmount: cat.baseAmount,
+            discount: 0,
+            paidAmount: 0,
+            pendingAmount: Number(cat.baseAmount),
+            status: 'PENDING',
+            dueDate: new Date().toISOString()
+          }));
+
+          await supabase.from('StudentFee').insert(feeInserts);
+        }
+      } catch (fErr) {
+        console.error("Auto Fee Assignment Error:", fErr);
+      }
+    }
+
     // revalidatePath("/list/students");
     return { success: true, error: false };
   } catch (err) {
