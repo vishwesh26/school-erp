@@ -6,6 +6,8 @@ import { useState, useEffect } from "react";
 import { getClassStudents, getAttendance, bulkUpdateAttendance, getTeacherLessons } from "@/lib/actions";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import AttendanceDownloadButton from "./AttendanceDownloadButton";
 
 type ClassType = {
     id: number;
@@ -23,6 +25,7 @@ type StudentType = {
     id: string;
     name: string;
     surname: string;
+    rollNumber?: string;
 };
 
 
@@ -38,28 +41,34 @@ const AttendanceTeacherView = ({
     const [date, setDate] = useState<string>(initialDate || new Date().toISOString().split("T")[0]);
     const [students, setStudents] = useState<StudentType[]>([]);
     const [attendance, setAttendance] = useState<{ [studentId: string]: boolean }>({});
+    const [className, setClassName] = useState<string>("");
     const [loading, setLoading] = useState(false);
 
     const router = useRouter();
+    const supabase = createClient();
 
-    // Fetch Students and Attendance when Class or Date changes
+    // Fetch Class Name, Students and Attendance when Class or Date changes
     useEffect(() => {
         if (classId && date) {
             const fetchData = async () => {
                 setLoading(true);
+                // Fetch Class Name
+                const { data: clsData } = await supabase.from('Class').select('name').eq('id', classId).single();
+                if (clsData) {
+                    setClassName(clsData.name);
+                }
+
                 // 1. Fetch Students
                 const studentsRes = await getClassStudents(classId);
                 setStudents(studentsRes || []);
 
                 // 2. Fetch Existing Attendance (Daily Attendance -> lessonId = null)
-                // Pass null for lessonId
                 const attendanceRes = await getAttendance(null, date);
 
                 // Map existing attendance to state
                 const initialAttendance: { [key: string]: boolean } = {};
                 if (attendanceRes) {
                     attendanceRes.forEach((rec: any) => {
-                        // Only map if student belongs to this class (security/sanity check)
                         initialAttendance[rec.studentId] = rec.present;
                     });
                 }
@@ -101,20 +110,36 @@ const AttendanceTeacherView = ({
     };
 
     return (
-        <div className="bg-white p-4 rounded-md m-4 mt-0 h-full">
-            <h1 className="text-xl font-semibold mb-4">Mark Daily Attendance</h1>
+        <div className="bg-white p-6 rounded-2xl m-4 mt-0 shadow-sm border border-gray-100/80">
+            <h1 className="text-2xl font-bold text-gray-800 tracking-tight mb-6">Mark Daily Attendance</h1>
 
             {/* CONTROLS */}
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 pb-4 border-b border-gray-100">
                 {/* DATE SELECTOR */}
-                <div className="flex flex-col gap-2">
-                    <label className="text-sm text-gray-500">Date</label>
+                <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-gray-600 uppercase tracking-wider">Attendance Date</label>
                     <input
                         type="date"
-                        className="p-2 ring-[1.5px] ring-gray-300 rounded-md text-sm"
+                        className="p-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-lamaSky bg-white shadow-2xs"
                         value={date}
                         onChange={(e) => setDate(e.target.value)}
                     />
+                </div>
+
+                <div className="flex items-center gap-3 self-end md:self-auto flex-wrap">
+                    <AttendanceDownloadButton
+                        students={students}
+                        attendance={attendance}
+                        date={date}
+                        className={className || `${classId}`}
+                    />
+                    <button
+                        onClick={handleSubmit}
+                        disabled={loading || students.length === 0}
+                        className="bg-lamaSky text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-opacity-90 disabled:opacity-50 transition-all shadow-sm active:scale-95"
+                    >
+                        {loading ? "Saving..." : "Save Attendance"}
+                    </button>
                 </div>
             </div>
 
@@ -122,15 +147,15 @@ const AttendanceTeacherView = ({
             <div className="flex flex-col gap-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {students.map((student) => (
-                        <div key={student.id} className={`p-4 rounded-md border flex items-center justify-between ${attendance[student.id] ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"}`}>
+                        <div key={student.id} className={`p-4 rounded-xl border-2 transition-all duration-200 flex items-center justify-between ${attendance[student.id] ? "bg-emerald-50/80 border-emerald-200/80 shadow-2xs" : "bg-rose-50/80 border-rose-200/80 shadow-2xs"}`}>
                             <div className="flex flex-col">
-                                <span className="font-semibold">{student.name} {student.surname}</span>
-                                <span className="text-xs text-gray-500">{attendance[student.id] ? "Present" : "Absent"}</span>
+                                <span className="font-bold text-gray-800 leading-tight">{student.name} {student.surname}</span>
+                                <span className="text-[10px] text-gray-500 font-bold uppercase mt-0.5 tracking-wider">{attendance[student.id] ? "Present" : "Absent"}</span>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => handleToggle(student.id)}
-                                className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${attendance[student.id] ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600"}`}
+                                className={`w-9 h-9 flex items-center justify-center rounded-full transition-all shadow-xs active:scale-95 ${attendance[student.id] ? "bg-emerald-500 hover:bg-emerald-600" : "bg-rose-500 hover:bg-rose-600"}`}
                             >
                                 {attendance[student.id] ? (
                                     // Tick Icon
@@ -149,16 +174,8 @@ const AttendanceTeacherView = ({
                 </div>
 
                 {students.length === 0 && !loading && (
-                    <div className="text-gray-500">No students found in this class.</div>
+                    <div className="text-gray-400 p-8 text-center bg-gray-50 border border-dashed border-gray-200 rounded-2xl font-medium text-sm">No students found in this class.</div>
                 )}
-
-                <button
-                    onClick={handleSubmit}
-                    disabled={loading || students.length === 0}
-                    className="self-end bg-lamaSky text-white px-6 py-2 rounded-md hover:bg-lamaSkyLight disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {loading ? "Saving..." : "Save Attendance"}
-                </button>
             </div>
         </div>
     );
