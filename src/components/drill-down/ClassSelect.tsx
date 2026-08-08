@@ -15,29 +15,31 @@ const ClassSelect = async ({ gradeId }: { gradeId: string | number }) => {
     }
 
     return (
-        <div className="p-4 bg-white rounded-md m-4 mt-0">
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
+        <div className="p-6 bg-white/80 backdrop-blur-md rounded-2xl m-4 mt-0 shadow-sm border border-gray-100/80 animate-fade-in">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 pb-2 border-b border-gray-100 gap-4">
                 <div className="flex items-center gap-4">
-                    <Link href="?" className="text-blue-500 hover:underline">← Back to Grades</Link>
-                    <h1 className="text-xl font-semibold">Select Class</h1>
+                    <Link href="?" className="text-xs font-bold text-lamaSky hover:underline flex items-center gap-1 bg-lamaSkyLight px-3 py-1.5 rounded-lg transition-colors">
+                        ← Back to Grades
+                    </Link>
+                    <h1 className="text-2xl font-bold text-gray-800 tracking-tight">Select Class</h1>
                 </div>
                 <TableSearch />
             </div>
 
             {classes?.length === 0 ? (
-                <div className="text-gray-500 italic">No classes found for this grade.</div>
+                <div className="text-gray-400 italic p-6 text-center bg-gray-50 rounded-xl">No classes found for this grade.</div>
             ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                     {classes?.map((cls) => (
                         <Link
                             key={cls.id}
                             href={`?gradeId=${gradeId}&classId=${cls.id}`}
-                            className="p-6 bg-lamaYellowLight rounded-md hover:bg-lamaYellow transition-colors flex flex-col items-center justify-center cursor-pointer shadow-sm border border-gray-100"
+                            className="p-6 bg-gradient-to-br from-amber-50/80 to-white rounded-2xl hover:from-amber-100/90 hover:to-amber-50 transition-all duration-300 flex flex-col items-center justify-center cursor-pointer shadow-xs hover:shadow-lg border border-amber-100/80 hover-lift group"
                         >
-                            <span className="text-2xl font-bold text-gray-700">{cls.name}</span>
-                            <span className="text-sm font-semibold text-gray-600 mt-2">
+                            <span className="text-3xl font-black text-gray-800 group-hover:scale-105 transition-transform">{cls.name}</span>
+                            <div className="mt-3 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full border border-amber-200/60 shadow-2xs text-xs font-bold text-amber-900">
                                 Students: {(cls as any)._count?.[0]?.count || 0} / {cls.capacity}
-                            </span>
+                            </div>
                         </Link>
                     ))}
                 </div>
