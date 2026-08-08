@@ -42,7 +42,7 @@ const FinanceMarkingView = ({ classId }: { classId: number }) => {
         if (classId && selectedCategoryId) {
             const fetchStudents = async () => {
                 setLoading(true);
-                const res = await getStudentsByFeeCategory(classId, selectedCategoryId, 1);
+                const res = await getStudentsByFeeCategory(classId, selectedCategoryId);
                 const studentList = res.data || [];
                 setStudents(studentList);
 
