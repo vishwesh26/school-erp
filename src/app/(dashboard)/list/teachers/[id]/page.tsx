@@ -39,9 +39,10 @@ const SingleTeacherPage = async ({
     .select("id, name")
     .eq("supervisorId", id);
 
+  const teacherClasses = teacherClassesRes || [];
   const teacherSubjects = (teacherSubjectsRes || []).map((item: any) => item.subject).filter(Boolean);
   const teacherSubjectIds = (teacherSubjectsRes || []).map((item: any) => item.A);
-  const teacherClassIds = (teacherClassesRes || []).map((c: any) => c.id);
+  const teacherClassIds = teacherClasses.map((c: any) => c.id);
 
   const teacherWithSubjects = {
     ...teacher,
@@ -243,6 +244,30 @@ const SingleTeacherPage = async ({
             ))}
             {teacherSubjects.length === 0 && (
               <span className="text-xs text-gray-400 italic">No subjects added yet.</span>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-xl shadow-2xs border border-gray-100">
+          <div className="flex items-center justify-between mb-3">
+            <h1 className="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#f16122]"></span>
+              My Classes
+            </h1>
+            <span className="text-xs text-gray-400 font-bold">{teacherClasses.length} Assigned</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {teacherClasses.map((cls: any) => (
+              <Link
+                key={cls.id}
+                href={`/list/classes?id=${cls.id}`}
+                className="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-800 hover:bg-amber-100 text-xs font-bold border border-amber-200/80 shadow-2xs transition-all flex items-center gap-1.5"
+              >
+                🏫 Class {cls.name}
+              </Link>
+            ))}
+            {teacherClasses.length === 0 && (
+              <span className="text-xs text-gray-400 italic">No classes assigned yet.</span>
             )}
           </div>
         </div>
