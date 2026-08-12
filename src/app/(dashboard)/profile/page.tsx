@@ -92,9 +92,6 @@ const ProfilePage = async () => {
                                             {role} Profile
                                         </span>
                                     </div>
-                                    {(role === "teacher" || role === "student" || role === "parent") && (
-                                        <FormContainer table={role as any} type="update" data={userData} />
-                                    )}
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs font-semibold">

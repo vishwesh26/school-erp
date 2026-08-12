@@ -91,7 +91,7 @@ const SingleTeacherPage = async ({
                     Teacher Profile
                   </span>
                 </div>
-                {canEdit && (
+                {role === "admin" && (
                   <FormContainer table="teacher" type="update" data={teacherWithSubjects} />
                 )}
               </div>
