@@ -91,6 +91,14 @@ export default function RegisterPage() {
                                             error={errors.grade} 
                                         />
                                     </div>
+                                    <div className="flex flex-col gap-1">
+                                        <SelectField 
+                                            label="Division / Section" 
+                                            name="division" 
+                                            options={["A", "B", "C", "D", "E", "F"]} 
+                                            error={errors.division} 
+                                        />
+                                    </div>
                                     <div className="md:col-span-2">
                                         <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">Local Residential Address</label>
                                         <textarea

@@ -134,35 +134,46 @@ export async function registerStudent(prevState: any, formData: FormData) {
         // Ensure their Auth password is updated so we can resend it or keep them synced
         await supabase.auth.admin.updateUserById(authUserId, { password: password });
     } else {
-        // Generate NEW credentials
-        let { data: classesData, error: classError } = await supabase
+        // Find or create class for specified division (e.g. 1A, 5B)
+        const selectedDivision = (data.division || "A").trim().toUpperCase();
+        const gradePrefix = gradeData.level <= 0 ? formatGrade(gradeData.level).replace(' ', '') : gradeData.level;
+        const targetClassName = `${gradePrefix}${selectedDivision}`;
+
+        let { data: targetClass } = await supabase
             .from("Class")
             .select("id, name")
-            .eq("gradeId", gradeData.id);
+            .eq("gradeId", gradeData.id)
+            .eq("name", targetClassName)
+            .single();
 
-        if (classError || !classesData || classesData.length === 0) {
-            const gradePrefix = gradeData.level <= 0 ? formatGrade(gradeData.level).replace(' ', '') : gradeData.level;
-
-            const { data: classA } = await supabase
+        if (!targetClass) {
+            const { data: newClass, error: newClassError } = await supabase
                 .from("Class")
-                .insert({ name: `${gradePrefix}A`, capacity: 20, gradeId: gradeData.id })
+                .insert({ name: targetClassName, capacity: 30, gradeId: gradeData.id })
                 .select("id, name")
                 .single();
 
-            const { data: classB } = await supabase
-                .from("Class")
-                .insert({ name: `${gradePrefix}B`, capacity: 20, gradeId: gradeData.id })
-                .select("id, name")
-                .single();
+            if (!newClassError && newClass) {
+                targetClass = newClass;
+            } else {
+                const { data: fallbackClasses } = await supabase
+                    .from("Class")
+                    .select("id, name")
+                    .eq("gradeId", gradeData.id)
+                    .limit(1);
 
-            classesData = [];
-            if (classA) classesData.push(classA);
-            if (classB) classesData.push(classB);
+                if (fallbackClasses && fallbackClasses.length > 0) {
+                    targetClass = fallbackClasses[0];
+                }
+            }
         }
 
-        const randomClass = classesData[Math.floor(Math.random() * classesData.length)];
-        finalClassId = randomClass.id;
-        className = randomClass.name;
+        if (!targetClass) {
+            return { success: false, message: "Failed to assign student to a class division.", errors: {} };
+        }
+
+        finalClassId = targetClass.id;
+        className = targetClass.name;
 
         // Get max roll number in the class to prevent duplicates across deletions
         const { data: maxStudentData } = await supabase

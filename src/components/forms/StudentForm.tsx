@@ -58,9 +58,23 @@ const StudentForm = ({
   };
 
   const selectedClassId = watch("classId");
+  const selectedGradeId = watch("gradeId");
   const rollNumberValue = watch("rollNumber");
 
   const { grades, classes } = relatedData;
+
+  const filteredClasses = classes.filter(
+    (c: any) => !selectedGradeId || c.gradeId === parseInt(selectedGradeId as any)
+  );
+
+  useEffect(() => {
+    if (selectedGradeId && filteredClasses.length > 0) {
+      const isClassValid = filteredClasses.some((c: any) => c.id === parseInt(selectedClassId as any));
+      if (!isClassValid) {
+        setValue("classId", filteredClasses[0].id.toString());
+      }
+    }
+  }, [selectedGradeId, filteredClasses, selectedClassId, setValue]);
 
   useEffect(() => {
     if (type === "create" && selectedClassId && rollNumberValue && rollNumberValue.length >= 3) {
@@ -298,22 +312,22 @@ const StudentForm = ({
           )}
         </div>
         <div className="flex flex-col gap-2 w-full md:w-1/4">
-          <label className="text-xs text-gray-500">Class</label>
+          <label className="text-xs text-gray-500">Class / Division</label>
           <select
             className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
             {...register("classId")}
             defaultValue={data?.classId}
           >
-            {classes.map(
+            {filteredClasses.map(
               (classItem: {
                 id: number;
                 name: string;
                 capacity: number;
-                _count: { students: number };
+                _count?: { students: number };
               }) => (
                 <option value={classItem.id} key={classItem.id}>
                   ({classItem.name} -{" "}
-                  {classItem._count.students + "/" + classItem.capacity}{" "}
+                  {(classItem._count?.students ?? 0) + "/" + classItem.capacity}{" "}
                   Capacity)
                 </option>
               )

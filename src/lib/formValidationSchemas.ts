@@ -266,6 +266,7 @@ export const studentRegistrationSchema = z.object({
     const num = typeof val === 'string' ? Number(val) : val;
     return isNaN(num) ? val : num;
   }).refine((val) => typeof val === "number" && !isNaN(val), { message: "Invalid grade!" }),
+  division: z.string().optional(),
 
   // Official Identifiers
   aadharNo: z.string().optional(),
