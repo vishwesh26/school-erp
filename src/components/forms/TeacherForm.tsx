@@ -26,12 +26,38 @@ const TeacherForm = ({
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<TeacherSchema>({
     resolver: zodResolver(teacherSchema),
   });
 
-  const [img, setImg] = useState<any>();
+  const [imgUrl, setImgUrl] = useState<string>(data?.img || "");
+  const [cldImg, setCldImg] = useState<any>();
+
+  const initialSubjects = data?.subjects
+    ? data.subjects.map((s: any) => (typeof s === "object" ? s.id : Number(s)))
+    : [];
+  const [selectedSubjects, setSelectedSubjects] = useState<number[]>(initialSubjects);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImgUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const toggleSubject = (subjectId: number) => {
+    setSelectedSubjects((prev) =>
+      prev.includes(subjectId)
+        ? prev.filter((id) => id !== subjectId)
+        : [...prev, subjectId]
+    );
+  };
 
   const [state, formAction] = useFormState(
     type === "create" ? createTeacher : updateTeacher,
@@ -41,9 +67,13 @@ const TeacherForm = ({
     }
   );
 
-  const onSubmit = handleSubmit((data) => {
-    console.log(data);
-    formAction({ ...data, img: img?.secure_url });
+  const onSubmit = handleSubmit((formData) => {
+    const photoToSave = imgUrl || cldImg?.secure_url || data?.img || null;
+    formAction({
+      ...formData,
+      img: photoToSave,
+      subjects: selectedSubjects.map(String),
+    });
   });
 
   const router = useRouter();
@@ -61,8 +91,9 @@ const TeacherForm = ({
   return (
     <form className="flex flex-col gap-6" onSubmit={onSubmit}>
       <h1 className="text-xl font-semibold">
-        {type === "create" ? "Create a new teacher" : "Update the teacher"}
+        {type === "create" ? "Create a new teacher" : "Update teacher profile"}
       </h1>
+
       <span className="text-sm text-blue-600 font-bold border-b pb-2 mb-2">
         Authentication Information
       </span>
@@ -90,30 +121,69 @@ const TeacherForm = ({
           error={errors?.password}
         />
       </div>
+
       <span className="text-sm text-blue-600 font-bold border-b pb-2 mb-2">
         Personal Information
       </span>
-      {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME && (
-        <CldUploadWidget
-          uploadPreset="school"
-          onSuccess={(result, { widget }) => {
-            setImg(result.info);
-            widget.close();
-          }}
-        >
-          {({ open }) => {
-            return (
-              <div
-                className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300 w-max"
-                onClick={() => open()}
+
+      {/* Profile Photo Uploader */}
+      <div className="flex flex-col gap-2 p-4 bg-slate-50 border border-gray-200 rounded-xl">
+        <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+          Profile Photo
+        </label>
+        <div className="flex items-center gap-4 flex-wrap">
+          {imgUrl || data?.img ? (
+            <Image
+              src={imgUrl || data?.img}
+              alt="Teacher Photo"
+              width={64}
+              height={64}
+              className="w-16 h-16 rounded-full object-cover border-2 border-lamaSky shadow-sm"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs font-bold border border-gray-300">
+              No Photo
+            </div>
+          )}
+
+          <div className="flex flex-col gap-2">
+            <label className="text-xs text-gray-700 flex items-center gap-2 cursor-pointer bg-white hover:bg-gray-100 px-3 py-2 rounded-lg border border-gray-300 transition-colors w-max font-semibold shadow-sm active:scale-95">
+              <Image src="/upload.png" alt="" width={18} height={18} />
+              <span>{imgUrl || data?.img ? "Change Photo" : "Upload Photo"}</span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+            </label>
+
+            {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME && (
+              <CldUploadWidget
+                uploadPreset="school"
+                onSuccess={(result, { widget }) => {
+                  if ((result.info as any)?.secure_url) {
+                    setCldImg(result.info);
+                    setImgUrl((result.info as any).secure_url);
+                  }
+                  widget.close();
+                }}
               >
-                <Image src="/upload.png" alt="" width={24} height={24} />
-                <span>{img ? "Photo uploaded!" : "Upload a photo"}</span>
-              </div>
-            );
-          }}
-        </CldUploadWidget>
-      )}
+                {({ open }) => (
+                  <button
+                    type="button"
+                    className="text-xs text-blue-600 hover:underline text-left font-medium"
+                    onClick={() => open()}
+                  >
+                    Upload via Cloudinary
+                  </button>
+                )}
+              </CldUploadWidget>
+            )}
+          </div>
+        </div>
+      </div>
+
       <div className="flex justify-between flex-wrap gap-x-4 gap-y-2">
         <InputField
           label="First Name"
@@ -153,7 +223,7 @@ const TeacherForm = ({
         <InputField
           label="Birthday"
           name="birthday"
-          defaultValue={data?.birthday.toISOString().split("T")[0]}
+          defaultValue={data?.birthday ? new Date(data.birthday).toISOString().split("T")[0] : ""}
           register={register}
           error={errors.birthday}
           type="date"
@@ -184,53 +254,48 @@ const TeacherForm = ({
             </p>
           )}
         </div>
-        <div className="flex flex-col gap-2 w-full md:w-1/4">
-          <label className="text-xs text-gray-500">Subjects</label>
-          <select
-            multiple
-            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
-            {...register("subjects")}
-            defaultValue={data?.subjects}
-          >
-            {subjects.map((subject: { id: number; name: string }) => (
-              <option value={subject.id} key={subject.id}>
-                {subject.name}
-              </option>
-            ))}
-          </select>
-          {errors.subjects?.message && (
-            <p className="text-xs text-red-400">
-              {errors.subjects.message.toString()}
-            </p>
+      </div>
+
+      {/* Subjects Selection Manager */}
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+          Assigned Subjects (Click to select/deselect)
+        </label>
+        <div className="flex flex-wrap gap-2 p-4 bg-slate-50 border border-gray-200 rounded-xl">
+          {subjects.map((subject: { id: number; name: string }) => {
+            const isSelected = selectedSubjects.includes(subject.id);
+            return (
+              <button
+                key={subject.id}
+                type="button"
+                onClick={() => toggleSubject(subject.id)}
+                className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all shadow-2xs active:scale-95 flex items-center gap-1.5 ${
+                  isSelected
+                    ? "bg-indigo-600 text-white shadow-xs scale-105"
+                    : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+                }`}
+              >
+                <span>{isSelected ? "✓" : "+"}</span>
+                <span>{subject.name}</span>
+              </button>
+            );
+          })}
+          {(!subjects || subjects.length === 0) && (
+            <span className="text-xs text-gray-400 italic">No subjects available to select.</span>
           )}
         </div>
-        {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME && (
-          <CldUploadWidget
-            uploadPreset="school"
-            onSuccess={(result, { widget }) => {
-              setImg(result.info);
-              widget.close();
-            }}
-          >
-            {({ open }) => {
-              return (
-                <div
-                  className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer"
-                  onClick={() => open()}
-                >
-                  <Image src="/upload.png" alt="" width={28} height={28} />
-                  <span>Upload a photo</span>
-                </div>
-              );
-            }}
-          </CldUploadWidget>
+        {errors.subjects?.message && (
+          <p className="text-xs text-red-400">
+            {errors.subjects.message.toString()}
+          </p>
         )}
       </div>
+
       {state.error && (
         <span className="text-red-500">Something went wrong!</span>
       )}
-      <button className="bg-blue-400 text-white p-2 rounded-md">
-        {type === "create" ? "Create" : "Update"}
+      <button type="submit" className="bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 transition-colors">
+        {type === "create" ? "Create Teacher" : "Save Profile Changes"}
       </button>
     </form>
   );

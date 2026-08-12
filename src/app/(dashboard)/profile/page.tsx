@@ -3,8 +3,10 @@ import Image from "next/image";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import FormContainer from "@/components/FormContainer";
 import StudentAttendanceCard from "@/components/StudentAttendanceCard";
 import { Suspense } from "react";
+import Announcements from "@/components/Announcements";
 
 const ProfilePage = async () => {
     const supabase = createClient();
@@ -17,7 +19,9 @@ const ProfilePage = async () => {
     const role = user.user_metadata?.role;
     const userId = user.id;
 
-    let userData;
+    let userData: any;
+    let teacherSubjects: any[] = [];
+
     // Fetch user details based on role
     if (role) {
         // capitalize first letter for table name
@@ -28,6 +32,20 @@ const ProfilePage = async () => {
 
     if (!userData) {
         return <div>Profile not found.</div>
+    }
+
+    if (role === 'teacher') {
+        const { data: teacherSubjectsRes } = await supabase
+            .from("_SubjectToTeacher")
+            .select("A, subject:Subject(id, name)")
+            .eq("B", userId);
+
+        teacherSubjects = (teacherSubjectsRes || []).map((item: any) => item.subject).filter(Boolean);
+        const teacherSubjectIds = (teacherSubjectsRes || []).map((item: any) => item.A);
+        userData = {
+            ...userData,
+            subjects: teacherSubjectIds,
+        };
     }
 
     // Fetch lesson count if student
@@ -74,6 +92,9 @@ const ProfilePage = async () => {
                                             {role} Profile
                                         </span>
                                     </div>
+                                    {(role === "teacher" || role === "student" || role === "parent") && (
+                                        <FormContainer table={role as any} type="update" data={userData} />
+                                    )}
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs font-semibold">
@@ -157,7 +178,31 @@ const ProfilePage = async () => {
                         {role === "student" && <Link className="p-3 rounded-md bg-lamaPurpleLight" href={`/list/results?studentId=${userId}`}>My Results</Link>}
                         <Link className="p-3 rounded-md bg-pink-50" href="/settings">Settings</Link>
                     </div>
-                </div>
+                {role === "teacher" && (
+                    <div className="bg-white p-4 rounded-xl shadow-2xs border border-gray-100">
+                        <div className="flex items-center justify-between mb-3">
+                            <h1 className="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
+                                My Subjects Taught
+                            </h1>
+                            <span className="text-xs text-gray-400 font-bold">{teacherSubjects.length} Assigned</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            {teacherSubjects.map((subject: any) => (
+                                <span
+                                    key={subject.id}
+                                    className="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-bold border border-indigo-100 shadow-2xs"
+                                >
+                                    📚 {subject.name}
+                                </span>
+                            ))}
+                            {teacherSubjects.length === 0 && (
+                                <span className="text-xs text-gray-400 italic">No subjects added yet.</span>
+                            )}
+                        </div>
+                    </div>
+                )}
+                <Announcements />
             </div>
         </div>
     );

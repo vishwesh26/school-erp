@@ -27,6 +27,22 @@ const SingleTeacherPage = async ({
     return notFound();
   }
 
+  // Fetch teacher's assigned subjects
+  const { data: teacherSubjectsRes } = await supabase
+    .from("_SubjectToTeacher")
+    .select("A, subject:Subject(id, name)")
+    .eq("B", id);
+
+  const teacherSubjects = (teacherSubjectsRes || []).map((item: any) => item.subject).filter(Boolean);
+  const teacherSubjectIds = (teacherSubjectsRes || []).map((item: any) => item.A);
+
+  const teacherWithSubjects = {
+    ...teacher,
+    subjects: teacherSubjectIds,
+  };
+
+  const canEdit = role === "admin" || (role === "teacher" && user?.id === id);
+
   // Fetch counts manually
   const { count: subjectsCount } = await supabase
     .from("Subject")
@@ -75,8 +91,8 @@ const SingleTeacherPage = async ({
                     Teacher Profile
                   </span>
                 </div>
-                {role === "admin" && (
-                  <FormContainer table="teacher" type="update" data={teacher} />
+                {canEdit && (
+                  <FormContainer table="teacher" type="update" data={teacherWithSubjects} />
                 )}
               </div>
 
@@ -200,6 +216,29 @@ const SingleTeacherPage = async ({
             </Link>
           </div>
         </div>
+        <div className="bg-white p-4 rounded-xl shadow-2xs border border-gray-100">
+          <div className="flex items-center justify-between mb-3">
+            <h1 className="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
+              Subjects Taught
+            </h1>
+            <span className="text-xs text-gray-400 font-bold">{teacherSubjects.length} Assigned</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {teacherSubjects.map((subject: any) => (
+              <span
+                key={subject.id}
+                className="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 text-xs font-bold border border-indigo-100 shadow-2xs"
+              >
+                📚 {subject.name}
+              </span>
+            ))}
+            {teacherSubjects.length === 0 && (
+              <span className="text-xs text-gray-400 italic">No subjects added yet.</span>
+            )}
+          </div>
+        </div>
+
         <Announcements />
       </div>
     </div>
