@@ -178,6 +178,7 @@ const ProfilePage = async () => {
                         {role === "student" && <Link className="p-3 rounded-md bg-lamaPurpleLight" href={`/list/results?studentId=${userId}`}>My Results</Link>}
                         <Link className="p-3 rounded-md bg-pink-50" href="/settings">Settings</Link>
                     </div>
+                </div>
                 {role === "teacher" && (
                     <div className="bg-white p-4 rounded-xl shadow-2xs border border-gray-100">
                         <div className="flex items-center justify-between mb-3">
