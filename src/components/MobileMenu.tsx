@@ -45,11 +45,9 @@ const MobileMenu = ({ role }: { role: string }) => {
                     <div className="flex-1 bg-white/95 backdrop-blur-xl flex flex-col h-full max-w-lg w-full ml-auto shadow-2xl">
                         {/* MENU HEADER */}
                         <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white shadow-xs">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-[#f4eaea] border border-[#4e282c]/20 p-1 flex items-center justify-center overflow-hidden">
-                                    <Image src="/logo.png" alt="logo" width={36} height={36} className="object-cover rounded-full w-full h-full" />
-                                </div>
-                            </div>
+                            <Link href="/" onClick={() => setIsOpen(false)} className="flex items-center">
+                                <Image src="/logo.png" alt="logo" width={48} height={48} className="w-12 h-12 object-contain" />
+                            </Link>
                             {/* THE CROSS BUTTON */}
                             <button
                                 onClick={() => setIsOpen(false)}
