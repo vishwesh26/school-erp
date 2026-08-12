@@ -23,7 +23,7 @@ const MobileMenu = ({ role }: { role: string }) => {
         <div className="lg:hidden w-full select-none">
             {/* TOGGLE BUTTON */}
             <button
-                className="flex items-center justify-between gap-3 py-2.5 px-4 bg-gradient-to-r from-sky-500 via-indigo-600 to-purple-600 text-white rounded-xl font-bold shadow-md shadow-indigo-200/50 hover:opacity-95 active:scale-95 transition-all w-full"
+                className="flex items-center justify-between gap-3 py-2.5 px-4 bg-gradient-to-r from-[#4e282c] via-[#802a2c] to-[#f16122] text-white rounded-xl font-bold shadow-md shadow-[#f16122]/30 hover:opacity-95 active:scale-95 transition-all w-full"
                 onClick={() => setIsOpen(true)}
             >
                 <div className="flex items-center gap-2.5">
@@ -41,17 +41,17 @@ const MobileMenu = ({ role }: { role: string }) => {
 
             {/* FULL SCREEN MENU OVERLAY */}
             {isOpen && (
-                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[9999] flex flex-col overflow-hidden animate-fadeIn">
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[9999] flex flex-col overflow-hidden animate-fade-in">
                     <div className="flex-1 bg-white/95 backdrop-blur-xl flex flex-col h-full max-w-lg w-full ml-auto shadow-2xl">
                         {/* MENU HEADER */}
                         <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white shadow-xs">
                             <div className="flex items-center gap-3">
-                                <div className="p-1 bg-slate-50 border border-slate-200/80 rounded-xl">
+                                <div className="p-1 bg-[#f4eaea] border border-[#4e282c]/20 rounded-xl">
                                     <Image src="/logo.png" alt="logo" width={32} height={32} />
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="font-extrabold text-slate-800 text-base">DCPEMS ERP</span>
-                                    <span className="text-[10px] text-indigo-500 font-bold uppercase tracking-wider">Navigation Menu</span>
+                                    <span className="font-black text-[#4e282c] text-base">DCPEMS ERP</span>
+                                    <span className="text-[10px] text-[#f16122] font-black uppercase tracking-wider">Navigation Menu</span>
                                 </div>
                             </div>
                             {/* THE CROSS BUTTON */}
@@ -70,8 +70,8 @@ const MobileMenu = ({ role }: { role: string }) => {
                                 {menuItems.map((group) => (
                                     <div key={group.title} className="flex flex-col gap-2">
                                         <div className="flex items-center gap-2 pl-2">
-                                            <span className="h-1.5 w-1.5 rounded-full bg-indigo-500"></span>
-                                            <span className="text-slate-400 font-extrabold text-[10px] uppercase tracking-widest">
+                                            <span className="h-2 w-2 rounded-full bg-gradient-to-r from-[#4e282c] to-[#f16122]"></span>
+                                            <span className="text-[#4e282c]/60 font-black text-[10px] uppercase tracking-widest">
                                                 {group.title}
                                             </span>
                                         </div>
@@ -86,18 +86,18 @@ const MobileMenu = ({ role }: { role: string }) => {
                                                             onClick={() => setIsOpen(false)}
                                                             className={`flex items-center justify-between p-3.5 rounded-xl border transition-all duration-200 ${
                                                                 active
-                                                                    ? "bg-gradient-to-r from-sky-500/15 via-indigo-500/10 to-transparent border-indigo-500/40 text-indigo-700 font-bold shadow-xs"
-                                                                    : "bg-white text-slate-700 border-slate-100 font-semibold hover:bg-slate-50 active:scale-98"
+                                                                    ? "bg-gradient-to-r from-[#4e282c]/15 via-[#f16122]/10 to-transparent border-[#4e282c]/40 text-[#4e282c] font-extrabold shadow-xs"
+                                                                    : "bg-white text-slate-700 border-slate-100 font-semibold hover:bg-[#f4eaea]/60 active:scale-98"
                                                             }`}
                                                         >
                                                             <div className="flex items-center gap-3.5">
-                                                                <div className={`p-1.5 rounded-lg ${active ? "bg-white border border-indigo-200" : "bg-slate-50"}`}>
+                                                                <div className={`p-1.5 rounded-lg ${active ? "bg-white border border-[#f16122]/40" : "bg-slate-50"}`}>
                                                                     <Image src={item.icon} alt="" width={20} height={20} />
                                                                 </div>
                                                                 <span className="text-sm">{item.label}</span>
                                                             </div>
                                                             {active && (
-                                                                <span className="h-2 w-2 rounded-full bg-indigo-600 animate-pulse"></span>
+                                                                <span className="h-2.5 w-2.5 rounded-full bg-[#f16122] animate-pulse"></span>
                                                             )}
                                                         </Link>
                                                     );
@@ -114,7 +114,7 @@ const MobileMenu = ({ role }: { role: string }) => {
                         <div className="p-4 border-t border-slate-100 bg-white">
                             <button
                                 onClick={() => setIsOpen(false)}
-                                className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold shadow-md active:scale-95 transition-all flex items-center justify-center gap-2 text-sm"
+                                className="w-full py-3 bg-[#4e282c] hover:bg-[#3b1e21] text-white rounded-xl font-bold shadow-md active:scale-95 transition-all flex items-center justify-center gap-2 text-sm"
                             >
                                 <span>CLOSE NAVIGATION</span>
                             </button>
