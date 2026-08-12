@@ -68,17 +68,28 @@ const AttendanceTeacherView = ({
                 setStudents(stdData || []);
 
                 // Fetch existing attendance for this class and date
-                const { data: attendanceRes } = await supabase
-                    .from("Attendance")
-                    .select("*")
-                    .eq("date", date)
-                    .eq("classId", classId);
+                const startOfDay = new Date(date);
+                startOfDay.setHours(0, 0, 0, 0);
+                const endOfDay = new Date(date);
+                endOfDay.setHours(23, 59, 59, 999);
 
+                const studentIds = (stdData || []).map((s: any) => s.id);
                 const initialAttendance: { [studentId: string]: boolean } = {};
-                if (attendanceRes) {
-                    attendanceRes.forEach((rec: any) => {
-                        initialAttendance[rec.studentId] = rec.present;
-                    });
+
+                if (studentIds.length > 0) {
+                    const { data: attendanceRes } = await supabase
+                        .from("Attendance")
+                        .select("studentId, present")
+                        .in("studentId", studentIds)
+                        .gte("date", startOfDay.toISOString())
+                        .lte("date", endOfDay.toISOString())
+                        .is("lessonId", null);
+
+                    if (attendanceRes) {
+                        attendanceRes.forEach((rec: any) => {
+                            initialAttendance[rec.studentId] = rec.present;
+                        });
+                    }
                 }
                 setAttendance(initialAttendance);
                 setLoading(false);

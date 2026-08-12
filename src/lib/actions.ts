@@ -1637,12 +1637,18 @@ export const bulkUpdateAttendance = async (
   const endOfDay = new Date(date);
   endOfDay.setHours(23, 59, 59, 999);
 
+  const studentIds = attendanceData.map(r => r.studentId);
+
   // 1. Delete existing for this date range (and specific lesson or generic)
   let deleteQuery = supabase
     .from('Attendance')
     .delete()
     .gte('date', startOfDay.toISOString())
     .lte('date', endOfDay.toISOString());
+
+  if (studentIds.length > 0) {
+    deleteQuery = deleteQuery.in('studentId', studentIds);
+  }
 
   if (lessonId) {
     deleteQuery = deleteQuery.eq('lessonId', lessonId);
