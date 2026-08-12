@@ -184,7 +184,7 @@ const ProfilePage = async () => {
                         <div className="flex items-center justify-between mb-3">
                             <h1 className="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
-                                My Subjects Taught
+                                My Subjects
                             </h1>
                             <span className="text-xs text-gray-400 font-bold">{teacherSubjects.length} Assigned</span>
                         </div>

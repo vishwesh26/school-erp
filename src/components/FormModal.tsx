@@ -338,14 +338,14 @@ const FormModal = ({
         {renderIcon()}
       </button>
       {open && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[999] flex items-center justify-center p-4">
-          <div className="bg-white p-8 rounded-3xl relative w-full max-w-[1000px] max-h-[90vh] overflow-y-auto shadow-2xl scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex items-center justify-center p-3 sm:p-6 animate-fade-in">
+          <div className="bg-white p-6 sm:p-8 rounded-3xl relative w-full max-w-4xl max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-100 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
             <Form />
             <div
-              className="absolute top-6 right-6 cursor-pointer p-2 hover:bg-gray-100 rounded-full transition-all group"
+              className="absolute top-5 right-5 cursor-pointer p-2 bg-slate-50 hover:bg-slate-100 rounded-full transition-all group border border-slate-200/60"
               onClick={() => setOpen(false)}
             >
-              <Image src="/close.png" alt="Close" width={16} height={16} className="opacity-60 group-hover:opacity-100" />
+              <Image src="/close.png" alt="Close" width={14} height={14} className="opacity-60 group-hover:opacity-100" />
             </div>
           </div>
         </div>

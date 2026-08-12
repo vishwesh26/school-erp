@@ -101,178 +101,194 @@ const TeacherForm = ({
 
   return (
     <form className="flex flex-col gap-6" onSubmit={onSubmit}>
-      <h1 className="text-xl font-semibold">
-        {type === "create" ? "Create a new teacher" : "Update teacher profile"}
-      </h1>
-
-      <span className="text-sm text-blue-600 font-bold border-b pb-2 mb-2">
-        Authentication Information
-      </span>
-      <div className="flex justify-between flex-wrap gap-x-4 gap-y-2">
-        <InputField
-          label="Username"
-          name="username"
-          defaultValue={data?.username}
-          register={register}
-          error={errors?.username}
-        />
-        <InputField
-          label="Email"
-          name="email"
-          defaultValue={data?.email}
-          register={register}
-          error={errors?.email}
-        />
-        <InputField
-          label="Password"
-          name="password"
-          type="password"
-          defaultValue={data?.password}
-          register={register}
-          error={errors?.password}
-        />
+      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div>
+          <h1 className="text-xl font-black text-slate-800 tracking-tight">
+            {type === "create" ? "Create New Teacher" : "Edit Teacher Profile"}
+          </h1>
+          <p className="text-xs font-semibold text-slate-400 mt-0.5">
+            {type === "create" ? "Fill in credentials and personal details to register a teacher." : "Update profile information and assigned subjects."}
+          </p>
+        </div>
       </div>
 
-      <span className="text-sm text-blue-600 font-bold border-b pb-2 mb-2">
-        Personal Information
-      </span>
+      {/* AUTHENTICATION SECTION */}
+      <div className="flex flex-col gap-3">
+        <span className="text-xs font-black uppercase tracking-wider text-[#4e282c] flex items-center gap-2 border-b border-[#4e282c]/10 pb-1.5">
+          <span className="w-2 h-2 rounded-full bg-[#f16122]"></span>
+          Authentication Information
+        </span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <InputField
+            label="Username"
+            name="username"
+            defaultValue={data?.username}
+            register={register}
+            error={errors?.username}
+          />
+          <InputField
+            label="Email Address"
+            name="email"
+            defaultValue={data?.email}
+            register={register}
+            error={errors?.email}
+          />
+          <InputField
+            label="Password"
+            name="password"
+            type="password"
+            defaultValue={data?.password}
+            register={register}
+            error={errors?.password}
+          />
+        </div>
+      </div>
 
-      {/* Profile Photo Uploader */}
-      <div className="flex flex-col gap-2 p-4 bg-slate-50 border border-gray-200 rounded-xl">
-        <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-          Profile Photo
-        </label>
-        <div className="flex items-center gap-4 flex-wrap">
-          {imgUrl || data?.img ? (
-            <Image
-              src={imgUrl || data?.img}
-              alt="Teacher Photo"
-              width={64}
-              height={64}
-              className="w-16 h-16 rounded-full object-cover border-2 border-lamaSky shadow-sm"
-            />
-          ) : (
-            <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs font-bold border border-gray-300">
-              No Photo
-            </div>
-          )}
+      {/* PERSONAL INFORMATION SECTION */}
+      <div className="flex flex-col gap-3">
+        <span className="text-xs font-black uppercase tracking-wider text-[#4e282c] flex items-center gap-2 border-b border-[#4e282c]/10 pb-1.5">
+          <span className="w-2 h-2 rounded-full bg-[#f16122]"></span>
+          Personal Information
+        </span>
 
-          <div className="flex flex-col gap-2">
-            <label className="text-xs text-gray-700 flex items-center gap-2 cursor-pointer bg-white hover:bg-gray-100 px-3 py-2 rounded-lg border border-gray-300 transition-colors w-max font-semibold shadow-sm active:scale-95">
-              <Image src="/upload.png" alt="" width={18} height={18} />
-              <span>{imgUrl || data?.img ? "Change Photo" : "Upload Photo"}</span>
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleFileChange}
+        {/* Profile Photo Uploader */}
+        <div className="flex flex-col gap-2 p-4 bg-slate-50 border border-slate-200/80 rounded-2xl shadow-2xs">
+          <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+            Profile Photo
+          </label>
+          <div className="flex items-center gap-4 flex-wrap">
+            {imgUrl || data?.img ? (
+              <Image
+                src={imgUrl || data?.img}
+                alt="Teacher Photo"
+                width={64}
+                height={64}
+                className="w-16 h-16 rounded-full object-cover border-2 border-[#f16122] shadow-sm"
               />
-            </label>
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 text-xs font-bold border border-slate-300">
+                No Photo
+              </div>
+            )}
 
-            {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME && (
-              <CldUploadWidget
-                uploadPreset="school"
-                onSuccess={(result, { widget }) => {
-                  if ((result.info as any)?.secure_url) {
-                    setCldImg(result.info);
-                    setImgUrl((result.info as any).secure_url);
-                  }
-                  widget.close();
-                }}
-              >
-                {({ open }) => (
-                  <button
-                    type="button"
-                    className="text-xs text-blue-600 hover:underline text-left font-medium"
-                    onClick={() => open()}
-                  >
-                    Upload via Cloudinary
-                  </button>
-                )}
-              </CldUploadWidget>
+            <div className="flex flex-col gap-2">
+              <label className="text-xs text-slate-700 flex items-center gap-2 cursor-pointer bg-white hover:bg-slate-100 px-3.5 py-2 rounded-xl border border-slate-300 transition-all font-bold shadow-2xs active:scale-95">
+                <Image src="/upload.png" alt="" width={18} height={18} />
+                <span>{imgUrl || data?.img ? "Change Photo" : "Upload Photo"}</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+              </label>
+
+              {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME && (
+                <CldUploadWidget
+                  uploadPreset="school"
+                  onSuccess={(result, { widget }) => {
+                    if ((result.info as any)?.secure_url) {
+                      setCldImg(result.info);
+                      setImgUrl((result.info as any).secure_url);
+                    }
+                    widget.close();
+                  }}
+                >
+                  {({ open }) => (
+                    <button
+                      type="button"
+                      className="text-xs text-[#f16122] hover:underline text-left font-bold"
+                      onClick={() => open()}
+                    >
+                      Upload via Cloudinary
+                    </button>
+                  )}
+                </CldUploadWidget>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-1">
+          <InputField
+            label="First Name"
+            name="name"
+            defaultValue={data?.name}
+            register={register}
+            error={errors.name}
+          />
+          <InputField
+            label="Last Name"
+            name="surname"
+            defaultValue={data?.surname}
+            register={register}
+            error={errors.surname}
+          />
+          <InputField
+            label="Phone Number"
+            name="phone"
+            defaultValue={data?.phone}
+            register={register}
+            error={errors.phone}
+          />
+          <InputField
+            label="Address"
+            name="address"
+            defaultValue={data?.address}
+            register={register}
+            error={errors.address}
+          />
+          <InputField
+            label="Blood Type"
+            name="bloodType"
+            defaultValue={data?.bloodType}
+            register={register}
+            error={errors.bloodType}
+          />
+          <InputField
+            label="Birthday"
+            name="birthday"
+            defaultValue={formatDate(data?.birthday)}
+            register={register}
+            error={errors.birthday}
+            type="date"
+          />
+          {data && (
+            <InputField
+              label="Id"
+              name="id"
+              defaultValue={data?.id}
+              register={register}
+              error={errors?.id}
+              hidden
+            />
+          )}
+          <div className="flex flex-col gap-1.5 w-full">
+            <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Sex</label>
+            <select
+              className="px-3.5 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#f16122] focus:bg-white focus:ring-2 focus:ring-[#f16122]/20 rounded-xl text-xs sm:text-sm text-slate-800 font-semibold outline-none transition-all duration-200 shadow-2xs"
+              {...register("sex")}
+              defaultValue={data?.sex}
+            >
+              <option value="MALE">Male</option>
+              <option value="FEMALE">Female</option>
+            </select>
+            {errors.sex?.message && (
+              <p className="text-xs text-rose-500 font-medium">
+                {errors.sex.message.toString()}
+              </p>
             )}
           </div>
         </div>
       </div>
 
-      <div className="flex justify-between flex-wrap gap-x-4 gap-y-2">
-        <InputField
-          label="First Name"
-          name="name"
-          defaultValue={data?.name}
-          register={register}
-          error={errors.name}
-        />
-        <InputField
-          label="Last Name"
-          name="surname"
-          defaultValue={data?.surname}
-          register={register}
-          error={errors.surname}
-        />
-        <InputField
-          label="Phone"
-          name="phone"
-          defaultValue={data?.phone}
-          register={register}
-          error={errors.phone}
-        />
-        <InputField
-          label="Address"
-          name="address"
-          defaultValue={data?.address}
-          register={register}
-          error={errors.address}
-        />
-        <InputField
-          label="Blood Type"
-          name="bloodType"
-          defaultValue={data?.bloodType}
-          register={register}
-          error={errors.bloodType}
-        />
-        <InputField
-          label="Birthday"
-          name="birthday"
-          defaultValue={formatDate(data?.birthday)}
-          register={register}
-          error={errors.birthday}
-          type="date"
-        />
-        {data && (
-          <InputField
-            label="Id"
-            name="id"
-            defaultValue={data?.id}
-            register={register}
-            error={errors?.id}
-            hidden
-          />
-        )}
-        <div className="flex flex-col gap-2 w-full md:w-1/4">
-          <label className="text-xs text-gray-500">Sex</label>
-          <select
-            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
-            {...register("sex")}
-            defaultValue={data?.sex}
-          >
-            <option value="MALE">Male</option>
-            <option value="FEMALE">Female</option>
-          </select>
-          {errors.sex?.message && (
-            <p className="text-xs text-red-400">
-              {errors.sex.message.toString()}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* Subjects Selection Manager */}
-      <div className="flex flex-col gap-2">
-        <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-          Assigned Subjects (Click to select/deselect)
+      {/* ASSIGNED SUBJECTS MANAGER */}
+      <div className="flex flex-col gap-2 pt-1">
+        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
+          <span>Assigned Subjects</span>
+          <span className="text-[10px] text-slate-400 font-normal">Click tag to select/deselect</span>
         </label>
-        <div className="flex flex-wrap gap-2 p-4 bg-slate-50 border border-gray-200 rounded-xl">
+        <div className="flex flex-wrap gap-2 p-4 bg-slate-50 border border-slate-200/80 rounded-2xl">
           {subjects.map((subject: { id: number; name: string }) => {
             const isSelected = selectedSubjects.includes(subject.id);
             return (
@@ -280,10 +296,10 @@ const TeacherForm = ({
                 key={subject.id}
                 type="button"
                 onClick={() => toggleSubject(subject.id)}
-                className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all shadow-2xs active:scale-95 flex items-center gap-1.5 ${
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs active:scale-95 flex items-center gap-1.5 ${
                   isSelected
-                    ? "bg-indigo-600 text-white shadow-xs scale-105"
-                    : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+                    ? "bg-[#4e282c] text-white shadow-xs scale-105"
+                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-300"
                 }`}
               >
                 <span>{isSelected ? "✓" : "+"}</span>
@@ -292,22 +308,37 @@ const TeacherForm = ({
             );
           })}
           {(!subjects || subjects.length === 0) && (
-            <span className="text-xs text-gray-400 italic">No subjects available to select.</span>
+            <span className="text-xs text-slate-400 italic">No subjects available to select.</span>
           )}
         </div>
         {errors.subjects?.message && (
-          <p className="text-xs text-red-400">
+          <p className="text-xs text-rose-500 font-medium">
             {errors.subjects.message.toString()}
           </p>
         )}
       </div>
 
       {state.error && (
-        <span className="text-red-500">Something went wrong!</span>
+        <div className="p-3 bg-rose-50 border border-rose-200 text-rose-600 rounded-xl text-xs font-bold">
+          Something went wrong! Please check your input and try again.
+        </div>
       )}
-      <button type="submit" className="bg-blue-600 text-white p-3 rounded-lg font-bold hover:bg-blue-700 transition-colors">
-        {type === "create" ? "Create Teacher" : "Save Profile Changes"}
-      </button>
+
+      <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="px-6 py-2.5 bg-gradient-to-r from-[#4e282c] to-[#f16122] text-white rounded-xl text-xs font-bold hover:opacity-95 shadow-md shadow-[#f16122]/20 active:scale-95 transition-all"
+        >
+          {type === "create" ? "Create Teacher" : "Save Changes"}
+        </button>
+      </div>
     </form>
   );
 };
