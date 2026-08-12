@@ -19,13 +19,13 @@ export default async function DashboardLayout({
       <div className="w-full lg:w-[16%] xl:w-[14%] p-4 border-b lg:border-r border-gray-100 flex flex-col items-start gap-4 bg-white z-[60] overflow-y-auto">
         <Link
           href="/"
-          className="flex items-center justify-center w-full p-2.5 rounded-2xl bg-gradient-to-br from-[#4e282c]/10 via-[#fdece7]/80 to-[#f16122]/15 border border-[#4e282c]/15 shadow-xs hover:shadow-md transition-all duration-300 group overflow-hidden relative"
+          className="flex items-center justify-center w-full p-2.5 rounded-full bg-gradient-to-br from-[#4e282c]/10 via-[#fdece7]/80 to-[#f16122]/15 border border-[#4e282c]/15 shadow-xs hover:shadow-md transition-all duration-300 group overflow-hidden relative"
         >
           {/* Subtle Ambient Background Light */}
           <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-[#f16122]/20 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
 
-          <div className="p-2 bg-white rounded-xl shadow-xs border border-[#f16122]/30 group-hover:scale-105 transition-transform duration-300 flex items-center justify-center">
-            <Image src="/logo.png" alt="logo" width={48} height={48} className="object-contain w-auto h-10 sm:h-12" priority />
+          <div className="w-12 h-12 rounded-full bg-white shadow-xs border-2 border-[#f16122]/40 group-hover:scale-110 transition-transform duration-300 flex items-center justify-center p-1 overflow-hidden">
+            <Image src="/logo.png" alt="logo" width={44} height={44} className="object-cover rounded-full w-full h-full" priority />
           </div>
         </Link>
 

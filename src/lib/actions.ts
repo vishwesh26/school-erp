@@ -346,9 +346,13 @@ export const createTeacher = async (
 
       if (relError) {
         console.error("Error inserting subjects:", relError);
-        // We might want to throw or just log? 
-        // If relation fails, teacher is still created.
       }
+    }
+
+    // Handle Assigned Classes (Class Supervision)
+    if (data.classes && data.classes.length > 0) {
+      const classIdsToAssign = data.classes.map(id => parseInt(id));
+      await supabase.from('Class').update({ supervisorId: userId }).in('id', classIdsToAssign);
     }
 
     // revalidatePath("/list/teachers");
@@ -402,6 +406,18 @@ export const updateTeacher = async (
           B: data.id
         }));
         await supabase.from('_SubjectToTeacher').insert(subjectInserts);
+      }
+    }
+
+    // Handle Assigned Classes (Class Supervision)
+    if (data.classes) {
+      // First unassign existing classes for this teacher
+      await supabase.from('Class').update({ supervisorId: null }).eq('supervisorId', data.id);
+
+      // Then assign selected classes
+      if (data.classes.length > 0) {
+        const classIdsToAssign = data.classes.map(id => parseInt(id));
+        await supabase.from('Class').update({ supervisorId: data.id }).in('id', classIdsToAssign);
       }
     }
 

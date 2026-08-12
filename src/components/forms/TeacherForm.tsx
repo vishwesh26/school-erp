@@ -51,6 +51,11 @@ const TeacherForm = ({
     : [];
   const [selectedSubjects, setSelectedSubjects] = useState<number[]>(initialSubjects);
 
+  const initialClasses = data?.classes
+    ? data.classes.map((c: any) => (typeof c === "object" ? c.id : Number(c)))
+    : [];
+  const [selectedClasses, setSelectedClasses] = useState<number[]>(initialClasses);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -70,6 +75,14 @@ const TeacherForm = ({
     );
   };
 
+  const toggleClass = (classId: number) => {
+    setSelectedClasses((prev) =>
+      prev.includes(classId)
+        ? prev.filter((id) => id !== classId)
+        : [...prev, classId]
+    );
+  };
+
   const [state, formAction] = useFormState(
     type === "create" ? createTeacher : updateTeacher,
     {
@@ -84,6 +97,7 @@ const TeacherForm = ({
       ...formData,
       img: photoToSave,
       subjects: selectedSubjects.map(String),
+      classes: selectedClasses.map(String),
     });
   });
 
@@ -97,7 +111,7 @@ const TeacherForm = ({
     }
   }, [state, router, type, setOpen]);
 
-  const { subjects } = relatedData;
+  const { subjects = [], classes = [] } = relatedData || {};
 
   return (
     <form className="flex flex-col gap-6" onSubmit={onSubmit}>
@@ -107,7 +121,7 @@ const TeacherForm = ({
             {type === "create" ? "Create New Teacher" : "Edit Teacher Profile"}
           </h1>
           <p className="text-xs font-semibold text-slate-400 mt-0.5">
-            {type === "create" ? "Fill in credentials and personal details to register a teacher." : "Update profile information and assigned subjects."}
+            {type === "create" ? "Fill in credentials and personal details to register a teacher." : "Update profile information, assigned classes with divisions, and subjects."}
           </p>
         </div>
       </div>
@@ -282,11 +296,42 @@ const TeacherForm = ({
         </div>
       </div>
 
+      {/* ASSIGNED CLASSES & DIVISIONS MANAGER */}
+      <div className="flex flex-col gap-2 pt-1">
+        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
+          <span>Assigned Classes & Divisions</span>
+          <span className="text-[10px] text-slate-400 font-normal">Click tag to select/deselect class division</span>
+        </label>
+        <div className="flex flex-wrap gap-2 p-4 bg-slate-50 border border-slate-200/80 rounded-2xl">
+          {classes.map((cls: { id: number; name: string }) => {
+            const isSelected = selectedClasses.includes(cls.id);
+            return (
+              <button
+                key={cls.id}
+                type="button"
+                onClick={() => toggleClass(cls.id)}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs active:scale-95 flex items-center gap-1.5 ${
+                  isSelected
+                    ? "bg-[#f16122] text-white shadow-xs scale-105"
+                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-300"
+                }`}
+              >
+                <span>{isSelected ? "✓" : "+"}</span>
+                <span>Class {cls.name}</span>
+              </button>
+            );
+          })}
+          {(!classes || classes.length === 0) && (
+            <span className="text-xs text-slate-400 italic">No classes available to select.</span>
+          )}
+        </div>
+      </div>
+
       {/* ASSIGNED SUBJECTS MANAGER */}
       <div className="flex flex-col gap-2 pt-1">
         <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
           <span>Assigned Subjects</span>
-          <span className="text-[10px] text-slate-400 font-normal">Click tag to select/deselect</span>
+          <span className="text-[10px] text-slate-400 font-normal">Click tag to select/deselect subject</span>
         </label>
         <div className="flex flex-wrap gap-2 p-4 bg-slate-50 border border-slate-200/80 rounded-2xl">
           {subjects.map((subject: { id: number; name: string }) => {

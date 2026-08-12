@@ -40,11 +40,19 @@ const ProfilePage = async () => {
             .select("A, subject:Subject(id, name)")
             .eq("B", userId);
 
+        const { data: teacherClassesRes } = await supabase
+            .from("Class")
+            .select("id, name")
+            .eq("supervisorId", userId);
+
         teacherSubjects = (teacherSubjectsRes || []).map((item: any) => item.subject).filter(Boolean);
         const teacherSubjectIds = (teacherSubjectsRes || []).map((item: any) => item.A);
+        const teacherClassIds = (teacherClassesRes || []).map((c: any) => c.id);
+
         userData = {
             ...userData,
             subjects: teacherSubjectIds,
+            classes: teacherClassIds,
         };
     }
 

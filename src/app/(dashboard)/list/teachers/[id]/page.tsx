@@ -33,12 +33,20 @@ const SingleTeacherPage = async ({
     .select("A, subject:Subject(id, name)")
     .eq("B", id);
 
+  // Fetch teacher's assigned classes (supervised classes)
+  const { data: teacherClassesRes } = await supabase
+    .from("Class")
+    .select("id, name")
+    .eq("supervisorId", id);
+
   const teacherSubjects = (teacherSubjectsRes || []).map((item: any) => item.subject).filter(Boolean);
   const teacherSubjectIds = (teacherSubjectsRes || []).map((item: any) => item.A);
+  const teacherClassIds = (teacherClassesRes || []).map((c: any) => c.id);
 
   const teacherWithSubjects = {
     ...teacher,
     subjects: teacherSubjectIds,
+    classes: teacherClassIds,
   };
 
   const canEdit = role === "admin" || (role === "teacher" && user?.id === id);
