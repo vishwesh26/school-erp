@@ -12,6 +12,17 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { CldUploadWidget } from "next-cloudinary";
 
+const formatDate = (val: any) => {
+  if (!val) return "";
+  try {
+    const d = typeof val === "string" || typeof val === "number" ? new Date(val) : val instanceof Date ? val : new Date(val);
+    if (!d || isNaN(d.getTime())) return "";
+    return d.toISOString().split("T")[0];
+  } catch {
+    return "";
+  }
+};
+
 const TeacherForm = ({
   type,
   data,
@@ -223,7 +234,7 @@ const TeacherForm = ({
         <InputField
           label="Birthday"
           name="birthday"
-          defaultValue={data?.birthday ? new Date(data.birthday).toISOString().split("T")[0] : ""}
+          defaultValue={formatDate(data?.birthday)}
           register={register}
           error={errors.birthday}
           type="date"

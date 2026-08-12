@@ -251,7 +251,7 @@ export async function registerStudent(prevState: any, formData: FormData) {
         img: imgUrl,
         bloodType: data.bloodType,
         sex: data.sex,
-        birthday: data.birthday.toISOString(),
+        birthday: data.birthday ? new Date(data.birthday).toISOString() : new Date().toISOString(),
         gradeId: gradeData.id,
         classId: finalClassId,
         parentId: parentId,
