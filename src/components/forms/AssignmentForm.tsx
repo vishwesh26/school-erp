@@ -7,6 +7,7 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { assignmentSchema, AssignmentSchema } from "@/lib/formValidationSchemas";
 import { useFormState } from "react-dom";
 import { createAssignment, updateAssignment } from "@/lib/actions";
+import { formatDateISO } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { CldUploadWidget } from "next-cloudinary";
@@ -91,7 +92,7 @@ const AssignmentForm = ({
         setValue("pdfUrl", "");
     };
 
-    const { subjects, classes } = relatedData;
+    const { subjects = [], classes = [] } = relatedData || {};
 
     return (
         <form className="flex flex-col gap-8" onSubmit={onSubmit}>
@@ -110,7 +111,7 @@ const AssignmentForm = ({
                 <InputField
                     label="Start Date"
                     name="startDate"
-                    defaultValue={data?.startDate ? new Date(data.startDate).toISOString().split("T")[0] : ""}
+                    defaultValue={formatDateISO(data?.startDate)}
                     register={register}
                     error={errors?.startDate}
                     type="date"
@@ -118,7 +119,7 @@ const AssignmentForm = ({
                 <InputField
                     label="Due Date"
                     name="dueDate"
-                    defaultValue={data?.dueDate ? new Date(data.dueDate).toISOString().split("T")[0] : ""}
+                    defaultValue={formatDateISO(data?.dueDate)}
                     register={register}
                     error={errors?.dueDate}
                     type="date"

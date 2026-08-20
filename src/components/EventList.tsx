@@ -1,14 +1,27 @@
 import { createClient } from "@/lib/supabase/server";
+import { formatTime } from "@/lib/utils";
 
 const EventList = async ({ dateParam }: { dateParam: string | undefined }) => {
-  const date = dateParam ? new Date(dateParam) : new Date();
+  let targetDate = new Date();
+  if (dateParam) {
+    const parsed = new Date(dateParam);
+    if (!isNaN(parsed.getTime())) {
+      targetDate = parsed;
+    }
+  }
+
+  const startOfDay = new Date(targetDate);
+  startOfDay.setHours(0, 0, 0, 0);
+
+  const endOfDay = new Date(targetDate);
+  endOfDay.setHours(23, 59, 59, 999);
 
   const supabase = createClient();
   const { data, error } = await supabase
     .from("Event")
     .select("*")
-    .gte("startTime", new Date(date.setHours(0, 0, 0, 0)).toISOString())
-    .lte("startTime", new Date(date.setHours(23, 59, 59, 999)).toISOString());
+    .gte("startTime", startOfDay.toISOString())
+    .lte("startTime", endOfDay.toISOString());
 
   if (error) {
     console.error(error);
@@ -22,11 +35,7 @@ const EventList = async ({ dateParam }: { dateParam: string | undefined }) => {
       <div className="flex items-center justify-between">
         <h1 className="font-semibold text-gray-600">{event.title}</h1>
         <span className="text-gray-300 text-xs">
-          {new Date(event.startTime).toLocaleTimeString("en-UK", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-          })}
+          {formatTime(event.startTime, "en-GB")}
         </span>
       </div>
       <p className="mt-2 text-gray-400 text-sm">{event.description}</p>

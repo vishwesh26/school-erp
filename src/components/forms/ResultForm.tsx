@@ -51,7 +51,7 @@ const ResultForm = ({
         }
     }, [state, router, type, setOpen]);
 
-    const { exams, assignments, students } = relatedData;
+    const { exams = [], assignments = [], students = [] } = relatedData || {};
 
     return (
         <form className="flex flex-col gap-8" onSubmit={onSubmit}>

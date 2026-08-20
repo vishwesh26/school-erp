@@ -51,14 +51,19 @@ const EventForm = ({
         }
     }, [state, router, type, setOpen]);
 
-    const { grades } = relatedData;
+    const { grades = [] } = relatedData || {};
 
     const formatDateTime = (dateString?: string) => {
         if (!dateString) return "";
-        const d = new Date(dateString);
-        // Create local ISO string: YYYY-MM-DDTHH:mm
-        const pad = (n: number) => n.toString().padStart(2, '0');
-        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        try {
+            const d = new Date(dateString);
+            if (isNaN(d.getTime())) return "";
+            // Create local ISO string: YYYY-MM-DDTHH:mm
+            const pad = (n: number) => n.toString().padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        } catch {
+            return "";
+        }
     };
 
     const defaultStartTime = data?.startTime ? formatDateTime(data.startTime) : "";

@@ -4,6 +4,7 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { createClient } from "@/lib/supabase/server";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { formatDate } from "@/lib/utils";
 import Image from "next/image";
 
 const ResultListPage = async ({
@@ -79,15 +80,15 @@ const ResultListPage = async ({
         key={item.id}
         className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
       >
-        <td className="flex items-center gap-4 p-4">{assessment.title}</td>
-        <td>{item.student?.name + " " + item.student?.surname}</td>
-        <td className="hidden md:table-cell">{item.score}</td>
+        <td className="flex items-center gap-4 p-4">{assessment.title || "-"}</td>
+        <td>{item.student ? `${item.student.name || ""} ${item.student.surname || ""}`.trim() : "-"}</td>
+        <td className="hidden md:table-cell">{item.score ?? "-"}</td>
         <td className="hidden md:table-cell">
-          {teacher ? (teacher.name + " " + teacher.surname) : "-"}
+          {teacher ? `${teacher.name || ""} ${teacher.surname || ""}`.trim() : "-"}
         </td>
         <td className="hidden md:table-cell">{classItem?.name || "-"}</td>
         <td className="hidden md:table-cell">
-          {new Intl.DateTimeFormat("en-US").format(new Date(isExam ? assessment.startTime : assessment.dueDate))}
+          {formatDate(isExam ? assessment.startTime : assessment.dueDate, "en-US")}
         </td>
         <td>
           <div className="flex items-center gap-2">

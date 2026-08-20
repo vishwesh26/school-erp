@@ -4,6 +4,7 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { createClient } from "@/lib/supabase/server";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { formatDate } from "@/lib/utils";
 import Image from "next/image";
 
 const AnnouncementListPage = async ({
@@ -47,7 +48,7 @@ const AnnouncementListPage = async ({
       <td className="flex items-center gap-4 p-4">{item.title}</td>
       <td>{item.class?.name || "-"}</td>
       <td className="hidden md:table-cell">
-        {new Intl.DateTimeFormat("en-US").format(new Date(item.date))}
+        {formatDate(item.date, "en-US")}
       </td>
       <td>
         <div className="flex items-center gap-2">

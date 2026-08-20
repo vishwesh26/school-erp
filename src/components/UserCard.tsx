@@ -39,7 +39,7 @@ const UserCard = async ({
       
       <div className="flex justify-between items-center relative z-10">
         <span className="text-[10px] font-black bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full text-white tracking-wider uppercase border border-white/20 shadow-xs">
-          {currentYear?.name.replace('-', '/') || "2026/27"}
+          {currentYear?.name ? currentYear.name.replace('-', '/') : "2026/27"}
         </span>
         <Image src="/more.png" alt="" width={18} height={18} className="invert brightness-200 hover:rotate-90 transition-transform duration-200 opacity-80" />
       </div>

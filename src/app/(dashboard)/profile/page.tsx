@@ -7,6 +7,7 @@ import FormContainer from "@/components/FormContainer";
 import StudentAttendanceCard from "@/components/StudentAttendanceCard";
 import { Suspense } from "react";
 import Announcements from "@/components/Announcements";
+import { formatDate } from "@/lib/utils";
 
 const ProfilePage = async () => {
     const supabase = createClient();
@@ -27,12 +28,15 @@ const ProfilePage = async () => {
     if (role) {
         // capitalize first letter for table name
         const table = role.charAt(0).toUpperCase() + role.slice(1);
-        const { data, error } = await supabase.from(table).select('*, class:Class(*)').eq('id', userId).single();
-        if (!error) userData = data;
+        const query = role === 'student'
+            ? supabase.from(table).select('*, class:Class(*)').eq('id', userId).single()
+            : supabase.from(table).select('*').eq('id', userId).single();
+        const { data, error } = await query;
+        if (!error && data) userData = data;
     }
 
     if (!userData) {
-        return <div>Profile not found.</div>
+        return <div className="p-4">Profile not found.</div>;
     }
 
     if (role === 'teacher') {
@@ -113,7 +117,7 @@ const ProfilePage = async () => {
                                     <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 hover:bg-white/20 transition-all duration-200 min-w-0">
                                         <Image src="/date.png" alt="" width={15} height={15} className="invert brightness-200 flex-shrink-0" />
                                         <span className="truncate text-white/90">
-                                            {userData.birthday ? new Date(userData.birthday).toLocaleDateString("en-GB") : "-"}
+                                            {formatDate(userData.birthday)}
                                         </span>
                                     </div>
 
@@ -172,7 +176,12 @@ const ProfilePage = async () => {
                     {/* SCHEDULE */}
                     <div className="bg-white p-4 rounded-md h-[800px]">
                         <h1 className="text-xl font-semibold">Schedule</h1>
-                        {(role === "teacher" || role === "student") && <BigCalendarContainer type={role === "teacher" ? "teacherId" : "classId"} id={role === "teacher" ? userId : userData.classId} />}
+                        {(role === "teacher" || (role === "student" && userData.classId)) && (
+                            <BigCalendarContainer
+                                type={role === "teacher" ? "teacherId" : "classId"}
+                                id={role === "teacher" ? userId : userData.classId}
+                            />
+                        )}
                     </div>
                 </div>
             </div>
@@ -181,7 +190,12 @@ const ProfilePage = async () => {
                 <div className="bg-white p-4 rounded-md">
                     <h1 className="text-xl font-semibold">Shortcuts</h1>
                     <div className="mt-4 flex gap-4 flex-wrap text-xs text-gray-500">
-                        <Link className="p-3 rounded-md bg-lamaSkyLight" href={`/list/lessons?${role === "teacher" ? "teacherId" : "classId"}=${role === "teacher" ? userId : userData.classId}`}>My Lessons</Link>
+                        <Link
+                            className="p-3 rounded-md bg-lamaSkyLight"
+                            href={role === "teacher" ? `/list/lessons?teacherId=${userId}` : userData?.classId ? `/list/lessons?classId=${userData.classId}` : '/list/lessons'}
+                        >
+                            My Lessons
+                        </Link>
                         {role === "student" && <Link className="p-3 rounded-md bg-lamaPurpleLight" href={`/list/results?studentId=${userId}`}>My Results</Link>}
                         <Link className="p-3 rounded-md bg-pink-50" href="/settings">Settings</Link>
                     </div>

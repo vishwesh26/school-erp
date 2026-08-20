@@ -8,6 +8,14 @@ const BigCalendarContainer = async ({
   type: "teacherId" | "classId";
   id: string | number;
 }) => {
+  if (!id) {
+    return (
+      <div className="flex items-center justify-center h-48 text-gray-400 text-sm">
+        No schedule available.
+      </div>
+    );
+  }
+
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const role = user?.user_metadata?.role;

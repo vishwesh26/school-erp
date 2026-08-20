@@ -78,7 +78,7 @@ const ClassForm = ({
     }
   }, [state, router, type, setOpen]);
 
-  const { teachers, grades } = relatedData;
+  const { teachers = [], grades = [] } = relatedData || {};
 
   // Watch logic to update hidden Name
   const selectedGradeId = watch("gradeId");

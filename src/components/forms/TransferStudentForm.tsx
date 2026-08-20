@@ -35,7 +35,8 @@ const TransferStudentForm = ({
     resolver: zodResolver(transferStudentSchema),
   });
 
-  const { grades, classes } = relatedData;
+  const grades = relatedData?.grades || [];
+  const classes = relatedData?.classes || [];
   const selectedGradeId = watch("gradeId");
   const selectedClassId = watch("classId");
 

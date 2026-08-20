@@ -70,3 +70,41 @@ export const formatGrade = (level: number): string => {
   if (level === -2) return "Nursery";
   return level.toString();
 };
+
+export const formatDate = (val: any, locale: string = "en-GB"): string => {
+  if (!val) return "-";
+  try {
+    const d = typeof val === "string" || typeof val === "number" ? new Date(val) : val instanceof Date ? val : new Date(val);
+    if (!d || isNaN(d.getTime())) return "-";
+    return new Intl.DateTimeFormat(locale).format(d);
+  } catch {
+    return "-";
+  }
+};
+
+export const formatDateISO = (val: any): string => {
+  if (!val) return "";
+  try {
+    const d = typeof val === "string" || typeof val === "number" ? new Date(val) : val instanceof Date ? val : new Date(val);
+    if (!d || isNaN(d.getTime())) return "";
+    return d.toISOString().split("T")[0];
+  } catch {
+    return "";
+  }
+};
+
+export const formatTime = (
+  val: any,
+  locale: string = "en-GB",
+  options: Intl.DateTimeFormatOptions = { hour: "2-digit", minute: "2-digit", hour12: false }
+): string => {
+  if (!val) return "-";
+  try {
+    const d = typeof val === "string" || typeof val === "number" ? new Date(val) : val instanceof Date ? val : new Date(val);
+    if (!d || isNaN(d.getTime())) return "-";
+    return d.toLocaleTimeString(locale, options);
+  } catch {
+    return "-";
+  }
+};
+

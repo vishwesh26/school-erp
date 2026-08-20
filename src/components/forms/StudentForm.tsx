@@ -71,7 +71,7 @@ const StudentForm = ({
   const selectedGradeId = watch("gradeId");
   const rollNumberValue = watch("rollNumber");
 
-  const { grades, classes } = relatedData;
+  const { grades = [], classes = [] } = relatedData || {};
 
   const filteredClasses = classes.filter(
     (c: any) => !selectedGradeId || c.gradeId === parseInt(selectedGradeId as any)

@@ -11,6 +11,7 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { teacherSchema, TeacherSchema } from "@/lib/formValidationSchemas";
 import { useFormState } from "react-dom";
 import { createLibrarian, updateLibrarian } from "@/lib/actions";
+import { formatDateISO } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { CldUploadWidget } from "next-cloudinary";
@@ -133,7 +134,7 @@ const LibrarianForm = ({
                 <InputField
                     label="Birthday"
                     name="birthday"
-                    defaultValue={data?.birthday ? new Date(data.birthday).toISOString().split("T")[0] : ""}
+                    defaultValue={formatDateISO(data?.birthday)}
                     register={register}
                     error={errors.birthday}
                     type="date"

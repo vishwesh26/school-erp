@@ -4,6 +4,7 @@ import FormContainer from "@/components/FormContainer";
 import Performance from "@/components/Performance";
 import StudentAttendanceCard from "@/components/StudentAttendanceCard";
 import { createClient } from "@/lib/supabase/server";
+import { formatDate } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -81,7 +82,7 @@ const SingleStudentPage = async ({
                 <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 hover:bg-white/20 transition-all duration-200 min-w-0">
                   <Image src="/date.png" alt="" width={15} height={15} className="invert brightness-200 flex-shrink-0" />
                   <span className="truncate text-white/90">
-                    {new Intl.DateTimeFormat("en-GB").format(new Date(student.birthday))}
+                    {formatDate(student.birthday)}
                   </span>
                 </div>
 

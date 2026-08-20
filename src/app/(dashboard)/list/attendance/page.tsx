@@ -3,6 +3,7 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { createClient } from "@/lib/supabase/server";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { formatDate } from "@/lib/utils";
 import Image from "next/image";
 import AttendanceTeacherView from "@/components/AttendanceTeacherView";
 import { getTeacherClasses } from "@/lib/actions";
@@ -72,9 +73,9 @@ const AttendanceListPage = async ({
             className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
         >
             <td className="flex items-center gap-4 p-4">
-                {new Intl.DateTimeFormat("en-US").format(new Date(item.date))}
+                {formatDate(item.date, "en-US")}
             </td>
-            <td>{item.student?.name + " " + item.student?.surname}</td>
+            <td>{item.student ? `${item.student.name || ""} ${item.student.surname || ""}`.trim() : "-"}</td>
             <td>
                 {item.present ? (
                     <span className="text-green-500">Present</span>
@@ -97,12 +98,14 @@ const AttendanceListPage = async ({
 
     // DATE FILTER
     if (date) {
-        const startOfDay = new Date(date);
-        startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date(date);
-        endOfDay.setHours(23, 59, 59, 999);
-
-        query = query.gte('date', startOfDay.toISOString()).lte('date', endOfDay.toISOString());
+        const parsed = new Date(date);
+        if (!isNaN(parsed.getTime())) {
+            const startOfDay = new Date(parsed);
+            startOfDay.setHours(0, 0, 0, 0);
+            const endOfDay = new Date(parsed);
+            endOfDay.setHours(23, 59, 59, 999);
+            query = query.gte('date', startOfDay.toISOString()).lte('date', endOfDay.toISOString());
+        }
     }
 
     // ROLE FILTER LOGIC
@@ -120,11 +123,14 @@ const AttendanceListPage = async ({
 
         // Re-apply date filter if needed (since we re-initialized query)
         if (date) {
-            const startOfDay = new Date(date);
-            startOfDay.setHours(0, 0, 0, 0);
-            const endOfDay = new Date(date);
-            endOfDay.setHours(23, 59, 59, 999);
-            query = query.gte('date', startOfDay.toISOString()).lte('date', endOfDay.toISOString());
+            const parsed = new Date(date);
+            if (!isNaN(parsed.getTime())) {
+                const startOfDay = new Date(parsed);
+                startOfDay.setHours(0, 0, 0, 0);
+                const endOfDay = new Date(parsed);
+                endOfDay.setHours(23, 59, 59, 999);
+                query = query.gte('date', startOfDay.toISOString()).lte('date', endOfDay.toISOString());
+            }
         }
     } else if (role === "student") {
         query = query.eq('studentId', userId!);

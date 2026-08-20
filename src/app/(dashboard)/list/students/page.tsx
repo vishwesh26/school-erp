@@ -37,7 +37,7 @@ const StudentListPage = async ({
               href={`?view=alumni&academicYearId=${year.id}`}
               className="p-6 bg-purple-50 rounded-md hover:bg-purple-100 transition-colors flex flex-col items-center justify-center cursor-pointer shadow-sm border border-purple-100 group"
             >
-              <span className="text-2xl font-black text-purple-700">{year.name.replace('-', '/')}</span>
+              <span className="text-2xl font-black text-purple-700">{year?.name ? year.name.replace('-', '/') : ""}</span>
               <span className="text-xs text-purple-400 font-bold mt-1 group-hover:text-purple-500">View passed out students</span>
             </Link>
           ))}

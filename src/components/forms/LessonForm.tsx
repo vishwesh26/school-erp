@@ -65,22 +65,27 @@ const LessonForm = ({
         }
     }, [state, router, type, setOpen]);
 
-    const { subjects, classes, teachers } = relatedData;
+    const { subjects = [], classes = [], teachers = [] } = relatedData || {};
 
     // Helper to format ISO (UTC) string to Local "YYYY-MM-DDTHH:mm" for input
     const formatToLocalDatetime = (isoString?: string) => {
         if (!isoString) return "";
-        const safeIso = isoString.endsWith("Z") || isoString.includes("+") ? isoString : isoString + "Z";
-        const date = new Date(safeIso);
+        try {
+            const safeIso = isoString.endsWith("Z") || isoString.includes("+") ? isoString : isoString + "Z";
+            const date = new Date(safeIso);
+            if (isNaN(date.getTime())) return "";
 
-        const pad = (n: number) => n.toString().padStart(2, '0');
-        const year = date.getFullYear();
-        const month = pad(date.getMonth() + 1);
-        const day = pad(date.getDate());
-        const hours = pad(date.getHours());
-        const minutes = pad(date.getMinutes());
+            const pad = (n: number) => n.toString().padStart(2, '0');
+            const year = date.getFullYear();
+            const month = pad(date.getMonth() + 1);
+            const day = pad(date.getDate());
+            const hours = pad(date.getHours());
+            const minutes = pad(date.getMinutes());
 
-        return `${year}-${month}-${day}T${hours}:${minutes}`;
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        } catch {
+            return "";
+        }
     };
 
     return (

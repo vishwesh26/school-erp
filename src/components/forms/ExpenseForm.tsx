@@ -7,6 +7,7 @@ import { Dispatch, SetStateAction, useEffect } from "react";
 import { expenseSchema, ExpenseSchema } from "@/lib/formValidationSchemas";
 import { useFormState } from "react-dom";
 import { createExpense, updateExpense } from "@/lib/accountantActions";
+import { formatDateISO } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
@@ -27,7 +28,7 @@ const ExpenseForm = ({
         resolver: zodResolver(expenseSchema),
         defaultValues: data ? {
             ...data,
-            date: data.date ? new Date(data.date).toISOString().split("T")[0] : ""
+            date: formatDateISO(data.date)
         } : undefined
     });
 
@@ -101,7 +102,7 @@ const ExpenseForm = ({
                     label="Date"
                     name="date"
                     type="date"
-                    defaultValue={data?.date ? new Date(data.date).toISOString().split("T")[0] : ""}
+                    defaultValue={formatDateISO(data?.date)}
                     register={register}
                     error={errors.date}
                 />

@@ -3,6 +3,7 @@ import CertificateGenerator from "@/components/CertificateGenerator";
 import GradeSelect from "@/components/drill-down/GradeSelect";
 import ClassSelect from "@/components/drill-down/ClassSelect";
 import StudentSelect from "@/components/drill-down/StudentSelect";
+import { formatDateISO } from "@/lib/utils";
 import Link from "next/link";
 
 const DocumentsPage = async ({
@@ -90,9 +91,7 @@ const DocumentsPage = async ({
         new Date(b.date).getTime() - new Date(a.date).getTime()
     ) : [];
     const lastAttendanceRecord = sortedAttendance[0];
-    const lastDateAttendance = lastAttendanceRecord
-        ? new Date(lastAttendanceRecord.date).toISOString().split('T')[0]
-        : "";
+    const lastDateAttendance = formatDateISO(lastAttendanceRecord?.date);
 
     // Merge attendance into student object (prefer DB stored values if they exist, else fallback to calculated)
     const enrichedStudent = {

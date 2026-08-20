@@ -4,6 +4,7 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { createClient } from "@/lib/supabase/server";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { formatDate } from "@/lib/utils";
 import Image from "next/image";
 
 const ExamListPage = async ({
@@ -54,10 +55,10 @@ const ExamListPage = async ({
       <td className="flex items-center gap-4 p-4">{item.lesson?.subject?.name || 'N/A'}</td>
       <td>{item.lesson?.class?.name || 'N/A'}</td>
       <td className="hidden md:table-cell">
-        {item.lesson?.teacher ? (item.lesson.teacher.name + " " + item.lesson.teacher.surname) : 'N/A'}
+        {item.lesson?.teacher ? `${item.lesson.teacher.name || ""} ${item.lesson.teacher.surname || ""}`.trim() : 'N/A'}
       </td>
       <td className="hidden md:table-cell">
-        {new Intl.DateTimeFormat("en-US").format(new Date(item.startTime))}
+        {formatDate(item.startTime, "en-US")}
       </td>
       <td>
         <div className="flex items-center gap-2">

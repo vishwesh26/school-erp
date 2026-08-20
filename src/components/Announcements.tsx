@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { formatDate } from "@/lib/utils";
 
 const Announcements = async ({ classId }: { classId?: number | string }) => {
   const supabase = createClient();
@@ -35,7 +36,7 @@ const Announcements = async ({ classId }: { classId?: number | string }) => {
             <div className="flex items-center justify-between">
               <h2 className="font-medium text-gray-800">{data[0].title}</h2>
               <span className="text-xs text-gray-500 bg-white/80 rounded-md px-2 py-0.5 font-medium shadow-2xs">
-                {new Intl.DateTimeFormat("en-GB").format(new Date(data[0].date))}
+                {formatDate(data[0].date)}
               </span>
             </div>
             <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">{data[0].description}</p>
@@ -46,7 +47,7 @@ const Announcements = async ({ classId }: { classId?: number | string }) => {
             <div className="flex items-center justify-between">
               <h2 className="font-medium text-gray-800">{data[1].title}</h2>
               <span className="text-xs text-gray-500 bg-white/80 rounded-md px-2 py-0.5 font-medium shadow-2xs">
-                {new Intl.DateTimeFormat("en-GB").format(new Date(data[1].date))}
+                {formatDate(data[1].date)}
               </span>
             </div>
             <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">{data[1].description}</p>
@@ -57,7 +58,7 @@ const Announcements = async ({ classId }: { classId?: number | string }) => {
             <div className="flex items-center justify-between">
               <h2 className="font-medium text-gray-800">{data[2].title}</h2>
               <span className="text-xs text-gray-500 bg-white/80 rounded-md px-2 py-0.5 font-medium shadow-2xs">
-                {new Intl.DateTimeFormat("en-GB").format(new Date(data[2].date))}
+                {formatDate(data[2].date)}
               </span>
             </div>
             <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">{data[2].description}</p>
