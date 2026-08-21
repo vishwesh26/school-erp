@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import Image from "next/image";
 
-interface StudentFeeItem {
+export interface StudentFeeItem {
     id?: string;
     studentId: string;
     student?: {
@@ -16,11 +16,17 @@ interface StudentFeeItem {
         parentName?: string;
     };
     status: "PAID" | "PARTIAL" | "PENDING";
+    totalAmount?: number;
+    paidAmount?: number;
+    pendingAmount?: number;
 }
 
 interface FeeDownloadButtonProps {
     students: StudentFeeItem[];
     statuses: { [studentId: string]: "PAID" | "PARTIAL" | "PENDING" };
+    paidAmounts?: { [studentId: string]: number };
+    pendingAmounts?: { [studentId: string]: number };
+    totalAmounts?: { [studentId: string]: number };
     className: string;
     categoryName?: string;
     categoryAmount?: number;
@@ -29,6 +35,9 @@ interface FeeDownloadButtonProps {
 const FeeDownloadButton = ({
     students,
     statuses,
+    paidAmounts = {},
+    pendingAmounts = {},
+    totalAmounts = {},
     className,
     categoryName,
     categoryAmount,
@@ -66,6 +75,20 @@ const FeeDownloadButton = ({
     const partialCount = students.filter(s => (statuses[s.studentId] || s.status) === "PARTIAL").length;
     const pendingCount = students.filter(s => (statuses[s.studentId] || s.status) === "PENDING").length;
     const paidPercentage = totalStudents > 0 ? Math.round((paidCount / totalStudents) * 100) : 0;
+
+    // Calculate sum of collected vs pending
+    const totalCollectedSum = students.reduce((sum, s) => {
+        const p = paidAmounts[s.studentId] !== undefined ? paidAmounts[s.studentId] : (s.paidAmount || 0);
+        return sum + Number(p);
+    }, 0);
+
+    const totalPendingSum = students.reduce((sum, s) => {
+        const p = pendingAmounts[s.studentId] !== undefined ? pendingAmounts[s.studentId] : (s.pendingAmount || 0);
+        return sum + Number(p);
+    }, 0);
+
+    const totalExpectedSum = totalCollectedSum + totalPendingSum;
+
     const formattedDateString = new Date().toLocaleDateString("en-GB", {
         weekday: "long",
         year: "numeric",
@@ -79,7 +102,7 @@ const FeeDownloadButton = ({
                 type="button"
                 onClick={handleDownload}
                 disabled={students.length === 0}
-                className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2.5 rounded-lg text-sm font-bold hover:bg-emerald-700 disabled:opacity-50 transition-all shadow-sm active:scale-95"
+                className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2.5 rounded-lg text-sm font-bold hover:bg-emerald-700 disabled:opacity-50 transition-all shadow-sm active:scale-95 cursor-pointer"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -151,7 +174,7 @@ const FeeDownloadButton = ({
                                 <p className="text-xs font-semibold text-gray-800 mt-1">
                                     Fee Category: <span className="font-bold">{categoryName}</span>
                                     {categoryAmount !== undefined && categoryAmount !== null && (
-                                        <span className="text-gray-600 font-normal"> (₹{categoryAmount.toLocaleString("en-IN")})</span>
+                                        <span className="text-gray-600 font-normal"> (Base: ₹{categoryAmount.toLocaleString("en-IN")})</span>
                                     )}
                                 </p>
                             )}
@@ -162,16 +185,19 @@ const FeeDownloadButton = ({
                         <div className="text-right text-xs font-semibold bg-gray-50 p-3 rounded border border-gray-300">
                             <p>
                                 Total Students: <span className="font-bold">{totalStudents}</span>
+                                {" | "}
+                                <span className="text-emerald-700">Collected: <span className="font-bold">₹{totalCollectedSum.toLocaleString("en-IN")}</span></span>
+                                {" | "}
+                                <span className="text-rose-700">Pending: <span className="font-bold">₹{totalPendingSum.toLocaleString("en-IN")}</span></span>
                             </p>
-                            <p className="mt-0.5">
+                            <p className="mt-1">
                                 <span className="text-green-700">Paid: <span className="font-bold">{paidCount}</span></span>
                                 {" | "}
                                 <span className="text-amber-600">Partial: <span className="font-bold">{partialCount}</span></span>
                                 {" | "}
                                 <span className="text-red-600">Pending: <span className="font-bold">{pendingCount}</span></span>
-                            </p>
-                            <p className="mt-1">
-                                Collection Rate: <span className="font-bold">{paidPercentage}%</span>
+                                {" | "}
+                                Rate: <span className="font-bold">{paidPercentage}%</span>
                             </p>
                         </div>
                     </div>
@@ -180,19 +206,24 @@ const FeeDownloadButton = ({
                     <table className="w-full text-center border-collapse border-[1px] border-slate-950 text-[9pt]">
                         <thead>
                             <tr className="bg-slate-100 font-bold uppercase">
-                                <th className="p-2 border border-slate-950 w-10">Sr</th>
-                                <th className="p-2 border border-slate-950 w-20">Roll No</th>
+                                <th className="p-2 border border-slate-950 w-8">Sr</th>
+                                <th className="p-2 border border-slate-950 w-16">Roll No</th>
                                 <th className="p-2 border border-slate-950 text-left pl-3">Student Name</th>
-                                <th className="p-2 border border-slate-950 text-left pl-3">Father Name</th>
-                                <th className="p-2 border border-slate-950 w-28">Contact No</th>
-                                <th className="p-2 border border-slate-950 text-left pl-3">Email ID</th>
-                                <th className="p-2 border border-slate-950 w-24">Blood Group</th>
+                                <th className="p-2 border border-slate-950 text-left pl-3">Parent / Father</th>
+                                <th className="p-2 border border-slate-950 w-24">Contact No</th>
+                                <th className="p-2 border border-slate-950 w-20 text-right pr-2">Total (₹)</th>
+                                <th className="p-2 border border-slate-950 w-20 text-right pr-2">Paid (₹)</th>
+                                <th className="p-2 border border-slate-950 w-20 text-right pr-2">Due (₹)</th>
                                 <th className="p-2 border border-slate-950 w-24">Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             {students.map((item, idx) => {
                                 const currentStatus = statuses[item.studentId] || item.status;
+                                const studentTotal = totalAmounts[item.studentId] !== undefined ? totalAmounts[item.studentId] : (item.totalAmount || categoryAmount || 0);
+                                const studentPaid = paidAmounts[item.studentId] !== undefined ? paidAmounts[item.studentId] : (item.paidAmount || 0);
+                                const studentDue = pendingAmounts[item.studentId] !== undefined ? pendingAmounts[item.studentId] : (item.pendingAmount || 0);
+
                                 return (
                                     <tr key={item.id || item.studentId || idx} className={idx % 2 === 1 ? "bg-slate-50" : ""}>
                                         <td className="p-2 border border-slate-950 font-semibold">{idx + 1}</td>
@@ -208,11 +239,14 @@ const FeeDownloadButton = ({
                                         <td className="p-2 border border-slate-950 font-semibold">
                                             {item.student?.phone || "N/A"}
                                         </td>
-                                        <td className="p-2 border border-slate-950 text-left pl-3 font-semibold">
-                                            {item.student?.email || "N/A"}
+                                        <td className="p-2 border border-slate-950 text-right pr-2 font-semibold">
+                                            ₹{studentTotal.toLocaleString("en-IN")}
                                         </td>
-                                        <td className="p-2 border border-slate-950 font-bold">
-                                            {item.student?.bloodType || "N/A"}
+                                        <td className="p-2 border border-slate-950 text-right pr-2 font-bold text-emerald-700">
+                                            ₹{studentPaid.toLocaleString("en-IN")}
+                                        </td>
+                                        <td className="p-2 border border-slate-950 text-right pr-2 font-bold text-rose-700">
+                                            ₹{studentDue.toLocaleString("en-IN")}
                                         </td>
                                         <td
                                             className={`p-2 border border-slate-950 font-bold ${
@@ -253,3 +287,4 @@ const FeeDownloadButton = ({
 };
 
 export default FeeDownloadButton;
+

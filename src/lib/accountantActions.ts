@@ -197,6 +197,10 @@ export const getStudentsByFeeCategory = async (classId: string | number, categor
 
     if (!allStudents) return { data: [], count: 0, error: null };
 
+    // 0. Fetch Category to know baseAmount
+    const { data: category } = await supabase.from('FeeCategory').select('*').eq('id', categoryId).single();
+    const baseAmount = Number(category?.baseAmount || 0);
+
     // 2. Fetch existing StudentFee records for these students and this category
     const studentIds = allStudents.map((s: { id: string }) => s.id);
     const { data: fees } = await supabase.from('StudentFee')
@@ -204,14 +208,35 @@ export const getStudentsByFeeCategory = async (classId: string | number, categor
         .in('studentId', studentIds)
         .eq('feeCategoryId', categoryId);
 
-    // 3. Map students to their fee status or default to PENDING
+    // 3. Map students to their fee status and amounts
     let data = allStudents.map((student: any) => {
         const fee = fees?.find(f => f.studentId === student.id);
         const parentName = student.parent ? `${student.parent.name || ''} ${student.parent.surname || ''}`.trim() : 'N/A';
+        
+        const totalAmount = fee ? Number(fee.totalAmount || baseAmount) : baseAmount;
+        const discount = fee ? Number(fee.discount || 0) : 0;
+        const netTotal = Math.max(0, totalAmount - discount);
+        const paidAmount = fee ? Number(fee.paidAmount || 0) : 0;
+        const pendingAmount = fee ? Number(fee.pendingAmount ?? (netTotal - paidAmount)) : (netTotal - paidAmount);
+        
+        let calculatedStatus: 'PAID' | 'PARTIAL' | 'PENDING' = 'PENDING';
+        if (fee?.status) {
+            calculatedStatus = fee.status;
+        } else if (paidAmount >= netTotal && netTotal > 0) {
+            calculatedStatus = 'PAID';
+        } else if (paidAmount > 0) {
+            calculatedStatus = 'PARTIAL';
+        }
+
         return {
             id: fee?.id || `new-${student.id}`,
             studentId: student.id,
-            status: fee?.status || 'PENDING',
+            status: calculatedStatus,
+            totalAmount: netTotal,
+            baseAmount: totalAmount,
+            discount: discount,
+            paidAmount: paidAmount,
+            pendingAmount: Math.max(0, pendingAmount),
             student: {
                 name: student.name,
                 surname: student.surname,
@@ -641,7 +666,14 @@ export const bulkAssignFeeToGrade = async (currentState: CurrentState, data: Bul
 
 export const bulkUpdateFees = async (
     categoryId: number,
-    studentUpdates: { studentId: string; status: 'PAID' | 'PARTIAL' | 'PENDING' }[]
+    studentUpdates: {
+        studentId: string;
+        status: 'PAID' | 'PARTIAL' | 'PENDING';
+        paidAmount?: number;
+        pendingAmount?: number;
+        totalAmount?: number;
+        discount?: number;
+    }[]
 ) => {
     const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -653,6 +685,8 @@ export const bulkUpdateFees = async (
         const { data: category } = await supabase.from('FeeCategory').select('*').eq('id', categoryId).single();
         if (!category) return { success: false, message: "Category not found" };
 
+        const baseAmount = Number(category.baseAmount || 0);
+
         const updates = studentUpdates.map(async (update) => {
             // Find existing
             const { data: fee } = await supabase
@@ -662,39 +696,50 @@ export const bulkUpdateFees = async (
                 .eq('feeCategoryId', categoryId)
                 .single();
 
-            const netAmount = Number(category.baseAmount) - 0; // Assuming 0 discount if new record created via bulk update
+            const total = update.totalAmount !== undefined ? Number(update.totalAmount) : (fee ? Number(fee.totalAmount) : baseAmount);
+            const discount = update.discount !== undefined ? Number(update.discount) : (fee ? Number(fee.discount || 0) : 0);
+            const netAmount = Math.max(0, total - discount);
+
+            let paid = 0;
+            if (update.paidAmount !== undefined) {
+                paid = Math.min(netAmount, Math.max(0, Number(update.paidAmount)));
+            } else if (update.status === 'PAID') {
+                paid = netAmount;
+            } else if (update.status === 'PENDING') {
+                paid = 0;
+            } else if (fee) {
+                paid = Number(fee.paidAmount || 0);
+            }
+
+            const pending = Math.max(0, netAmount - paid);
+
+            let finalStatus: 'PAID' | 'PARTIAL' | 'PENDING' = update.status;
+            if (paid >= netAmount && netAmount > 0) {
+                finalStatus = 'PAID';
+            } else if (paid > 0 && paid < netAmount) {
+                finalStatus = 'PARTIAL';
+            } else if (paid === 0) {
+                finalStatus = 'PENDING';
+            }
 
             if (fee) {
-                let paidAmount = fee.paidAmount;
-                const currentNet = Number(fee.totalAmount) - Number(fee.discount || 0);
-
-                if (update.status === 'PAID') {
-                    paidAmount = currentNet;
-                } else if (update.status === 'PENDING') {
-                    paidAmount = 0;
-                }
-
                 return supabase.from('StudentFee').update({
-                    status: update.status,
-                    paidAmount: paidAmount,
-                    pendingAmount: currentNet - paidAmount
+                    status: finalStatus,
+                    totalAmount: total,
+                    discount: discount,
+                    paidAmount: paid,
+                    pendingAmount: pending
                 }).eq('id', fee.id);
             } else {
-                // CREATE NEW RECORD if marking as PAID or keeping status
-                let paidAmount = 0;
-                if (update.status === 'PAID') {
-                    paidAmount = netAmount;
-                }
-
                 return supabase.from('StudentFee').insert({
                     studentId: update.studentId,
                     feeCategoryId: categoryId,
-                    totalAmount: category.baseAmount,
-                    discount: 0,
-                    paidAmount: paidAmount,
-                    pendingAmount: netAmount - paidAmount,
-                    status: update.status,
-                    dueDate: new Date().toISOString() // Default to today
+                    totalAmount: total,
+                    discount: discount,
+                    paidAmount: paid,
+                    pendingAmount: pending,
+                    status: finalStatus,
+                    dueDate: new Date().toISOString()
                 });
             }
         });
