@@ -178,7 +178,7 @@ export const createClass = async (
     const supervisorId = data.supervisorId && data.supervisorId.trim() !== "" ? data.supervisorId : null;
 
     const insertPayload = {
-      name: data.name,
+      name: data.name.trim(),
       capacity: Number(data.capacity),
       gradeId: Number(data.gradeId),
       supervisorId: supervisorId,
@@ -188,15 +188,18 @@ export const createClass = async (
 
     if (error) {
       console.error("createClass Supabase error:", error);
-      throw error;
+      return { success: false, error: true, message: error.message };
     }
 
     revalidatePath("/list/classes");
     revalidatePath("/list/students");
+    revalidatePath("/parent");
+    revalidatePath("/profile");
+    revalidatePath("/student");
     return { success: true, error: false };
-  } catch (err) {
+  } catch (err: any) {
     console.error("createClass catch error:", err);
-    return { success: false, error: true };
+    return { success: false, error: true, message: err?.message || "Failed to create class" };
   }
 };
 
@@ -215,11 +218,11 @@ export const updateClass = async (
 
     if (!classId || isNaN(classId)) {
       console.error("updateClass: invalid classId", data.id);
-      return { success: false, error: true };
+      return { success: false, error: true, message: "Invalid class ID provided for update." };
     }
 
     const updatePayload = {
-      name: data.name,
+      name: data.name.trim(),
       capacity: Number(data.capacity),
       gradeId: Number(data.gradeId),
       supervisorId: supervisorId,
@@ -229,15 +232,18 @@ export const updateClass = async (
 
     if (error) {
       console.error("updateClass Supabase error:", error);
-      throw error;
+      return { success: false, error: true, message: error.message };
     }
 
     revalidatePath("/list/classes");
     revalidatePath("/list/students");
+    revalidatePath("/parent");
+    revalidatePath("/profile");
+    revalidatePath("/student");
     return { success: true, error: false };
-  } catch (err) {
+  } catch (err: any) {
     console.error("updateClass catch error:", err);
-    return { success: false, error: true };
+    return { success: false, error: true, message: err?.message || "Failed to update class" };
   }
 };
 
