@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import AttendanceDownloadButton from "./AttendanceDownloadButton";
+import { formatClassName } from "@/lib/utils";
 
 type ClassType = {
     id: number;
@@ -150,7 +151,7 @@ const AttendanceTeacherView = ({
                         students={students}
                         attendance={attendance}
                         date={date}
-                        className={className || `${classId}`}
+                        className={formatClassName(className) || `${classId}`}
                     />
                     <button
                         onClick={handleSubmit}

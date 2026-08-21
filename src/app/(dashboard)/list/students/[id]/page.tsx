@@ -4,7 +4,7 @@ import FormContainer from "@/components/FormContainer";
 import Performance from "@/components/Performance";
 import StudentAttendanceCard from "@/components/StudentAttendanceCard";
 import { createClient } from "@/lib/supabase/server";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatGrade, formatClassName } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -21,7 +21,7 @@ const SingleStudentPage = async ({
 
   const { data: student, error } = await supabase
     .from("Student")
-    .select("*, class:Class(*)")
+    .select("*, class:Class(*), grade:Grade!gradeId(level)")
     .eq("id", id)
     .single();
 
@@ -124,7 +124,7 @@ const SingleStudentPage = async ({
               />
               <div className="">
                 <h1 className="text-xl font-semibold">
-                  {student.class?.name ? parseInt(student.class.name) : ""}th
+                  {student.grade?.level !== undefined ? formatGrade(student.grade.level) : formatGrade(student.class?.name)}
                 </h1>
                 <span className="text-sm text-gray-400">Grade</span>
               </div>
@@ -155,7 +155,7 @@ const SingleStudentPage = async ({
                 className="w-6 h-6"
               />
               <div className="">
-                <h1 className="text-xl font-semibold">{student.class?.name}</h1>
+                <h1 className="text-xl font-semibold">{formatClassName(student.class?.name)}</h1>
                 <span className="text-sm text-gray-400">Class</span>
               </div>
             </div>

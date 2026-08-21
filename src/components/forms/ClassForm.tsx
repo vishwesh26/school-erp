@@ -16,6 +16,8 @@ import { Dispatch, SetStateAction, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
+import { formatGrade } from "@/lib/utils";
+
 const ClassForm = ({
   type,
   data,
@@ -29,8 +31,8 @@ const ClassForm = ({
 }) => {
   const { teachers = [], grades = [] } = relatedData || {};
 
-  // Infer initial division if updating (e.g. name "10A" -> "A")
-  const initialDivision = data?.name ? data.name.replace(/^[0-9]+/, "") : "A";
+  // Infer initial division if updating (e.g. name "10A" -> "A", "Nursery B" -> "B")
+  const initialDivision = data?.name ? (data.name.match(/[A-Z]$/i)?.[0]?.toUpperCase() || "A") : "A";
 
   const {
     register,
@@ -66,7 +68,15 @@ const ClassForm = ({
       const grade = grades.find((g: any) => g.id == selectedGradeId);
       const div = selectedDivision || initialDivision || "A";
       if (grade) {
-        setValue("name", `${grade.level}${div}`);
+        if (grade.level === -2) {
+          setValue("name", `Nursery ${div}`);
+        } else if (grade.level === -1) {
+          setValue("name", `Junior KG ${div}`);
+        } else if (grade.level === 0) {
+          setValue("name", `Senior KG ${div}`);
+        } else {
+          setValue("name", `${grade.level}${div}`);
+        }
       }
     }
   }, [selectedGradeId, selectedDivision, grades, initialDivision, setValue]);
@@ -77,7 +87,15 @@ const ClassForm = ({
       const grade = grades.find((g: any) => g.id == formData.gradeId);
       const div = selectedDivision || initialDivision || "A";
       if (grade) {
-        formData.name = `${grade.level}${div}`;
+        if (grade.level === -2) {
+          formData.name = `Nursery ${div}`;
+        } else if (grade.level === -1) {
+          formData.name = `Junior KG ${div}`;
+        } else if (grade.level === 0) {
+          formData.name = `Senior KG ${div}`;
+        } else {
+          formData.name = `${grade.level}${div}`;
+        }
       } else if (data?.name) {
         formData.name = data.name;
       }
@@ -130,7 +148,7 @@ const ClassForm = ({
                 value={grade.id}
                 key={grade.id}
               >
-                Grade {grade.level}
+                {formatGrade(grade.level)}
               </option>
             ))}
           </select>

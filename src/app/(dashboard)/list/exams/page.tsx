@@ -4,7 +4,7 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { createClient } from "@/lib/supabase/server";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatClassName } from "@/lib/utils";
 import Image from "next/image";
 
 const ExamListPage = async ({
@@ -53,7 +53,7 @@ const ExamListPage = async ({
       className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
     >
       <td className="flex items-center gap-4 p-4">{item.lesson?.subject?.name || 'N/A'}</td>
-      <td>{item.lesson?.class?.name || 'N/A'}</td>
+      <td>{formatClassName(item.lesson?.class?.name) || 'N/A'}</td>
       <td className="hidden md:table-cell">
         {item.lesson?.teacher ? `${item.lesson.teacher.name || ""} ${item.lesson.teacher.surname || ""}`.trim() : 'N/A'}
       </td>

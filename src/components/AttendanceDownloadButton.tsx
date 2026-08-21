@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import Image from "next/image";
+import { formatClassName } from "@/lib/utils";
 
 interface Student {
     id: string;
@@ -37,9 +38,11 @@ const AttendanceDownloadButton = ({
 
         const formattedDate = date ? new Date(date).toLocaleDateString("en-GB") : new Date().toLocaleDateString("en-GB");
 
+        const formattedClass = formatClassName(className).replace(/[^a-zA-Z0-9]/g, "_");
+
         const opt = {
             margin: 10,
-            filename: `Class_${className}_Attendance_${date}.pdf`,
+            filename: `Class_${formattedClass}_Attendance_${date}.pdf`,
             image: { type: "jpeg" as const, quality: 0.98 },
             html2canvas: { scale: 2, useCORS: true, windowWidth: 1200 },
             jsPDF: { unit: "mm" as const, format: "a4" as const, orientation: "portrait" as const },
@@ -120,7 +123,7 @@ const AttendanceDownloadButton = ({
                     {/* Metadata & Summary */}
                     <div className="flex justify-between items-center mb-6 text-sm">
                         <div>
-                            <p className="font-bold text-base">Class: <span className="underline">{className}</span></p>
+                            <p className="font-bold text-base">Class: <span className="underline">{formatClassName(className)}</span></p>
                             <p className="text-xs font-semibold text-gray-700 mt-1">Date: {formattedDateString}</p>
                         </div>
                         <div className="text-right text-xs font-semibold bg-gray-50 p-3 rounded border border-gray-300">

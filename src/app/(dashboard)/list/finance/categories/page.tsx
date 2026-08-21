@@ -4,6 +4,7 @@ import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import FormModal from "@/components/FormModal";
 import Link from "next/link";
+import { formatGrade } from "@/lib/utils";
 
 const FeeCategoryListPage = async () => {
     const { data, error } = await getFeeCategories();
@@ -39,8 +40,8 @@ const FeeCategoryListPage = async () => {
         >
             <td className="flex items-center gap-4 p-4 font-semibold">{item.name}</td>
             <td className="hidden md:table-cell">₹{item.baseAmount}</td>
-            <td className="hidden md:table-cell">
-                {item.grade?.level ? `Grade ${item.grade.level}` : "All Grades"}
+            <td className="hidden md:table-cell font-semibold">
+                {item.grade?.level !== undefined && item.grade?.level !== null ? formatGrade(item.grade.level) : "All Grades"}
             </td>
             <td>
                 <div className="flex items-center gap-2">

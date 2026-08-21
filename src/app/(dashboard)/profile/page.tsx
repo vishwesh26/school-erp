@@ -7,7 +7,7 @@ import FormContainer from "@/components/FormContainer";
 import StudentAttendanceCard from "@/components/StudentAttendanceCard";
 import { Suspense } from "react";
 import Announcements from "@/components/Announcements";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatGrade, formatClassName } from "@/lib/utils";
 
 const ProfilePage = async () => {
     const supabase = createClient();
@@ -29,7 +29,7 @@ const ProfilePage = async () => {
         // capitalize first letter for table name
         const table = role.charAt(0).toUpperCase() + role.slice(1);
         const query = role === 'student'
-            ? supabase.from(table).select('*, class:Class(*)').eq('id', userId).single()
+            ? supabase.from(table).select('*, class:Class(*), grade:Grade!gradeId(level)').eq('id', userId).single()
             : supabase.from(table).select('*').eq('id', userId).single();
         const { data, error } = await query;
         if (!error && data) userData = data;
@@ -149,7 +149,7 @@ const ProfilePage = async () => {
                                     <Image src="/singleBranch.png" alt="" width={24} height={24} className="w-6 h-6" />
                                     <div>
                                         <h1 className="text-xl font-semibold">
-                                            {userData.class?.name ? parseInt(userData.class.name) : ""}th
+                                            {userData.grade?.level !== undefined ? formatGrade(userData.grade.level) : formatGrade(userData.class?.name)}
                                         </h1>
                                         <span className="text-sm text-gray-400">Grade</span>
                                     </div>
@@ -166,7 +166,7 @@ const ProfilePage = async () => {
                                 <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] lg:w-[48%]">
                                     <Image src="/singleClass.png" alt="" width={24} height={24} className="w-6 h-6" />
                                     <div>
-                                        <h1 className="text-xl font-semibold">{userData.class?.name || "-"}</h1>
+                                        <h1 className="text-xl font-semibold">{formatClassName(userData.class?.name) || "-"}</h1>
                                         <span className="text-sm text-gray-400">Class</span>
                                     </div>
                                 </div>
@@ -240,7 +240,7 @@ const ProfilePage = async () => {
                                         href={`/list/classes?id=${cls.id}`}
                                         className="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-800 hover:bg-amber-100 text-xs font-bold border border-amber-200/80 shadow-2xs transition-all flex items-center gap-1.5"
                                     >
-                                        🏫 Class {cls.name}
+                                        🏫 Class {formatClassName(cls.name)}
                                     </Link>
                                 ))}
                                 {teacherClasses.length === 0 && (

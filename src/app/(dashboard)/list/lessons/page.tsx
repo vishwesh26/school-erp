@@ -2,6 +2,7 @@ import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
+import { formatClassName } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/server";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import Image from "next/image";
@@ -45,7 +46,7 @@ const LessonListPage = async ({
       className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
     >
       <td className="flex items-center gap-4 p-4">{item.subject?.name}</td>
-      <td>{item.class?.name}</td>
+      <td>{formatClassName(item.class?.name)}</td>
       {/* 
          Display Formatted Time.
          Assuming startTime and endTime are stored as ISO UTC strings.

@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import StudentAttendanceCard from "@/components/StudentAttendanceCard";
 import { Suspense } from "react";
 import Image from "next/image";
+import { formatGrade, formatClassName } from "@/lib/utils";
 
 const StudentPage = async () => {
   const supabase = createClient();
@@ -14,7 +15,7 @@ const StudentPage = async () => {
 
   const { data: student } = await supabase
     .from('Student')
-    .select('*, class:Class(*)')
+    .select('*, class:Class(*), grade:Grade!gradeId(level)')
     .eq('id', userId)
     .single();
 
@@ -46,7 +47,7 @@ const StudentPage = async () => {
           <Image src="/singleBranch.png" alt="" width={24} height={24} className="w-6 h-6" />
           <div>
             <h1 className="text-xl font-semibold">
-              {student?.class?.name ? parseInt(student.class.name) : ""}th
+              {student?.grade?.level !== undefined ? formatGrade(student.grade.level) : formatGrade(student?.class?.name)}
             </h1>
             <span className="text-sm text-gray-400">Grade</span>
           </div>
@@ -63,7 +64,7 @@ const StudentPage = async () => {
         <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[24%] shadow-sm">
           <Image src="/singleClass.png" alt="" width={24} height={24} className="w-6 h-6" />
           <div>
-            <h1 className="text-xl font-semibold">{student?.class?.name || "-"}</h1>
+            <h1 className="text-xl font-semibold">{formatClassName(student?.class?.name) || "-"}</h1>
             <span className="text-sm text-gray-400">Class</span>
           </div>
         </div>
@@ -73,7 +74,7 @@ const StudentPage = async () => {
         {/* LEFT */}
         <div className="w-full xl:w-2/3">
           <div className="h-full bg-white p-4 rounded-md shadow-sm">
-            <h1 className="text-xl font-semibold mb-4">Schedule ({student?.class?.name || "-"})</h1>
+            <h1 className="text-xl font-semibold mb-4">Schedule ({formatClassName(student?.class?.name) || "-"})</h1>
             {classId && <BigCalendarContainer type="classId" id={classId} />}
           </div>
         </div>

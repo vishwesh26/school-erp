@@ -64,11 +64,61 @@ export const adjustScheduleToCurrentWeek = (
   });
 };
 
-export const formatGrade = (level: number): string => {
-  if (level === 0) return "Senior KG";
-  if (level === -1) return "Junior KG";
-  if (level === -2) return "Nursery";
-  return level.toString();
+export const formatGrade = (level: number | string | undefined | null): string => {
+  if (level === undefined || level === null || level === "") return "";
+  const str = level.toString().trim();
+  const num = parseInt(str, 10);
+
+  if (num === -2 || str === "-2" || str.toLowerCase() === "nursery") return "Nursery";
+  if (num === -1 || str === "-1" || str.toLowerCase() === "junior kg" || str.toLowerCase() === "jr kg") return "Junior KG";
+  if (num === 0 || str === "0" || str.toLowerCase() === "senior kg" || str.toLowerCase() === "sr kg") return "Senior KG";
+
+  if (!isNaN(num) && num > 0) return `Grade ${num}`;
+  return str;
+};
+
+export const formatClassName = (name: string | undefined | null): string => {
+  if (!name) return "";
+  const trimmed = name.trim();
+
+  // If already formatted like "Nursery A", "Junior KG B", "Senior KG C"
+  if (/^(nursery|junior kg|senior kg|jr kg|sr kg)/i.test(trimmed)) {
+    return trimmed
+      .replace(/^jr kg/i, "Junior KG")
+      .replace(/^sr kg/i, "Senior KG")
+      .replace(/^nursery/i, "Nursery");
+  }
+
+  // Handle -2A, -2B, -2
+  if (trimmed.startsWith("-2")) {
+    const div = trimmed.replace("-2", "").trim();
+    return div ? `Nursery ${div}` : "Nursery";
+  }
+
+  // Handle -1A, -1B, -1
+  if (trimmed.startsWith("-1")) {
+    const div = trimmed.replace("-1", "").trim();
+    return div ? `Junior KG ${div}` : "Junior KG";
+  }
+
+  // Handle 0A, 0B, 0
+  if (trimmed.startsWith("0")) {
+    const div = trimmed.replace(/^0+/, "").trim();
+    return div ? `Senior KG ${div}` : "Senior KG";
+  }
+
+  // Handle NurseryA (no space), JuniorKGA, SeniorKGA
+  if (/^nursery[a-z]$/i.test(trimmed)) {
+    return `Nursery ${trimmed.slice(-1).toUpperCase()}`;
+  }
+  if (/^juniorkg[a-z]$/i.test(trimmed)) {
+    return `Junior KG ${trimmed.slice(-1).toUpperCase()}`;
+  }
+  if (/^seniorkg[a-z]$/i.test(trimmed)) {
+    return `Senior KG ${trimmed.slice(-1).toUpperCase()}`;
+  }
+
+  return trimmed;
 };
 
 export const formatDate = (val: any, locale: string = "en-GB"): string => {

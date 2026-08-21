@@ -9,6 +9,7 @@ import GradeSelect from "@/components/drill-down/GradeSelect";
 import ClassSelect from "@/components/drill-down/ClassSelect";
 import Link from "next/link";
 import IncreaseStrengthButton from "@/components/IncreaseStrengthButton";
+import { formatGrade, formatClassName } from "@/lib/utils";
 
 const ClassListPage = async ({
   searchParams,
@@ -64,9 +65,9 @@ const ClassListPage = async ({
       key={item.id}
       className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
     >
-      <td className="flex items-center gap-4 p-4 font-semibold">{item.name}</td>
+      <td className="flex items-center gap-4 p-4 font-semibold">{formatClassName(item.name)}</td>
       <td className="hidden md:table-cell">{item.capacity}</td>
-      <td className="hidden md:table-cell">{parseInt(item.name)}</td>
+      <td className="hidden md:table-cell">{formatGrade(item.grade?.level !== undefined ? item.grade.level : item.name)}</td>
       <td className="hidden md:table-cell">
         {item.supervisor ? (item.supervisor.name + " " + item.supervisor.surname) : 'N/A'}
       </td>
@@ -86,7 +87,7 @@ const ClassListPage = async ({
 
   const p = page ? parseInt(page) : 1;
 
-  let query = supabase.from('Class').select('*, supervisor:Teacher!supervisorId(*)', { count: 'exact' });
+  let query = supabase.from('Class').select('*, supervisor:Teacher!supervisorId(*), grade:Grade!gradeId(level)', { count: 'exact' });
 
   // STRICT FILTER
   query = query.eq('id', classId);

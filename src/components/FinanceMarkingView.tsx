@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import FeeDownloadButton from "@/components/FeeDownloadButton";
 import { createClient } from "@/lib/supabase/client";
+import { formatClassName } from "@/lib/utils";
 
 interface StudentFeeRecord {
     id: string;
@@ -254,7 +255,7 @@ const FinanceMarkingView = ({ classId }: { classId: number }) => {
                             Fee Collection & Amounts
                         </h1>
                         <span className="px-2.5 py-0.5 rounded-full bg-lamaSkyLight text-lamaSky text-xs font-bold uppercase tracking-wider">
-                            Class {className || classId}
+                            Class {formatClassName(className) || classId}
                         </span>
                     </div>
                     <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
@@ -269,7 +270,7 @@ const FinanceMarkingView = ({ classId }: { classId: number }) => {
                         paidAmounts={paidAmounts}
                         pendingAmounts={pendingAmounts}
                         totalAmounts={totalAmounts}
-                        className={className || `${classId}`}
+                        className={formatClassName(className) || `${classId}`}
                         categoryName={selectedCategory?.name}
                         categoryAmount={selectedCategory?.baseAmount}
                     />

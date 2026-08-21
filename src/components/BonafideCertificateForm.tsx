@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form";
 import { useRef, useEffect } from "react";
 import Image from "next/image";
+import { formatClassName } from "@/lib/utils";
 
 const BonafideCertificateForm = ({ student }: { student: any }) => {
     const pdfExportComponent = useRef<HTMLDivElement>(null);
@@ -14,7 +15,7 @@ const BonafideCertificateForm = ({ student }: { student: any }) => {
             regNo: student?.rollNumber || "",
             studentName: `${student?.name} ${student?.surname}`.toUpperCase(),
             fatherName: (`${student?.parent?.name} ${student?.parent?.surname}`.toUpperCase()) || "",
-            class: student?.class?.name || "",
+            class: formatClassName(student?.class?.name) || "",
             academicYear: "2025-2026",
             dob: student?.birthday ? new Date(student?.birthday).toLocaleDateString('en-GB') : "",
             dobWords: "",
@@ -32,7 +33,7 @@ const BonafideCertificateForm = ({ student }: { student: any }) => {
             regNo: student?.rollNumber || "",
             studentName: `${student?.name} ${student?.surname}`.toUpperCase(),
             fatherName: (`${student?.parent?.name} ${student?.parent?.surname}`.toUpperCase()) || "",
-            class: student?.class?.name || "",
+            class: formatClassName(student?.class?.name) || "",
             academicYear: "2025-2026",
             dob: student?.birthday ? new Date(student?.birthday).toLocaleDateString('en-GB') : "",
             dobWords: "",

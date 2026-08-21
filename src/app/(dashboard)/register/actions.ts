@@ -136,8 +136,7 @@ export async function registerStudent(prevState: any, formData: FormData) {
     } else {
         // Find or create class for specified division (e.g. 1A, 5B)
         const selectedDivision = (data.division || "A").trim().toUpperCase();
-        const gradePrefix = gradeData.level <= 0 ? formatGrade(gradeData.level).replace(' ', '') : gradeData.level;
-        const targetClassName = `${gradePrefix}${selectedDivision}`;
+        const targetClassName = gradeData.level <= 0 ? `${formatGrade(gradeData.level)} ${selectedDivision}` : `${gradeData.level}${selectedDivision}`;
 
         let { data: targetClass } = await supabase
             .from("Class")

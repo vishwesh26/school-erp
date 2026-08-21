@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import TableSearch from "@/components/TableSearch";
 import FormContainer from "@/components/FormContainer";
+import { formatClassName } from "@/lib/utils";
 
 const ClassSelect = async ({ gradeId }: { gradeId: string | number }) => {
     const supabase = createClient();
@@ -57,7 +58,7 @@ const ClassSelect = async ({ gradeId }: { gradeId: string | number }) => {
                                 href={`?gradeId=${gradeId}&classId=${cls.id}`}
                                 className="w-full flex flex-col items-center justify-center"
                             >
-                                <span className="text-3xl font-black text-gray-800 group-hover:scale-105 transition-transform">{cls.name}</span>
+                                <span className="text-3xl font-black text-gray-800 group-hover:scale-105 transition-transform text-center">{formatClassName(cls.name)}</span>
                                 <div className="mt-3 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full border border-amber-200/60 shadow-2xs text-xs font-bold text-amber-900">
                                     Students: {(cls as any)._count?.[0]?.count || 0} / {cls.capacity}
                                 </div>

@@ -9,6 +9,7 @@ import { useFormState } from "react-dom";
 import { Dispatch, SetStateAction, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { formatGrade } from "@/lib/utils";
 
 const AnnouncementForm = ({
     type,
@@ -112,7 +113,7 @@ const AnnouncementForm = ({
                                     value={grade.id}
                                     {...register("gradeIds")}
                                 />
-                                <span className="text-sm text-gray-700">Grade {grade.level}</span>
+                                <span className="text-sm text-gray-700">{formatGrade(grade.level)}</span>
                             </label>
                         ))}
                     </div>

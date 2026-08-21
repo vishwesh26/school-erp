@@ -10,6 +10,7 @@ import Link from "next/link";
 import GradeSelect from "@/components/drill-down/GradeSelect";
 import ClassSelect from "@/components/drill-down/ClassSelect";
 import StudentListDownloadButton from "@/components/StudentListDownloadButton";
+import { formatGrade, formatClassName } from "@/lib/utils";
 
 const StudentListPage = async ({
   searchParams,
@@ -66,7 +67,7 @@ const StudentListPage = async ({
       .eq('status', 'Passed Out')
       .eq('academicYearId', academicYearId);
   } else {
-    query = supabase.from('Student').select('*, Class(*)', { count: 'exact' });
+    query = supabase.from('Student').select('*, Class(*), grade:Grade!gradeId(level)', { count: 'exact' });
     if (classId) {
       query = query.eq('classId', classId);
     }
@@ -154,11 +155,11 @@ const StudentListPage = async ({
         />
         <div className="flex flex-col">
           <h3 className="font-semibold">{item.name} {item.surname || ""}</h3>
-          <p className="text-xs text-gray-500">{item.Class?.name}</p>
+          <p className="text-xs text-gray-500">{formatClassName(item.Class?.name)}</p>
         </div>
       </td>
       <td className="hidden md:table-cell">{item.username}</td>
-      <td className="hidden md:table-cell">{item.Class?.name ? parseInt(item.Class.name) : ""}</td>
+      <td className="hidden md:table-cell">{item.grade?.level !== undefined ? formatGrade(item.grade.level) : formatGrade(item.Class?.name)}</td>
       <td className="hidden md:table-cell">{item.phone}</td>
       <td className="hidden md:table-cell">{item.address}</td>
       <td>

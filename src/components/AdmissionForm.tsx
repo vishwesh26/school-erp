@@ -3,6 +3,7 @@
 import { useForm } from "react-hook-form";
 import { useRef, useEffect } from "react";
 import Image from "next/image";
+import { formatClassName } from "@/lib/utils";
 
 const AdmissionForm = ({ student }: { student?: any }) => {
     const pdfExportComponent = useRef<HTMLDivElement>(null);
@@ -18,7 +19,7 @@ const AdmissionForm = ({ student }: { student?: any }) => {
         placeOfBirth: s?.address || "",
         nationality: "Indian",
         religionCaste: s ? `${s?.religion || ""} / ${s?.caste || ""}` : "",
-        standardSought: s?.class?.name || "",
+        standardSought: formatClassName(s?.class?.name) || "",
         prevSchool: "",
         prevStd: "",
         board: "CBSE",

@@ -20,7 +20,7 @@ import {
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { CldUploadWidget } from "next-cloudinary";
-import { formatGrade } from "@/lib/utils";
+import { formatGrade, formatClassName } from "@/lib/utils";
 
 const formatDate = (val: any) => {
   if (!val) return "";
@@ -385,7 +385,7 @@ const StudentForm = ({
                 _count?: { students: number };
               }) => (
                 <option value={classItem.id} key={classItem.id}>
-                  ({classItem.name} -{" "}
+                  ({formatClassName(classItem.name)} -{" "}
                   {(classItem._count?.students ?? 0) + "/" + classItem.capacity}{" "}
                   Capacity)
                 </option>

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { formatClassName } from "@/lib/utils";
 
 // Utility to convert number to words
 const numberToWords = (num: number): string => {
@@ -134,10 +135,10 @@ const ReceiptDownloadButton = ({
                     <div style="width: 120px; font-weight: bold;">Father's Name</div>
                     <div>${fatherName}</div>
                 </div>
-                 <div style="display: flex; padding: 5px;">
-                    <div style="width: 120px; font-weight: bold;">Class / Standard</div>
-                    <div>${standard}</div>
-                </div>
+                  <div style="display: flex; padding: 5px;">
+                     <div style="width: 120px; font-weight: bold;">Class / Standard</div>
+                     <div>${formatClassName(standard)}</div>
+                 </div>
             </div>
 
             <div>

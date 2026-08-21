@@ -12,7 +12,7 @@ import { useFormState } from "react-dom";
 import { transferStudent } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { formatGrade } from "@/lib/utils";
+import { formatGrade, formatClassName } from "@/lib/utils";
 
 const TransferStudentForm = ({
   type,
@@ -126,7 +126,7 @@ const TransferStudentForm = ({
                 _count?: { students: number };
               }) => (
                 <option value={classItem.id} key={classItem.id}>
-                  ({classItem.name} -{" "}
+                  ({formatClassName(classItem.name)} -{" "}
                   {(classItem._count?.students ?? 0) + "/" + classItem.capacity}{" "}
                   Capacity)
                 </option>

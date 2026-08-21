@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { getStudentsForPromotion, promoteStudents, createAcademicYear } from "@/lib/promotionActions";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { formatGrade, formatClassName } from "@/lib/utils";
 
 interface PromotionViewProps {
     academicYears: any[];
@@ -264,7 +265,7 @@ const PromotionView = ({ academicYears, grades, classes }: PromotionViewProps) =
                     >
                         <option value="">Select Class</option>
                         <option value="all">All Classes (Whole School)</option>
-                        {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        {classes.map(c => <option key={c.id} value={c.id}>{formatClassName(c.name)}</option>)}
                     </select>
                 </div>
                 <div className="flex flex-col gap-1">
@@ -373,7 +374,7 @@ const PromotionView = ({ academicYears, grades, classes }: PromotionViewProps) =
                                         <td className="p-4">
                                             {sourceClass === "all" ? (
                                                 <span className="text-xs font-bold text-gray-500">
-                                                    {classes.find(c => c.id === parseInt(s.nextClassId as any))?.name || "-"}
+                                                    {formatClassName(classes.find(c => c.id === parseInt(s.nextClassId as any))?.name) || "-"}
                                                 </span>
                                             ) : (
                                                 (s.status === 'Promoted' || s.status === 'Repeat') ? (
@@ -383,7 +384,7 @@ const PromotionView = ({ academicYears, grades, classes }: PromotionViewProps) =
                                                         className="p-1 text-xs border rounded outline-none w-32"
                                                     >
                                                         <option value="">Select Class</option>
-                                                        {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                                        {classes.map(c => <option key={c.id} value={c.id}>{formatClassName(c.name)}</option>)}
                                                     </select>
                                                 ) : (
                                                     <span className="text-gray-400 text-xs">-</span>
@@ -392,7 +393,7 @@ const PromotionView = ({ academicYears, grades, classes }: PromotionViewProps) =
                                         </td>
                                         <td className="p-4">
                                             <span className="text-xs font-bold text-gray-600">
-                                                {s.nextGradeId ? `Grade ${grades.find(g => g.id === s.nextGradeId)?.level}` : 'N/A'}
+                                                {s.nextGradeId ? formatGrade(grades.find(g => g.id === s.nextGradeId)?.level) : 'N/A'}
                                             </span>
                                         </td>
                                     </tr>

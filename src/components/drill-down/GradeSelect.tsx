@@ -28,7 +28,7 @@ const GradeSelect = async () => {
                         className="p-6 bg-gradient-to-br from-lamaSkyLight to-white rounded-2xl hover:from-lamaSky hover:to-lamaSky/90 hover:text-white transition-all duration-300 flex flex-col items-center justify-center cursor-pointer shadow-xs hover:shadow-lg border border-gray-100 hover-lift group"
                     >
                         <span className="text-2xl font-black text-gray-800 group-hover:text-white transition-colors">
-                           {grade.level <= 0 ? formatGrade(grade.level) : `Grade ${grade.level}`}
+                           {formatGrade(grade.level)}
                         </span>
                         <span className="text-xs text-gray-400 group-hover:text-white/80 font-bold mt-1 tracking-wider uppercase">
                             View Classes →

@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { useRef, useEffect } from "react";
 import Image from "next/image";
-import { formatDateISO } from "@/lib/utils";
+import { formatDateISO, formatClassName } from "@/lib/utils";
 
 const SCHOOL_UDISE = "27250507717";
 
@@ -28,8 +28,8 @@ const LeavingCertificateForm = ({ student }: { student: any }) => {
             religion: (student?.religion || "").toUpperCase(),
             caste: (student?.caste || "").toUpperCase(),
             isST: student?.isST || "No",
-            classAdmitted: student?.classAdmitted || "",
-            classLeaving: student?.class?.name || "",
+            classAdmitted: formatClassName(student?.classAdmitted) || "",
+            classLeaving: formatClassName(student?.class?.name) || "",
             lastDateAttendance: formatDateISO(student?.lastDateAttendance),
             examTaken: student?.examTaken || "",
             examResult: student?.examResult || "",
@@ -72,8 +72,8 @@ const LeavingCertificateForm = ({ student }: { student: any }) => {
             religion: student?.religion || "",
             caste: student?.caste || "",
             isST: student?.isST || "No",
-            classAdmitted: student?.classAdmitted || "",
-            classLeaving: student?.class?.name || "",
+            classAdmitted: formatClassName(student?.classAdmitted) || "",
+            classLeaving: formatClassName(student?.class?.name) || "",
             lastDateAttendance: formatDateISO(student?.lastDateAttendance),
             examTaken: student?.examTaken || "",
             examResult: student?.examResult || "",

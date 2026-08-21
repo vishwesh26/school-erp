@@ -9,6 +9,7 @@ import { useFormState } from "react-dom";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import InputField from "../InputField";
+import { formatGrade } from "@/lib/utils";
 
 const FeeCategoryForm = ({
     type,
@@ -46,18 +47,18 @@ const FeeCategoryForm = ({
 
     useEffect(() => {
         if (state.success) {
-            toast(`Category has been ${type === "create" ? "created" : "updated"}!`);
+            toast(`Fee Category has been ${type === "create" ? "created" : "updated"}!`);
             setOpen(false);
             router.refresh();
         }
     }, [state, router, type, setOpen]);
 
-    const { grades } = relatedData || { grades: [] };
+    const { grades = [] } = relatedData || {};
 
     return (
         <form className="flex flex-col gap-8" onSubmit={onSubmit}>
             <h1 className="text-xl font-semibold">
-                {type === "create" ? "Create a new Fee Category" : "Update Fee Category"}
+                {type === "create" ? "Create a new fee category" : "Update fee category"}
             </h1>
 
             <div className="flex justify-between flex-wrap gap-4">
@@ -69,14 +70,12 @@ const FeeCategoryForm = ({
                     error={errors?.name}
                 />
                 <InputField
-                    label="Amount (₹)"
+                    label="Base Amount (₹)"
                     name="baseAmount"
-                    type="number"
                     defaultValue={data?.baseAmount}
                     register={register}
                     error={errors?.baseAmount}
                 />
-
                 <div className="flex flex-col gap-2 w-full md:w-[48%]">
                     <label className="text-xs text-gray-400">Grade (Optional - applies to all if empty)</label>
                     <select
@@ -87,7 +86,7 @@ const FeeCategoryForm = ({
                         <option value="">All Grades</option>
                         {grades.map((grade: any) => (
                             <option value={grade.id} key={grade.id}>
-                                Grade {grade.level}
+                                {formatGrade(grade.level)}
                             </option>
                         ))}
                     </select>
