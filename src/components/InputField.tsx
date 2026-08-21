@@ -9,6 +9,7 @@ type InputFieldProps = {
   error?: FieldError;
   hidden?: boolean;
   className?: string;
+  placeholder?: string;
   inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
 };
 
@@ -21,6 +22,7 @@ const InputField = ({
   error,
   hidden,
   className,
+  placeholder,
   inputProps,
 }: InputFieldProps) => {
   return (
@@ -29,6 +31,7 @@ const InputField = ({
       <input
         type={type}
         {...register(name)}
+        placeholder={placeholder}
         className="px-3.5 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#f16122] focus:bg-white focus:ring-2 focus:ring-[#f16122]/20 rounded-xl text-xs sm:text-sm text-slate-800 font-semibold outline-none transition-all duration-200 shadow-2xs placeholder-slate-400"
         {...inputProps}
         defaultValue={defaultValue}

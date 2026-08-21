@@ -45,9 +45,13 @@ const LibrarianForm = ({
         }
     );
 
-    const onSubmit = handleSubmit((data) => {
-        console.log(data);
-        formAction({ ...data, img: img?.secure_url });
+    const onSubmit = handleSubmit((formData) => {
+        formAction({
+            ...formData,
+            id: data?.id || formData.id,
+            password: formData.password ? formData.password : undefined,
+            img: img?.secure_url || data?.img || null,
+        });
     });
 
     const router = useRouter();
@@ -87,9 +91,10 @@ const LibrarianForm = ({
                     label="Password"
                     name="password"
                     type="password"
-                    defaultValue={data?.password}
+                    defaultValue={type === "create" ? data?.password : ""}
                     register={register}
                     error={errors?.password}
+                    placeholder={type === "update" ? "Leave blank to keep unchanged" : undefined}
                 />
             </div>
             <span className="text-xs text-gray-400 font-medium">

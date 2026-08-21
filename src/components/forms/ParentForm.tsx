@@ -37,8 +37,12 @@ const ParentForm = ({
         }
     );
 
-    const onSubmit = handleSubmit((data) => {
-        formAction(data);
+    const onSubmit = handleSubmit((formData) => {
+        formAction({
+            ...formData,
+            id: data?.id || formData.id,
+            password: formData.password ? formData.password : undefined,
+        });
     });
 
     const router = useRouter();
@@ -78,9 +82,10 @@ const ParentForm = ({
                     label="Password"
                     name="password"
                     type="password"
-                    defaultValue={data?.password}
+                    defaultValue={type === "create" ? data?.password : ""}
                     register={register}
                     error={errors?.password}
+                    placeholder={type === "update" ? "Leave blank to keep unchanged" : undefined}
                 />
             </div>
             <span className="text-sm text-blue-600 font-bold border-b pb-2 mb-2">

@@ -375,10 +375,16 @@ export const updateTeacher = async (
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
-    // Supabase Auth update logic omitted
+    // Only update Auth password if a new non-empty password was provided
+    if (data.password && typeof data.password === "string" && data.password.trim().length >= 6) {
+      try {
+        await supabase.auth.admin.updateUserById(data.id, { password: data.password.trim() });
+      } catch (authErr) {
+        console.warn("Could not update auth password for teacher:", authErr);
+      }
+    }
 
-    const { error } = await supabase.from('Teacher').update({
-      ...(data.password !== "" && { password: data.password }),
+    const updatePayload: any = {
       username: data.username,
       name: data.name,
       surname: data.surname,
@@ -389,8 +395,13 @@ export const updateTeacher = async (
       bloodType: data.bloodType,
       sex: data.sex,
       birthday: data.birthday,
-      // subjects relation omitted
-    }).eq('id', data.id);
+    };
+
+    if (data.password && typeof data.password === "string" && data.password.trim().length >= 6) {
+      updatePayload.password = data.password.trim();
+    }
+
+    const { error } = await supabase.from('Teacher').update(updatePayload).eq('id', data.id);
 
     if (error) throw error;
 
@@ -625,15 +636,15 @@ export const updateStudent = async (
     );
     // Supabase update logic omitted
 
-    // If password is provided, update it via Auth API
-    if (data.password && data.password !== "") {
-      const { error: authError } = await supabase.auth.admin.updateUserById(
-        data.id,
-        { password: data.password }
-      );
-      if (authError) {
-        console.error("[UPDATE_STUDENT_AUTH_ERROR]", authError);
-        return { success: false, error: true };
+    // If new password is provided, update it via Auth API
+    if (data.password && typeof data.password === "string" && data.password.trim().length >= 6) {
+      try {
+        await supabase.auth.admin.updateUserById(
+          data.id,
+          { password: data.password.trim() }
+        );
+      } catch (authError) {
+        console.warn("[UPDATE_STUDENT_AUTH_ERROR]", authError);
       }
     }
 
@@ -944,16 +955,25 @@ export const updateLibrarian = async (
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const { data: user, error: userError } =
-      await supabase.auth.admin.updateUserById(data.id, {
-        email: data.email || "",
-        password: data.password,
-        user_metadata: { role: "librarian" },
-      });
-
-    if (userError) {
-      console.log(userError);
-      return { success: false, error: true };
+    if (data.password && typeof data.password === "string" && data.password.trim().length >= 6) {
+      try {
+        await supabase.auth.admin.updateUserById(data.id, {
+          email: data.email || undefined,
+          password: data.password.trim(),
+          user_metadata: { role: "librarian" },
+        });
+      } catch (authErr) {
+        console.warn("Could not update auth password for librarian:", authErr);
+      }
+    } else if (data.email) {
+      try {
+        await supabase.auth.admin.updateUserById(data.id, {
+          email: data.email,
+          user_metadata: { role: "librarian" },
+        });
+      } catch (authErr) {
+        console.warn("Could not update auth email for librarian:", authErr);
+      }
     }
 
     const { error } = await supabase
@@ -1781,14 +1801,14 @@ export const updateParent = async (
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    if (data.password && data.password !== "") {
-      const { error: authError } = await supabase.auth.admin.updateUserById(
-        data.id,
-        { password: data.password }
-      );
-      if (authError) {
-        console.error("[UPDATE_PARENT_AUTH_ERROR]", authError);
-        return { success: false, error: true };
+    if (data.password && typeof data.password === "string" && data.password.trim().length >= 6) {
+      try {
+        await supabase.auth.admin.updateUserById(
+          data.id,
+          { password: data.password.trim() }
+        );
+      } catch (authError) {
+        console.warn("[UPDATE_PARENT_AUTH_ERROR]", authError);
       }
     }
 

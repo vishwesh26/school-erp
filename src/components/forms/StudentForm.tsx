@@ -60,8 +60,39 @@ const StudentForm = ({
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImgUrl(reader.result as string);
+      reader.onload = (event) => {
+        const img = new (window as any).Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX_WIDTH = 500;
+          const MAX_HEIGHT = 500;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressedBase64 = canvas.toDataURL("image/jpeg", 0.85);
+            setImgUrl(compressedBase64);
+          } else {
+            setImgUrl(event.target?.result as string);
+          }
+        };
+        img.src = event.target?.result as string;
       };
       reader.readAsDataURL(file);
     }
@@ -118,7 +149,14 @@ const StudentForm = ({
 
     const photoToSave = imgUrl || data?.img || null;
 
-    formAction({ ...formData, name: finalName, surname: finalSurname, img: photoToSave });
+    formAction({
+      ...formData,
+      id: data?.id || formData.id,
+      name: finalName,
+      surname: finalSurname,
+      img: photoToSave,
+      password: formData.password ? formData.password : undefined,
+    });
   });
 
   const router = useRouter();
@@ -166,10 +204,21 @@ const StudentForm = ({
           label="Password"
           name="password"
           type="password"
-          defaultValue={data?.password}
+          defaultValue={type === "create" ? data?.password : ""}
           register={register}
           error={errors?.password}
+          placeholder={type === "update" ? "Leave blank to keep unchanged" : undefined}
         />
+        {data?.id && (
+          <InputField
+            label="Id"
+            name="id"
+            defaultValue={data?.id}
+            register={register}
+            error={errors?.id}
+            hidden
+          />
+        )}
       </div>
       <span className="text-sm text-blue-600 font-bold border-b pb-2 mb-2">
         Personal Information
