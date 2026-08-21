@@ -60,13 +60,17 @@ export default function LoginPage() {
           <div className="flex flex-col items-center text-center">
             <div className="relative mb-3 group">
               <div className="absolute -inset-1.5 bg-gradient-to-r from-[#4e282c] to-[#f16122] rounded-full blur opacity-40 group-hover:opacity-75 transition duration-300"></div>
-              <div className="relative w-20 h-20 sm:w-22 sm:h-22 rounded-full overflow-hidden bg-white p-1 shadow-md border border-gray-100 flex items-center justify-center">
+              <div 
+                className="relative w-20 h-20 sm:w-22 sm:h-22 rounded-full overflow-hidden bg-white p-1 shadow-md border border-gray-100 flex items-center justify-center"
+                style={{ width: "80px", height: "80px", maxWidth: "80px", maxHeight: "80px" }}
+              >
                 <Image
                   src="/logo.png"
                   alt="School Logo"
                   width={80}
                   height={80}
                   priority
+                  style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
                   className="object-contain transform transition duration-300 group-hover:scale-105"
                 />
               </div>
