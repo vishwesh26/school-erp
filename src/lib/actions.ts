@@ -192,6 +192,7 @@ export const createClass = async (
     }
 
     revalidatePath("/list/classes");
+    revalidatePath("/list/students");
     return { success: true, error: false };
   } catch (err) {
     console.error("createClass catch error:", err);
@@ -232,6 +233,7 @@ export const updateClass = async (
     }
 
     revalidatePath("/list/classes");
+    revalidatePath("/list/students");
     return { success: true, error: false };
   } catch (err) {
     console.error("updateClass catch error:", err);
@@ -278,6 +280,7 @@ export const increaseClassStrength = async (classId: number | string, increment:
     }
 
     revalidatePath("/list/classes");
+    revalidatePath("/list/students");
     return { success: true, newCapacity };
   } catch (err: any) {
     console.error("Failed to increase class strength:", err);
@@ -310,7 +313,8 @@ export const deleteClass = async (
 
     if (error) throw error;
 
-    // revalidatePath("/list/class");
+    revalidatePath("/list/classes");
+    revalidatePath("/list/students");
     return { success: true, error: false };
   } catch (err) {
     console.log(err);

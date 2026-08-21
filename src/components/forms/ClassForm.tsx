@@ -62,9 +62,9 @@ const ClassForm = ({
   const selectedGradeId = watch("gradeId");
   const selectedDivision = watch("division" as any);
 
-  // Watch logic to auto-update name if Grade or Division changes
+  // Watch logic to auto-update name if Grade or Division changes on create mode
   useEffect(() => {
-    if (selectedGradeId) {
+    if (selectedGradeId && type === "create") {
       const grade = grades.find((g: any) => g.id == selectedGradeId);
       const div = selectedDivision || initialDivision || "A";
       if (grade) {
@@ -79,11 +79,11 @@ const ClassForm = ({
         }
       }
     }
-  }, [selectedGradeId, selectedDivision, grades, initialDivision, setValue]);
+  }, [selectedGradeId, selectedDivision, grades, initialDivision, setValue, type]);
 
   const onSubmit = handleSubmit((formData) => {
     // If name is empty, compose it or fallback to data.name
-    if (!formData.name) {
+    if (!formData.name || formData.name.trim() === "") {
       const grade = grades.find((g: any) => g.id == formData.gradeId);
       const div = selectedDivision || initialDivision || "A";
       if (grade) {
@@ -99,6 +99,8 @@ const ClassForm = ({
       } else if (data?.name) {
         formData.name = data.name;
       }
+    } else {
+      formData.name = formData.name.trim();
     }
 
     if (type === "update" && data?.id) {
@@ -127,18 +129,27 @@ const ClassForm = ({
   return (
     <form className="flex flex-col gap-6" onSubmit={onSubmit}>
       <h1 className="text-xl font-bold text-slate-800">
-        {type === "create" ? "Create a new class" : "Update Class & Strength"}
+        {type === "create" ? "Create a new class" : "Update Class & Rename"}
       </h1>
 
-      <div className="flex justify-between flex-wrap gap-4">
-        {/* Hidden Name Input for Zod/Submission */}
-        <input type="hidden" {...register("name")} defaultValue={data?.name || ""} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Class Name Input - Editable for renaming */}
+        <div className="md:col-span-2">
+          <InputField
+            label="Class Name (e.g. Nursery A, Junior KG B, 10A)"
+            name="name"
+            defaultValue={data?.name}
+            register={register}
+            error={errors?.name}
+            placeholder="e.g. Nursery A, Senior KG B, 10A"
+          />
+        </div>
 
         {/* Class / Grade Selection */}
-        <div className="flex flex-col gap-2 w-full md:w-1/4">
-          <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Class (Grade)</label>
+        <div className="flex flex-col gap-1.5 w-full">
+          <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Class (Grade)</label>
           <select
-            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full font-semibold outline-none focus:ring-2 focus:ring-lamaSky"
+            className="px-3.5 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#f16122] focus:bg-white focus:ring-2 focus:ring-[#f16122]/20 rounded-xl text-xs sm:text-sm text-slate-800 font-semibold outline-none transition-all duration-200 shadow-2xs"
             {...register("gradeId")}
             defaultValue={data?.gradeId}
           >
@@ -153,22 +164,22 @@ const ClassForm = ({
             ))}
           </select>
           {errors.gradeId?.message && (
-            <p className="text-xs text-red-500 font-semibold">
+            <p className="text-xs text-rose-500 font-medium">
               {errors.gradeId.message.toString()}
             </p>
           )}
         </div>
 
         {/* Division Selection */}
-        <div className="flex flex-col gap-2 w-full md:w-1/4">
-          <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Division</label>
+        <div className="flex flex-col gap-1.5 w-full">
+          <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Division</label>
           <select
-            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full font-semibold outline-none focus:ring-2 focus:ring-lamaSky"
+            className="px-3.5 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#f16122] focus:bg-white focus:ring-2 focus:ring-[#f16122]/20 rounded-xl text-xs sm:text-sm text-slate-800 font-semibold outline-none transition-all duration-200 shadow-2xs"
             {...register("division" as any)}
             defaultValue={initialDivision}
           >
             <option value="">Select Division</option>
-            {["A", "B", "C", "D", "E"].map((div) => (
+            {["A", "B", "C", "D", "E", "F"].map((div) => (
               <option value={div} key={div}>
                 Division {div}
               </option>
@@ -185,21 +196,10 @@ const ClassForm = ({
           error={errors?.capacity}
         />
 
-        {data && (
-          <InputField
-            label="Id"
-            name="id"
-            defaultValue={data?.id}
-            register={register}
-            error={errors?.id}
-            hidden
-          />
-        )}
-
-        <div className="flex flex-col gap-2 w-full md:w-1/4">
-          <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Supervisor / Class Teacher</label>
+        <div className="flex flex-col gap-1.5 w-full">
+          <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Supervisor / Class Teacher</label>
           <select
-            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full font-semibold outline-none focus:ring-2 focus:ring-lamaSky"
+            className="px-3.5 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#f16122] focus:bg-white focus:ring-2 focus:ring-[#f16122]/20 rounded-xl text-xs sm:text-sm text-slate-800 font-semibold outline-none transition-all duration-200 shadow-2xs"
             {...register("supervisorId")}
             defaultValue={data?.supervisorId || ""}
           >
@@ -216,11 +216,22 @@ const ClassForm = ({
             )}
           </select>
           {errors.supervisorId?.message && (
-            <p className="text-xs text-red-500 font-semibold">
+            <p className="text-xs text-rose-500 font-medium">
               {errors.supervisorId.message.toString()}
             </p>
           )}
         </div>
+
+        {data && (
+          <InputField
+            label="Id"
+            name="id"
+            defaultValue={data?.id}
+            register={register}
+            error={errors?.id}
+            hidden
+          />
+        )}
       </div>
 
       {state.error && (
