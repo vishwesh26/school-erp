@@ -6,14 +6,10 @@ import InputField from "../InputField";
 import {
   classSchema,
   ClassSchema,
-  subjectSchema,
-  SubjectSchema,
 } from "@/lib/formValidationSchemas";
 import {
   createClass,
-  createSubject,
   updateClass,
-  updateSubject,
 } from "@/lib/actions";
 import { useFormState } from "react-dom";
 import { Dispatch, SetStateAction, useEffect } from "react";
@@ -31,6 +27,11 @@ const ClassForm = ({
   setOpen: Dispatch<SetStateAction<boolean>>;
   relatedData?: any;
 }) => {
+  const { teachers = [], grades = [] } = relatedData || {};
+
+  // Infer initial division if updating (e.g. name "10A" -> "A")
+  const initialDivision = data?.name ? data.name.replace(/^[0-9]+/, "") : "A";
+
   const {
     register,
     handleSubmit,
@@ -39,11 +40,14 @@ const ClassForm = ({
     watch,
   } = useForm<ClassSchema>({
     resolver: zodResolver(classSchema),
+    defaultValues: {
+      id: data?.id,
+      name: data?.name || "",
+      capacity: data?.capacity !== undefined ? Number(data.capacity) : 40,
+      gradeId: data?.gradeId !== undefined ? Number(data.gradeId) : (grades[0]?.id ? Number(grades[0].id) : undefined),
+      supervisorId: data?.supervisorId || "",
+    },
   });
-
-  // Watch fields to auto-generate name if needed (optional, or just handle in submit)
-  // Actually, we'll compose data on submit, but zod needs 'name' to pass validation.
-  // So we'll update a hidden 'name' field whenever Grade or Division changes.
 
   const [state, formAction] = useFormState(
     type === "create" ? createClass : updateClass,
@@ -53,18 +57,42 @@ const ClassForm = ({
     }
   );
 
-  const onSubmit = handleSubmit((formData) => {
-    // Determine Name from Logic
-    // formData.gradeId is the ID. We need the Level.
-    const selectedGrade = relatedData?.grades?.find((g: any) => g.id == formData.gradeId);
-    const level = selectedGrade?.level || "";
-    // division is custom field, we need to register it or just read from form?
-    // We can register 'division' even if not in schema if we cast or just read value.
-    // Actually simpler: Just accept "name" is what we send.
-    // If user filled "Class" (GradeId) and "Division", we set Name = Level + Division.
+  const selectedGradeId = watch("gradeId");
+  const selectedDivision = watch("division" as any);
 
-    // However, validation happens BEFORE onSubmit. 
-    // So 'name' must be populated.
+  // Watch logic to auto-update name if Grade or Division changes
+  useEffect(() => {
+    if (selectedGradeId) {
+      const grade = grades.find((g: any) => g.id == selectedGradeId);
+      const div = selectedDivision || initialDivision || "A";
+      if (grade) {
+        setValue("name", `${grade.level}${div}`);
+      }
+    }
+  }, [selectedGradeId, selectedDivision, grades, initialDivision, setValue]);
+
+  const onSubmit = handleSubmit((formData) => {
+    // If name is empty, compose it or fallback to data.name
+    if (!formData.name) {
+      const grade = grades.find((g: any) => g.id == formData.gradeId);
+      const div = selectedDivision || initialDivision || "A";
+      if (grade) {
+        formData.name = `${grade.level}${div}`;
+      } else if (data?.name) {
+        formData.name = data.name;
+      }
+    }
+
+    if (type === "update" && data?.id) {
+      formData.id = Number(data.id);
+    }
+
+    formData.capacity = Number(formData.capacity);
+    formData.gradeId = Number(formData.gradeId);
+    if (!formData.supervisorId || formData.supervisorId.trim() === "") {
+      formData.supervisorId = null;
+    }
+
     formAction(formData);
   });
 
@@ -72,42 +100,27 @@ const ClassForm = ({
 
   useEffect(() => {
     if (state.success) {
-      toast(`Class has been ${type === "create" ? "created" : "updated"}!`);
+      toast.success(`Class has been ${type === "create" ? "created" : "updated"}!`);
       setOpen(false);
       router.refresh();
     }
   }, [state, router, type, setOpen]);
 
-  const { teachers = [], grades = [] } = relatedData || {};
-
-  // Watch logic to update hidden Name
-  const selectedGradeId = watch("gradeId");
-  const selectedDivision = watch("division" as any); // "division" not in schema, safe cast
-
-  useEffect(() => {
-    if (selectedGradeId && selectedDivision) {
-      const grade = grades.find((g: any) => g.id == selectedGradeId);
-      if (grade) {
-        setValue("name", `${grade.level}${selectedDivision}`);
-      }
-    }
-  }, [selectedGradeId, selectedDivision, grades, setValue]);
-
   return (
-    <form className="flex flex-col gap-8" onSubmit={onSubmit}>
-      <h1 className="text-xl font-semibold">
-        {type === "create" ? "Create a new class" : "Update the class"}
+    <form className="flex flex-col gap-6" onSubmit={onSubmit}>
+      <h1 className="text-xl font-bold text-slate-800">
+        {type === "create" ? "Create a new class" : "Update Class & Strength"}
       </h1>
 
       <div className="flex justify-between flex-wrap gap-4">
         {/* Hidden Name Input for Zod/Submission */}
-        <input type="hidden" {...register("name")} />
+        <input type="hidden" {...register("name")} defaultValue={data?.name || ""} />
 
         {/* Class / Grade Selection */}
         <div className="flex flex-col gap-2 w-full md:w-1/4">
-          <label className="text-xs text-gray-500">Class (Grade)</label>
+          <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Class (Grade)</label>
           <select
-            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
+            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full font-semibold outline-none focus:ring-2 focus:ring-lamaSky"
             {...register("gradeId")}
             defaultValue={data?.gradeId}
           >
@@ -116,14 +129,13 @@ const ClassForm = ({
               <option
                 value={grade.id}
                 key={grade.id}
-                selected={data && grade.id === data.gradeId}
               >
-                {grade.level}
+                Grade {grade.level}
               </option>
             ))}
           </select>
           {errors.gradeId?.message && (
-            <p className="text-xs text-red-400">
+            <p className="text-xs text-red-500 font-semibold">
               {errors.gradeId.message.toString()}
             </p>
           )}
@@ -131,28 +143,30 @@ const ClassForm = ({
 
         {/* Division Selection */}
         <div className="flex flex-col gap-2 w-full md:w-1/4">
-          <label className="text-xs text-gray-500">Division</label>
+          <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Division</label>
           <select
-            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
-            {...register("division" as any)} // Register as custom
-            defaultValue={data?.name ? data.name.slice(-1) : ""} // Guess division from name if updating
+            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full font-semibold outline-none focus:ring-2 focus:ring-lamaSky"
+            {...register("division" as any)}
+            defaultValue={initialDivision}
           >
             <option value="">Select Division</option>
             {["A", "B", "C", "D", "E"].map((div) => (
               <option value={div} key={div}>
-                {div}
+                Division {div}
               </option>
             ))}
           </select>
         </div>
 
         <InputField
-          label="Capacity"
+          label="Capacity / Max Strength"
           name="capacity"
+          type="number"
           defaultValue={data?.capacity}
           register={register}
           error={errors?.capacity}
         />
+
         {data && (
           <InputField
             label="Id"
@@ -163,10 +177,11 @@ const ClassForm = ({
             hidden
           />
         )}
+
         <div className="flex flex-col gap-2 w-full md:w-1/4">
-          <label className="text-xs text-gray-500">Supervisor</label>
+          <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Supervisor / Class Teacher</label>
           <select
-            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
+            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full font-semibold outline-none focus:ring-2 focus:ring-lamaSky"
             {...register("supervisorId")}
             defaultValue={data?.supervisorId || ""}
           >
@@ -183,20 +198,25 @@ const ClassForm = ({
             )}
           </select>
           {errors.supervisorId?.message && (
-            <p className="text-xs text-red-400">
+            <p className="text-xs text-red-500 font-semibold">
               {errors.supervisorId.message.toString()}
             </p>
           )}
         </div>
       </div>
+
       {state.error && (
-        <span className="text-red-500">Something went wrong!</span>
+        <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs font-bold">
+          Failed to save class. Please ensure all required fields are filled correctly.
+        </div>
       )}
-      <button className="bg-blue-400 text-white p-2 rounded-md">
-        {type === "create" ? "Create" : "Update"}
+
+      <button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer">
+        {type === "create" ? "Create Class" : "Update Class & Strength"}
       </button>
     </form>
   );
 };
 
 export default ClassForm;
+

@@ -175,14 +175,26 @@ export const createClass = async (
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const { error } = await supabase.from('Class').insert(data);
+    const supervisorId = data.supervisorId && data.supervisorId.trim() !== "" ? data.supervisorId : null;
 
-    if (error) throw error;
+    const insertPayload = {
+      name: data.name,
+      capacity: Number(data.capacity),
+      gradeId: Number(data.gradeId),
+      supervisorId: supervisorId,
+    };
 
-    // revalidatePath("/list/class");
+    const { error } = await supabase.from('Class').insert(insertPayload);
+
+    if (error) {
+      console.error("createClass Supabase error:", error);
+      throw error;
+    }
+
+    revalidatePath("/list/classes");
     return { success: true, error: false };
   } catch (err) {
-    console.log(err);
+    console.error("createClass catch error:", err);
     return { success: false, error: true };
   }
 };
@@ -197,47 +209,79 @@ export const updateClass = async (
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const { error } = await supabase.from('Class').update(data).eq('id', data.id);
+    const supervisorId = data.supervisorId && data.supervisorId.trim() !== "" ? data.supervisorId : null;
+    const classId = Number(data.id);
 
-    if (error) throw error;
+    if (!classId || isNaN(classId)) {
+      console.error("updateClass: invalid classId", data.id);
+      return { success: false, error: true };
+    }
 
-    // revalidatePath("/list/class");
+    const updatePayload = {
+      name: data.name,
+      capacity: Number(data.capacity),
+      gradeId: Number(data.gradeId),
+      supervisorId: supervisorId,
+    };
+
+    const { error } = await supabase.from('Class').update(updatePayload).eq('id', classId);
+
+    if (error) {
+      console.error("updateClass Supabase error:", error);
+      throw error;
+    }
+
+    revalidatePath("/list/classes");
     return { success: true, error: false };
   } catch (err) {
-    console.log(err);
+    console.error("updateClass catch error:", err);
     return { success: false, error: true };
   }
 };
 
-export const increaseClassStrength = async (classId: number, increment: number = 5) => {
+export const increaseClassStrength = async (classId: number | string, increment: number = 5) => {
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
+    const numericId = typeof classId === 'string' ? parseInt(classId, 10) : Number(classId);
+    if (!numericId || isNaN(numericId)) {
+      console.error("increaseClassStrength: invalid classId", classId);
+      return { success: false, error: "Invalid Class ID" };
+    }
+
     // 1. Get current capacity
     const { data: classData, error: fetchError } = await supabase
       .from('Class')
       .select('capacity')
-      .eq('id', classId)
+      .eq('id', numericId)
       .single();
 
-    if (fetchError || !classData) throw fetchError || new Error("Class not found");
+    if (fetchError || !classData) {
+      console.error("increaseClassStrength fetch error:", fetchError);
+      throw fetchError || new Error("Class not found");
+    }
 
     // 2. Update capacity
-    const newCapacity = (classData.capacity || 0) + increment;
+    const currentCap = Number(classData.capacity) || 0;
+    const newCapacity = currentCap + increment;
     const { error: updateError } = await supabase
       .from('Class')
       .update({ capacity: newCapacity })
-      .eq('id', classId);
+      .eq('id', numericId);
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error("increaseClassStrength update error:", updateError);
+      throw updateError;
+    }
 
+    revalidatePath("/list/classes");
     return { success: true, newCapacity };
-  } catch (err) {
+  } catch (err: any) {
     console.error("Failed to increase class strength:", err);
-    return { success: false, error: "Failed to update capacity" };
+    return { success: false, error: err?.message || "Failed to update capacity" };
   }
 };
 
