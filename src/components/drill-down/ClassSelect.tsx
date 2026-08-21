@@ -1,9 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import TableSearch from "@/components/TableSearch";
+import FormContainer from "@/components/FormContainer";
 
 const ClassSelect = async ({ gradeId }: { gradeId: string | number }) => {
     const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const role = user?.user_metadata?.role;
+    const canManageClass = role === "admin" || role === "teacher";
+
     const { data: classes, error } = await supabase
         .from('Class')
         .select('*, _count:Student(count)')
@@ -23,7 +28,12 @@ const ClassSelect = async ({ gradeId }: { gradeId: string | number }) => {
                     </Link>
                     <h1 className="text-2xl font-bold text-gray-800 tracking-tight">Select Class</h1>
                 </div>
-                <TableSearch />
+                <div className="flex items-center gap-3">
+                    <TableSearch />
+                    {canManageClass && (
+                        <FormContainer table="class" type="create" />
+                    )}
+                </div>
             </div>
 
             {classes?.length === 0 ? (
@@ -31,16 +41,28 @@ const ClassSelect = async ({ gradeId }: { gradeId: string | number }) => {
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                     {classes?.map((cls) => (
-                        <Link
+                        <div
                             key={cls.id}
-                            href={`?gradeId=${gradeId}&classId=${cls.id}`}
-                            className="p-6 bg-gradient-to-br from-amber-50/80 to-white rounded-2xl hover:from-amber-100/90 hover:to-amber-50 transition-all duration-300 flex flex-col items-center justify-center cursor-pointer shadow-xs hover:shadow-lg border border-amber-100/80 hover-lift group"
+                            className="relative group p-6 bg-gradient-to-br from-amber-50/80 to-white rounded-2xl hover:from-amber-100/90 hover:to-amber-50 transition-all duration-300 flex flex-col items-center justify-center shadow-xs hover:shadow-lg border border-amber-100/80 hover-lift"
                         >
-                            <span className="text-3xl font-black text-gray-800 group-hover:scale-105 transition-transform">{cls.name}</span>
-                            <div className="mt-3 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full border border-amber-200/60 shadow-2xs text-xs font-bold text-amber-900">
-                                Students: {(cls as any)._count?.[0]?.count || 0} / {cls.capacity}
-                            </div>
-                        </Link>
+                            {/* Manage Action Buttons */}
+                            {canManageClass && (
+                                <div className="absolute top-2.5 right-2.5 flex items-center gap-1 z-20">
+                                    <FormContainer table="class" type="update" data={cls} />
+                                    <FormContainer table="class" type="delete" id={cls.id} />
+                                </div>
+                            )}
+
+                            <Link
+                                href={`?gradeId=${gradeId}&classId=${cls.id}`}
+                                className="w-full flex flex-col items-center justify-center"
+                            >
+                                <span className="text-3xl font-black text-gray-800 group-hover:scale-105 transition-transform">{cls.name}</span>
+                                <div className="mt-3 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full border border-amber-200/60 shadow-2xs text-xs font-bold text-amber-900">
+                                    Students: {(cls as any)._count?.[0]?.count || 0} / {cls.capacity}
+                                </div>
+                            </Link>
+                        </div>
                     ))}
                 </div>
             )}
@@ -49,3 +71,4 @@ const ClassSelect = async ({ gradeId }: { gradeId: string | number }) => {
 };
 
 export default ClassSelect;
+

@@ -254,6 +254,7 @@ export const deleteClass = async (
 
     // Conflict cleanup
     // 1. Academic relations
+    await supabase.from('Assignment').delete().eq('classId', parseInt(id));
     await supabase.from('Lesson').delete().eq('classId', parseInt(id));
     await supabase.from('Event').delete().eq('classId', parseInt(id));
     await supabase.from('Announcement').delete().eq('classId', parseInt(id));
