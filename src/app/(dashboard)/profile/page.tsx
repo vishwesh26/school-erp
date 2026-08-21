@@ -62,6 +62,32 @@ const ProfilePage = async () => {
         };
     }
 
+    let parentChildren: any[] = [];
+    if (role === 'parent') {
+        const { data: childrenRes } = await supabase
+            .from("Student")
+            .select("*, class:Class(*), grade:Grade!gradeId(level)")
+            .eq("parentId", userId);
+
+        if (childrenRes && childrenRes.length > 0) {
+            parentChildren = childrenRes;
+        } else if (userData?.email) {
+            const { data: parentRecord } = await supabase
+                .from("Parent")
+                .select("id")
+                .eq("email", userData.email)
+                .limit(1)
+                .single();
+            if (parentRecord?.id) {
+                const { data: matchedChildren } = await supabase
+                    .from("Student")
+                    .select("*, class:Class(*), grade:Grade!gradeId(level)")
+                    .eq("parentId", parentRecord.id);
+                parentChildren = matchedChildren || [];
+            }
+        }
+    }
+
     // Fetch lesson count if student
     let lessonCount = 0;
     if (role === 'student' && userData.classId) {
@@ -91,7 +117,7 @@ const ProfilePage = async () => {
                                         alt=""
                                         width={128}
                                         height={128}
-                                        className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover shadow-inner"
+                                        className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover shadow-inner bg-slate-800"
                                     />
                                 </div>
                             </div>
@@ -100,7 +126,7 @@ const ProfilePage = async () => {
                                 <div className="flex items-center justify-between gap-3">
                                     <div>
                                         <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white leading-snug">
-                                            {userData.name} {userData.surname}
+                                            {userData.name + " " + (userData.surname || "")}
                                         </h1>
                                         <span className="text-xs font-bold text-amber-400 uppercase tracking-wider mt-0.5 inline-block">
                                             {role} Profile
@@ -109,21 +135,25 @@ const ProfilePage = async () => {
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs font-semibold">
-                                    <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 hover:bg-white/20 transition-all duration-200 min-w-0">
-                                        <Image src="/blood.png" alt="" width={15} height={15} className="invert brightness-200 flex-shrink-0" />
-                                        <span className="truncate text-white/90">{userData.bloodType || "-"}</span>
-                                    </div>
+                                    {userData.bloodType && (
+                                        <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 hover:bg-white/20 transition-all duration-200 min-w-0">
+                                            <Image src="/blood.png" alt="" width={15} height={15} className="invert brightness-200 flex-shrink-0" />
+                                            <span className="truncate text-white/90">{userData.bloodType || "-"}</span>
+                                        </div>
+                                    )}
 
-                                    <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 hover:bg-white/20 transition-all duration-200 min-w-0">
-                                        <Image src="/date.png" alt="" width={15} height={15} className="invert brightness-200 flex-shrink-0" />
-                                        <span className="truncate text-white/90">
-                                            {formatDate(userData.birthday)}
-                                        </span>
-                                    </div>
+                                    {userData.birthday && (
+                                        <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 hover:bg-white/20 transition-all duration-200 min-w-0">
+                                            <Image src="/date.png" alt="" width={15} height={15} className="invert brightness-200 flex-shrink-0" />
+                                            <span className="truncate text-white/90">
+                                                {formatDate(userData.birthday)}
+                                            </span>
+                                        </div>
+                                    )}
 
-                                    <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 hover:bg-white/20 transition-all duration-200 min-w-0 col-span-1 sm:col-span-2" title={userData.email || user.email || "-"}>
+                                    <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 hover:bg-white/20 transition-all duration-200 min-w-0 col-span-1 sm:col-span-2" title={userData.email || "-"}>
                                         <Image src="/mail.png" alt="" width={15} height={15} className="invert brightness-200 flex-shrink-0" />
-                                        <span className="truncate text-white/90">{userData.email || user.email || "-"}</span>
+                                        <span className="truncate text-white/90">{userData.email || "-"}</span>
                                     </div>
 
                                     <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 hover:bg-white/20 transition-all duration-200 min-w-0 col-span-1 sm:col-span-2">
@@ -173,16 +203,55 @@ const ProfilePage = async () => {
                             </div>
                         )}
                     </div>
-                    {/* SCHEDULE */}
-                    <div className="bg-white p-4 rounded-md h-[800px]">
-                        <h1 className="text-xl font-semibold">Schedule</h1>
-                        {(role === "teacher" || (role === "student" && userData.classId)) && (
-                            <BigCalendarContainer
-                                type={role === "teacher" ? "teacherId" : "classId"}
-                                id={role === "teacher" ? userId : userData.classId}
-                            />
-                        )}
-                    </div>
+                    {/* SCHEDULE OR CHILDREN VIEW */}
+                    {role === 'parent' ? (
+                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col gap-4">
+                            <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-[#f16122]" />
+                                Enrolled Children ({parentChildren.length})
+                            </h2>
+                            {parentChildren.length === 0 ? (
+                                <p className="text-xs text-slate-400">No children assigned to this parent account.</p>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {parentChildren.map((child) => (
+                                        <div key={child.id} className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-4 hover:bg-slate-100 transition-all">
+                                            <Image
+                                                src={child.img || "/noAvatar.png"}
+                                                alt={child.name}
+                                                width={60}
+                                                height={60}
+                                                className="w-14 h-14 rounded-full object-cover shadow-xs border border-white"
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="text-sm font-bold text-slate-800 truncate">{child.name} {child.surname || ""}</h3>
+                                                <p className="text-xs text-slate-500 font-medium">
+                                                    Class: <span className="text-slate-800 font-bold">{formatClassName(child.class?.name) || "-"}</span>
+                                                </p>
+                                                <p className="text-[11px] text-slate-400">Roll No: {child.rollNumber || "N/A"}</p>
+                                            </div>
+                                            <Link
+                                                href="/parent"
+                                                className="px-3 py-1.5 bg-[#f16122] hover:bg-[#d9531a] text-white text-xs font-bold rounded-lg shadow-2xs transition-all"
+                                            >
+                                                View
+                                            </Link>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="bg-white p-4 rounded-md h-[800px]">
+                            <h1 className="text-xl font-semibold">Schedule</h1>
+                            {(role === "teacher" || (role === "student" && userData.classId)) && (
+                                <BigCalendarContainer
+                                    type={role === "teacher" ? "teacherId" : "classId"}
+                                    id={role === "teacher" ? userId : userData.classId}
+                                />
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
             {/* RIGHT */}
@@ -190,6 +259,7 @@ const ProfilePage = async () => {
                 <div className="bg-white p-4 rounded-md">
                     <h1 className="text-xl font-semibold">Shortcuts</h1>
                     <div className="mt-4 flex gap-4 flex-wrap text-xs text-gray-500">
+                        {role === "parent" && <Link className="p-3 rounded-md bg-lamaSkyLight font-bold" href="/parent">My Children & Timetable</Link>}
                         <Link
                             className="p-3 rounded-md bg-lamaSkyLight"
                             href={role === "teacher" ? `/list/lessons?teacherId=${userId}` : userData?.classId ? `/list/lessons?classId=${userData.classId}` : '/list/lessons'}

@@ -745,7 +745,11 @@ export const updateStudent = async (
 
     if (error) throw error;
 
-    // revalidatePath("/list/students");
+    revalidatePath("/list/students");
+    revalidatePath(`/list/students/${data.id}`);
+    revalidatePath("/parent");
+    revalidatePath("/student");
+    revalidatePath("/profile");
     return { success: true, error: false };
   } catch (err) {
     console.log(err);
