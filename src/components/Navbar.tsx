@@ -4,15 +4,55 @@ import { createClient } from "@/lib/supabase/server";
 
 const Navbar = async () => {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   let name = "John Doe";
   let role = user?.user_metadata?.role;
+  let img: string | null = null;
 
-  if (role) {
-    const { data } = await supabase.from(role.charAt(0).toUpperCase() + role.slice(1)).select("name, surname").eq("id", user?.id).single();
-    if (data) {
-      name = `${data.name} ${data.surname || ""}`;
+  if (role && user?.id) {
+    const tableName = role.charAt(0).toUpperCase() + role.slice(1);
+
+    try {
+      if (role === "parent") {
+        const { data: parentData } = await supabase
+          .from("Parent")
+          .select("id, name, surname")
+          .or(`id.eq.${user.id},email.eq.${user.email || ""}`)
+          .maybeSingle();
+
+        if (parentData) {
+          name = `${parentData.name} ${parentData.surname || ""}`.trim();
+        }
+
+        // Fetch child photo if available
+        const { data: childData } = await supabase
+          .from("Student")
+          .select("img")
+          .or(`parentId.eq.${user.id},parentId.eq.${parentData?.id || ""}`)
+          .not("img", "is", null)
+          .limit(1)
+          .maybeSingle();
+
+        if (childData?.img) {
+          img = childData.img;
+        }
+      } else {
+        const { data } = await supabase
+          .from(tableName)
+          .select("name, surname, img")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (data) {
+          name = `${data.name} ${data.surname || ""}`.trim();
+          img = data.img || null;
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching navbar user details:", err);
     }
   }
 
@@ -38,15 +78,30 @@ const Navbar = async () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 bg-gradient-to-r from-[#f4eaea]/70 via-slate-50 to-[#fdece7]/70 px-3.5 py-1.5 rounded-full border border-[#4e282c]/15 shadow-2xs">
-          <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#4e282c] via-[#802a2c] to-[#f16122] text-white flex items-center justify-center text-xs font-black uppercase shadow-xs">
-            {name.charAt(0)}
-          </div>
-          <div className="flex flex-col">
-            <span className="text-xs font-extrabold text-[#4e282c] leading-tight">{name}</span>
+        <Link
+          href="/profile"
+          className="flex items-center gap-3 bg-gradient-to-r from-[#f4eaea]/70 via-slate-50 to-[#fdece7]/70 px-3.5 py-1.5 rounded-full border border-[#4e282c]/15 shadow-2xs hover:border-[#f16122]/40 transition-all hover:scale-102 cursor-pointer"
+        >
+          {img ? (
+            <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-white shadow-xs flex-shrink-0 bg-slate-100">
+              <Image
+                src={img}
+                alt={name}
+                fill
+                sizes="32px"
+                className="object-cover"
+              />
+            </div>
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#4e282c] via-[#802a2c] to-[#f16122] text-white flex items-center justify-center text-xs font-black uppercase shadow-xs flex-shrink-0">
+              {name.charAt(0)}
+            </div>
+          )}
+          <div className="flex flex-col min-w-0">
+            <span className="text-xs font-extrabold text-[#4e282c] leading-tight truncate max-w-[140px] sm:max-w-[200px]">{name}</span>
             <span className="text-[10px] font-black text-[#f16122] uppercase tracking-widest leading-none mt-0.5">{role || "User"}</span>
           </div>
-        </div>
+        </Link>
 
         <Link 
           href="/logout" 
