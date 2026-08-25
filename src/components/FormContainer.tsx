@@ -32,6 +32,11 @@ const FormContainer = async ({ table, type, data, id }: FormContainerProps) => {
   const role = user?.user_metadata?.role;
   const currentUserId = user?.id;
 
+  // Protect class deletion: Admin only
+  if (table === "class" && type === "delete" && role !== "admin") {
+    return null;
+  }
+
   if (type !== "delete") {
     switch (table) {
       case "subject":

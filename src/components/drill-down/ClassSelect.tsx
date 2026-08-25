@@ -52,7 +52,9 @@ const ClassSelect = async ({ gradeId }: { gradeId: string | number }) => {
                             {canManageClass && (
                                 <div className="absolute top-2.5 right-2.5 flex items-center gap-1 z-20">
                                     <FormContainer table="class" type="update" data={cls} />
-                                    <FormContainer table="class" type="delete" id={cls.id} />
+                                    {role === "admin" && (
+                                        <FormContainer table="class" type="delete" id={cls.id} />
+                                    )}
                                 </div>
                             )}
 

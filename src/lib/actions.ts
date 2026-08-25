@@ -18,6 +18,7 @@ import {
   TransferStudentSchema,
 } from "./formValidationSchemas";
 import { createClient } from "@supabase/supabase-js";
+import { createClient as createServerClient } from "@/lib/supabase/server";
 import { sendNotificationEmail } from "./mail";
 
 
@@ -300,6 +301,13 @@ export const deleteClass = async (
 ) => {
   const id = data.get("id") as string;
   try {
+    const authSupabase = createServerClient();
+    const { data: { user } } = await authSupabase.auth.getUser();
+    if (user?.user_metadata?.role !== "admin") {
+      console.warn("Unauthorized attempt to delete class by user:", user?.id);
+      return { success: false, error: true };
+    }
+
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!

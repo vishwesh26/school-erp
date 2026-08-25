@@ -77,7 +77,9 @@ const ClassListPage = async ({
             <>
               <IncreaseStrengthButton classId={item.id} initialCapacity={item.capacity} />
               <FormContainer table="class" type="update" data={item} />
-              <FormContainer table="class" type="delete" id={item.id} />
+              {role === "admin" && (
+                <FormContainer table="class" type="delete" id={item.id} />
+              )}
             </>
           )}
         </div>
