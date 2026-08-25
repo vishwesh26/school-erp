@@ -2,7 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { fetchStudentsForCredentials, ClassGroup, StudentCredentialItem } from "@/lib/credentialsActions";
+import {
+    fetchStudentsForCredentials,
+    syncStudentAuthPasswords,
+    ClassGroup,
+    StudentCredentialItem,
+} from "@/lib/credentialsActions";
 import { formatClassName } from "@/lib/utils";
 
 interface StudentCredentialsPDFModalProps {
@@ -19,6 +24,8 @@ export default function StudentCredentialsPDFModal({
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [generatingPdf, setGeneratingPdf] = useState(false);
+    const [syncingAuth, setSyncingAuth] = useState(false);
+    const [syncSuccessMessage, setSyncSuccessMessage] = useState<string>("");
     const [classesList, setClassesList] = useState<{ id: number; name: string }[]>(propClasses || []);
     const [selectedClassId, setSelectedClassId] = useState<string>(
         initialClassId ? initialClassId.toString() : "all"
@@ -28,7 +35,7 @@ export default function StudentCredentialsPDFModal({
 
     // Credential configuration
     const [defaultPassword, setDefaultPassword] = useState<string>("dcpems@123");
-    const [passwordFormat, setPasswordFormat] = useState<"fixed" | "roll" | "dob">("fixed");
+    const [passwordFormat, setPasswordFormat] = useState<"fixed" | "roll" | "dob" | "db">("fixed");
     const [layoutMode, setLayoutMode] = useState<"table" | "cards">("table");
     const [activeTab, setActiveTab] = useState<"config" | "preview">("config");
 
@@ -55,16 +62,21 @@ export default function StudentCredentialsPDFModal({
 
     const handleOpen = () => {
         setIsOpen(true);
+        setSyncSuccessMessage("");
         loadData(selectedClassId);
     };
 
     const handleClassChange = (newClsId: string) => {
         setSelectedClassId(newClsId);
+        setSyncSuccessMessage("");
         loadData(newClsId);
     };
 
     // Helper to calculate displayed password
     const getStudentPassword = (student: StudentCredentialItem): string => {
+        if (passwordFormat === "db" && student.password) {
+            return student.password;
+        }
         if (passwordFormat === "fixed") {
             return defaultPassword || "dcpems@123";
         }
@@ -84,7 +96,43 @@ export default function StudentCredentialsPDFModal({
                 return defaultPassword || "dcpems@123";
             }
         }
-        return defaultPassword || "dcpems@123";
+        return student.password || defaultPassword || "dcpems@123";
+    };
+
+    // 1-Click Sync to Supabase Auth
+    const handleSyncAuthPasswords = async () => {
+        const targetDesc = selectedClassId === "all" ? "ALL students across all classes" : "students in this class";
+        if (
+            !confirm(
+                `Are you sure you want to synchronize and update login passwords for ${targetDesc} in Supabase Auth to match the selected format?`
+            )
+        ) {
+            return;
+        }
+
+        setSyncingAuth(true);
+        setSyncSuccessMessage("");
+        try {
+            const res = await syncStudentAuthPasswords({
+                classId: selectedClassId,
+                passwordFormat: passwordFormat === "db" ? "fixed" : passwordFormat,
+                defaultPassword,
+            });
+
+            if (res.success) {
+                setSyncSuccessMessage(
+                    `✅ Successfully synchronized ${res.updatedCount} student password(s) in Supabase Auth & Database!`
+                );
+                await loadData(selectedClassId);
+            } else {
+                alert(res.error || "Failed to synchronize passwords.");
+            }
+        } catch (err: any) {
+            console.error("Error during password sync:", err);
+            alert("Error syncing passwords: " + (err?.message || "Unknown error"));
+        } finally {
+            setSyncingAuth(false);
+        }
     };
 
     // PDF Download Handler
@@ -100,7 +148,10 @@ export default function StudentCredentialsPDFModal({
             if (wrapper) wrapper.style.display = "block";
 
             const selectedClassObj = classesList.find((c) => c.id.toString() === selectedClassId);
-            const classNameTag = selectedClassId === "all" ? "All_Classes" : (selectedClassObj?.name || "Class").replace(/[^a-zA-Z0-9]/g, "_");
+            const classNameTag =
+                selectedClassId === "all"
+                    ? "All_Classes"
+                    : (selectedClassObj?.name || "Class").replace(/[^a-zA-Z0-9]/g, "_");
             const layoutTag = layoutMode === "table" ? "Roster" : "Cards";
             const filename = `DCPEMS_Student_Credentials_${classNameTag}_${layoutTag}.pdf`;
 
@@ -179,16 +230,16 @@ export default function StudentCredentialsPDFModal({
                                 </div>
                                 <div>
                                     <h2 className="text-lg sm:text-xl font-black tracking-tight">
-                                        Student Credentials PDF Generator
+                                        Student Credentials & Password Sync
                                     </h2>
                                     <p className="text-xs text-orange-100 font-medium">
-                                        Export class-wise login usernames & passwords for distribution
+                                        Manage student login passwords in Supabase Auth & export PDF cards
                                     </p>
                                 </div>
                             </div>
                             <button
                                 onClick={() => setIsOpen(false)}
-                                className="text-white/80 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors"
+                                className="text-white/80 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -207,17 +258,17 @@ export default function StudentCredentialsPDFModal({
                         <div className="flex border-b border-gray-200 bg-gray-50 px-6 pt-3 gap-3">
                             <button
                                 onClick={() => setActiveTab("config")}
-                                className={`pb-3 px-4 font-bold text-xs sm:text-sm border-b-2 transition-all ${
+                                className={`pb-3 px-4 font-bold text-xs sm:text-sm border-b-2 transition-all cursor-pointer ${
                                     activeTab === "config"
                                         ? "border-[#f16122] text-[#4e282c]"
                                         : "border-transparent text-gray-500 hover:text-gray-800"
                                 }`}
                             >
-                                ⚙️ Export Settings
+                                ⚙️ Password & Export Settings
                             </button>
                             <button
                                 onClick={() => setActiveTab("preview")}
-                                className={`pb-3 px-4 font-bold text-xs sm:text-sm border-b-2 transition-all ${
+                                className={`pb-3 px-4 font-bold text-xs sm:text-sm border-b-2 transition-all cursor-pointer ${
                                     activeTab === "preview"
                                         ? "border-[#f16122] text-[#4e282c]"
                                         : "border-transparent text-gray-500 hover:text-gray-800"
@@ -229,6 +280,12 @@ export default function StudentCredentialsPDFModal({
 
                         {/* Modal Body */}
                         <div className="flex-1 overflow-y-auto p-6">
+                            {syncSuccessMessage && (
+                                <div className="mb-5 p-3.5 bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs sm:text-sm rounded-xl font-semibold flex items-center gap-2 animate-fade-in shadow-xs">
+                                    <span>{syncSuccessMessage}</span>
+                                </div>
+                            )}
+
                             {loading ? (
                                 <div className="flex flex-col items-center justify-center py-16 gap-3 text-gray-500">
                                     <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#f16122]"></div>
@@ -240,14 +297,14 @@ export default function StudentCredentialsPDFModal({
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="flex flex-col gap-1.5">
                                             <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-                                                Select Target Class
+                                                Target Class
                                             </label>
                                             <select
                                                 value={selectedClassId}
                                                 onChange={(e) => handleClassChange(e.target.value)}
-                                                className="w-full p-3 rounded-xl border border-gray-300 bg-white text-gray-900 font-semibold focus:ring-2 focus:ring-[#f16122] focus:outline-none text-sm"
+                                                className="w-full p-3 rounded-xl border border-gray-300 bg-white text-gray-900 font-semibold focus:ring-2 focus:ring-[#f16122] focus:outline-none text-sm cursor-pointer"
                                             >
-                                                <option value="all">📚 All Classes (Full School Report)</option>
+                                                <option value="all">📚 All Classes (Full School)</option>
                                                 {classesList.map((cls) => (
                                                     <option key={cls.id} value={cls.id.toString()}>
                                                         {formatClassName(cls.name)}
@@ -255,7 +312,7 @@ export default function StudentCredentialsPDFModal({
                                                 ))}
                                             </select>
                                             <span className="text-[11px] text-gray-500">
-                                                Choose a single class or export all classes arranged sequentially.
+                                                Select a class or manage all classes sequentially.
                                             </span>
                                         </div>
 
@@ -265,7 +322,13 @@ export default function StudentCredentialsPDFModal({
                                                     Selected Scope
                                                 </span>
                                                 <h3 className="text-lg font-black text-gray-900 mt-0.5">
-                                                    {selectedClassId === "all" ? "All Classes" : formatClassName(classesList.find((c) => c.id.toString() === selectedClassId)?.name)}
+                                                    {selectedClassId === "all"
+                                                        ? "All Classes"
+                                                        : formatClassName(
+                                                              classesList.find(
+                                                                  (c) => c.id.toString() === selectedClassId
+                                                              )?.name
+                                                          )}
                                                 </h3>
                                                 <p className="text-xs text-orange-950 font-medium">
                                                     {groupedData.length} Class Section(s) • {totalStudents} Student(s)
@@ -277,18 +340,58 @@ export default function StudentCredentialsPDFModal({
                                         </div>
                                     </div>
 
-                                    {/* Password Configuration */}
-                                    <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-4">
-                                        <label className="text-xs font-bold text-gray-800 uppercase tracking-wider block">
-                                            🔑 Password Display Format on PDF
-                                        </label>
+                                    {/* Password Configuration & Auth Sync Box */}
+                                    <div className="p-5 bg-gradient-to-br from-gray-50 to-orange-50/30 border border-gray-200 rounded-2xl space-y-4">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-200 pb-3">
+                                            <div>
+                                                <label className="text-xs font-bold text-gray-900 uppercase tracking-wider block">
+                                                    🔑 Password Scheme & Supabase Auth Sync
+                                                </label>
+                                                <p className="text-[11px] text-gray-500">
+                                                    Select password format and synchronize student login passwords directly into Supabase Auth
+                                                </p>
+                                            </div>
+
+                                            {/* Sync to Supabase Auth Button */}
+                                            <button
+                                                type="button"
+                                                onClick={handleSyncAuthPasswords}
+                                                disabled={syncingAuth || totalStudents === 0}
+                                                className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-md hover:shadow-lg active:scale-95 transition disabled:opacity-50 cursor-pointer shrink-0"
+                                            >
+                                                {syncingAuth ? (
+                                                    <>
+                                                        <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent"></div>
+                                                        <span>Syncing Auth...</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            strokeWidth={2}
+                                                            stroke="currentColor"
+                                                            className="w-4 h-4 text-emerald-200"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+                                                            />
+                                                        </svg>
+                                                        <span>Sync to Supabase Auth</span>
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
 
                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                             <label
                                                 className={`p-3 rounded-xl border cursor-pointer flex flex-col gap-1 transition-all ${
                                                     passwordFormat === "fixed"
                                                         ? "border-[#f16122] bg-white shadow-xs text-[#4e282c]"
-                                                        : "border-gray-200 bg-white/50 text-gray-600 hover:bg-white"
+                                                        : "border-gray-200 bg-white/60 text-gray-600 hover:bg-white"
                                                 }`}
                                             >
                                                 <div className="flex items-center gap-2">
@@ -302,7 +405,7 @@ export default function StudentCredentialsPDFModal({
                                                     <span className="text-xs font-bold">Standard Password</span>
                                                 </div>
                                                 <span className="text-[11px] text-gray-400 pl-5">
-                                                    Fixed default password for all
+                                                    Common initial password for all
                                                 </span>
                                             </label>
 
@@ -310,7 +413,7 @@ export default function StudentCredentialsPDFModal({
                                                 className={`p-3 rounded-xl border cursor-pointer flex flex-col gap-1 transition-all ${
                                                     passwordFormat === "roll"
                                                         ? "border-[#f16122] bg-white shadow-xs text-[#4e282c]"
-                                                        : "border-gray-200 bg-white/50 text-gray-600 hover:bg-white"
+                                                        : "border-gray-200 bg-white/60 text-gray-600 hover:bg-white"
                                                 }`}
                                             >
                                                 <div className="flex items-center gap-2">
@@ -332,7 +435,7 @@ export default function StudentCredentialsPDFModal({
                                                 className={`p-3 rounded-xl border cursor-pointer flex flex-col gap-1 transition-all ${
                                                     passwordFormat === "dob"
                                                         ? "border-[#f16122] bg-white shadow-xs text-[#4e282c]"
-                                                        : "border-gray-200 bg-white/50 text-gray-600 hover:bg-white"
+                                                        : "border-gray-200 bg-white/60 text-gray-600 hover:bg-white"
                                                 }`}
                                             >
                                                 <div className="flex items-center gap-2">
@@ -354,7 +457,7 @@ export default function StudentCredentialsPDFModal({
                                         {passwordFormat === "fixed" && (
                                             <div className="flex flex-col gap-1.5 pt-2">
                                                 <label className="text-xs font-semibold text-gray-700">
-                                                    Default Initial Password text
+                                                    Initial Password text
                                                 </label>
                                                 <input
                                                     type="text"
@@ -389,7 +492,7 @@ export default function StudentCredentialsPDFModal({
                                                         Class Roster Sheet (Table View)
                                                     </h4>
                                                     <p className="text-xs text-gray-500 mt-0.5">
-                                                        Official tabular list with Sr, Roll No, Student Name, Username, Password, and Signature lines. Ideal for teachers.
+                                                        Official tabular roster with Sr, Roll No, Student Name, Username, Password, and Signature lines.
                                                     </p>
                                                 </div>
                                             </div>
@@ -410,7 +513,7 @@ export default function StudentCredentialsPDFModal({
                                                         Individual Login Slips (Cut-out Cards)
                                                     </h4>
                                                     <p className="text-xs text-gray-500 mt-0.5">
-                                                        Grid of distinct login cards with School Crest, Student Details & Portal Instructions. Easy to cut & distribute to parents.
+                                                        Grid of distinct login cards with School Crest, Student Details & Portal Instructions. Easy to cut & distribute.
                                                     </p>
                                                 </div>
                                             </div>
@@ -422,7 +525,7 @@ export default function StudentCredentialsPDFModal({
                                 <div className="space-y-6">
                                     <div className="flex items-center justify-between text-xs text-gray-500 bg-gray-50 p-3 rounded-lg border">
                                         <span>
-                                            Showing sample data for <strong>{groupedData.length}</strong> class group(s). Click Download PDF below for the full print-ready document.
+                                            Showing sample preview for <strong>{groupedData.length}</strong> class group(s). Click Download PDF below for the full print-ready document.
                                         </span>
                                         <span className="font-bold text-[#f16122] uppercase">
                                             Layout: {layoutMode.toUpperCase()}
@@ -432,7 +535,10 @@ export default function StudentCredentialsPDFModal({
                                     {/* Preview Content */}
                                     <div className="space-y-8">
                                         {groupedData.map((grp) => (
-                                            <div key={grp.className} className="border border-gray-200 rounded-xl overflow-hidden shadow-xs">
+                                            <div
+                                                key={grp.className}
+                                                className="border border-gray-200 rounded-xl overflow-hidden shadow-xs"
+                                            >
                                                 <div className="bg-[#4e282c] text-white px-4 py-2.5 flex items-center justify-between">
                                                     <span className="font-bold text-sm">
                                                         Class: {formatClassName(grp.className)}
@@ -451,18 +557,28 @@ export default function StudentCredentialsPDFModal({
                                                                     <th className="p-2.5 w-20">Roll No</th>
                                                                     <th className="p-2.5">Student Name</th>
                                                                     <th className="p-2.5">Login Username</th>
-                                                                    <th className="p-2.5">Initial Password</th>
+                                                                    <th className="p-2.5">Active Password</th>
                                                                     <th className="p-2.5">Login Email</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody className="divide-y divide-gray-200">
                                                                 {grp.students.map((st, idx) => (
                                                                     <tr key={st.id || idx} className="hover:bg-gray-50">
-                                                                        <td className="p-2.5 text-center font-bold text-gray-500">{idx + 1}</td>
-                                                                        <td className="p-2.5 font-bold text-gray-800">{st.rollNumber}</td>
-                                                                        <td className="p-2.5 font-semibold text-gray-900">{st.name} {st.surname}</td>
-                                                                        <td className="p-2.5 font-mono font-bold text-[#f16122]">{st.username}</td>
-                                                                        <td className="p-2.5 font-mono bg-gray-50 font-bold text-gray-700">{getStudentPassword(st)}</td>
+                                                                        <td className="p-2.5 text-center font-bold text-gray-500">
+                                                                            {idx + 1}
+                                                                        </td>
+                                                                        <td className="p-2.5 font-bold text-gray-800">
+                                                                            {st.rollNumber}
+                                                                        </td>
+                                                                        <td className="p-2.5 font-semibold text-gray-900">
+                                                                            {st.name} {st.surname}
+                                                                        </td>
+                                                                        <td className="p-2.5 font-mono font-bold text-[#f16122]">
+                                                                            {st.username}
+                                                                        </td>
+                                                                        <td className="p-2.5 font-mono bg-gray-50 font-bold text-gray-700">
+                                                                            {getStudentPassword(st)}
+                                                                        </td>
                                                                         <td className="p-2.5 text-gray-500">{st.email}</td>
                                                                     </tr>
                                                                 ))}
@@ -472,11 +588,19 @@ export default function StudentCredentialsPDFModal({
                                                 ) : (
                                                     <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3 bg-gray-50">
                                                         {grp.students.map((st, idx) => (
-                                                            <div key={st.id || idx} className="p-3.5 bg-white rounded-xl border border-gray-200 shadow-2xs space-y-2">
+                                                            <div
+                                                                key={st.id || idx}
+                                                                className="p-3.5 bg-white rounded-xl border border-gray-200 shadow-2xs space-y-2"
+                                                            >
                                                                 <div className="flex items-center justify-between border-b pb-1.5">
                                                                     <div>
-                                                                        <h5 className="font-bold text-xs text-gray-900">{st.name} {st.surname}</h5>
-                                                                        <span className="text-[10px] text-gray-500">Roll No: {st.rollNumber} • {formatClassName(grp.className)}</span>
+                                                                        <h5 className="font-bold text-xs text-gray-900">
+                                                                            {st.name} {st.surname}
+                                                                        </h5>
+                                                                        <span className="text-[10px] text-gray-500">
+                                                                            Roll No: {st.rollNumber} •{" "}
+                                                                            {formatClassName(grp.className)}
+                                                                        </span>
                                                                     </div>
                                                                     <span className="text-[10px] font-black uppercase text-[#f16122] bg-orange-50 px-2 py-0.5 rounded">
                                                                         DCPEMS ERP
@@ -484,12 +608,20 @@ export default function StudentCredentialsPDFModal({
                                                                 </div>
                                                                 <div className="grid grid-cols-2 gap-2 text-xs">
                                                                     <div className="bg-gray-50 p-2 rounded-lg">
-                                                                        <span className="text-[10px] text-gray-400 block font-semibold">USERNAME</span>
-                                                                        <span className="font-mono font-bold text-gray-800">{st.username}</span>
+                                                                        <span className="text-[10px] text-gray-400 block font-semibold">
+                                                                            USERNAME
+                                                                        </span>
+                                                                        <span className="font-mono font-bold text-gray-800">
+                                                                            {st.username}
+                                                                        </span>
                                                                     </div>
                                                                     <div className="bg-orange-50/60 p-2 rounded-lg">
-                                                                        <span className="text-[10px] text-orange-600 block font-semibold">PASSWORD</span>
-                                                                        <span className="font-mono font-bold text-orange-950">{getStudentPassword(st)}</span>
+                                                                        <span className="text-[10px] text-orange-600 block font-semibold">
+                                                                            PASSWORD
+                                                                        </span>
+                                                                        <span className="font-mono font-bold text-orange-950">
+                                                                            {getStudentPassword(st)}
+                                                                        </span>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -508,7 +640,7 @@ export default function StudentCredentialsPDFModal({
                             <button
                                 type="button"
                                 onClick={() => setIsOpen(false)}
-                                className="px-4 py-2 text-xs sm:text-sm font-bold text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded-xl transition"
+                                className="px-4 py-2 text-xs sm:text-sm font-bold text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded-xl transition cursor-pointer"
                             >
                                 Cancel
                             </button>
@@ -518,7 +650,7 @@ export default function StudentCredentialsPDFModal({
                                     <button
                                         type="button"
                                         onClick={() => setActiveTab("preview")}
-                                        className="px-4 py-2 text-xs sm:text-sm font-bold text-gray-700 bg-white border border-gray-300 hover:bg-gray-100 rounded-xl transition shadow-2xs"
+                                        className="px-4 py-2 text-xs sm:text-sm font-bold text-gray-700 bg-white border border-gray-300 hover:bg-gray-100 rounded-xl transition shadow-2xs cursor-pointer"
                                     >
                                         Preview Output
                                     </button>
@@ -614,11 +746,17 @@ export default function StudentCredentialsPDFModal({
                             {/* Meta Information Bar */}
                             <div className="flex justify-between items-center mb-3 text-[9pt] font-semibold text-gray-800 border-b border-gray-300 pb-1">
                                 <div>
-                                    <span>Class: <strong>{formatClassName(group.className)}</strong></span>
-                                    <span className="ml-6">Total Students: <strong>{group.students.length}</strong></span>
+                                    <span>
+                                        Class: <strong>{formatClassName(group.className)}</strong>
+                                    </span>
+                                    <span className="ml-6">
+                                        Total Students: <strong>{group.students.length}</strong>
+                                    </span>
                                 </div>
                                 <div>
-                                    <span>Portal URL: <strong>https://dcpems-erp.com/sign-in</strong></span>
+                                    <span>
+                                        Portal URL: <strong>https://dcpems-erp.com/sign-in</strong>
+                                    </span>
                                 </div>
                                 <div>
                                     <span>Academic Session 2025-26</span>
@@ -632,10 +770,18 @@ export default function StudentCredentialsPDFModal({
                                         <tr className="bg-slate-100 font-bold uppercase">
                                             <th className="p-1.5 border border-slate-950 w-10">Sr</th>
                                             <th className="p-1.5 border border-slate-950 w-16">Roll No</th>
-                                            <th className="p-1.5 border border-slate-950 text-left pl-3">Student Name</th>
-                                            <th className="p-1.5 border border-slate-950 w-28 font-mono">Login Username</th>
-                                            <th className="p-1.5 border border-slate-950 w-28 font-mono">Initial Password</th>
-                                            <th className="p-1.5 border border-slate-950 text-left pl-3">Official Email</th>
+                                            <th className="p-1.5 border border-slate-950 text-left pl-3">
+                                                Student Name
+                                            </th>
+                                            <th className="p-1.5 border border-slate-950 w-28 font-mono">
+                                                Login Username
+                                            </th>
+                                            <th className="p-1.5 border border-slate-950 w-28 font-mono">
+                                                Active Password
+                                            </th>
+                                            <th className="p-1.5 border border-slate-950 text-left pl-3">
+                                                Official Email
+                                            </th>
                                             <th className="p-1.5 border border-slate-950 w-24">Parent Signature</th>
                                         </tr>
                                     </thead>
@@ -645,8 +791,12 @@ export default function StudentCredentialsPDFModal({
                                                 key={student.id || idx}
                                                 className={idx % 2 === 1 ? "bg-slate-50" : ""}
                                             >
-                                                <td className="p-1.5 border border-slate-950 font-semibold">{idx + 1}</td>
-                                                <td className="p-1.5 border border-slate-950 font-bold">{student.rollNumber || "N/A"}</td>
+                                                <td className="p-1.5 border border-slate-950 font-semibold">
+                                                    {idx + 1}
+                                                </td>
+                                                <td className="p-1.5 border border-slate-950 font-bold">
+                                                    {student.rollNumber || "N/A"}
+                                                </td>
                                                 <td className="p-1.5 border border-slate-950 text-left pl-3 font-semibold">
                                                     {student.name} {student.surname || ""}
                                                 </td>
@@ -696,24 +846,52 @@ export default function StudentCredentialsPDFModal({
                                                 }}
                                             >
                                                 <div>
-                                                    <span style={{ fontSize: "9pt", fontWeight: "bold", textTransform: "uppercase" }}>
+                                                    <span
+                                                        style={{
+                                                            fontSize: "9pt",
+                                                            fontWeight: "bold",
+                                                            textTransform: "uppercase",
+                                                        }}
+                                                    >
                                                         DR CYRUS POONAWALLA EMS
                                                     </span>
-                                                    <span style={{ fontSize: "7pt", display: "block", color: "#555" }}>
+                                                    <span
+                                                        style={{ fontSize: "7pt", display: "block", color: "#555" }}
+                                                    >
                                                         Student Portal Login Slip
                                                     </span>
                                                 </div>
-                                                <span style={{ fontSize: "8pt", fontWeight: "bold", background: "#eee", padding: "2px 6px", borderRadius: "3px" }}>
+                                                <span
+                                                    style={{
+                                                        fontSize: "8pt",
+                                                        fontWeight: "bold",
+                                                        background: "#eee",
+                                                        padding: "2px 6px",
+                                                        borderRadius: "3px",
+                                                    }}
+                                                >
                                                     {formatClassName(group.className)}
                                                 </span>
                                             </div>
 
                                             <div style={{ fontSize: "9pt", marginBottom: "6px" }}>
                                                 <div>
-                                                    Student: <strong>{student.name} {student.surname || ""}</strong>
+                                                    Student:{" "}
+                                                    <strong>
+                                                        {student.name} {student.surname || ""}
+                                                    </strong>
                                                 </div>
-                                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "8pt", color: "#444" }}>
-                                                    <span>Roll No: <strong>{student.rollNumber || "N/A"}</strong></span>
+                                                <div
+                                                    style={{
+                                                        display: "flex",
+                                                        justifyContent: "space-between",
+                                                        fontSize: "8pt",
+                                                        color: "#444",
+                                                    }}
+                                                >
+                                                    <span>
+                                                        Roll No: <strong>{student.rollNumber || "N/A"}</strong>
+                                                    </span>
                                                     <span>Session: 2025-26</span>
                                                 </div>
                                             </div>
@@ -732,17 +910,23 @@ export default function StudentCredentialsPDFModal({
                                                 }}
                                             >
                                                 <div>
-                                                    <span style={{ color: "#666", fontSize: "7pt", display: "block" }}>USERNAME / ID</span>
+                                                    <span style={{ color: "#666", fontSize: "7pt", display: "block" }}>
+                                                        USERNAME / ID
+                                                    </span>
                                                     <strong>{student.username}</strong>
                                                 </div>
                                                 <div>
-                                                    <span style={{ color: "#666", fontSize: "7pt", display: "block" }}>PASSWORD</span>
+                                                    <span style={{ color: "#666", fontSize: "7pt", display: "block" }}>
+                                                        PASSWORD
+                                                    </span>
                                                     <strong>{getStudentPassword(student)}</strong>
                                                 </div>
                                             </div>
 
                                             <div style={{ fontSize: "7pt", color: "#555", lineHeight: "1.2" }}>
-                                                <div>🌐 Login: <strong>https://dcpems-erp.com/sign-in</strong></div>
+                                                <div>
+                                                    🌐 Login: <strong>https://dcpems-erp.com/sign-in</strong>
+                                                </div>
                                                 <div style={{ fontStyle: "italic", marginTop: "2px" }}>
                                                     * Please change password after initial login in profile settings.
                                                 </div>

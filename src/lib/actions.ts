@@ -604,6 +604,7 @@ export const createStudent = async (
     const { error: dbError } = await supabase.from('Student').insert({
       id: userId,
       username: data.username,
+      password: data.password || null,
       name: data.name,
       surname: data.surname,
       rollNumber: data.rollNumber,
@@ -711,7 +712,7 @@ export const updateStudent = async (
       }
     }
 
-    const { error } = await supabase.from('Student').update({
+    const updatePayload: any = {
       username: data.username,
       name: data.name,
       surname: data.surname,
@@ -755,7 +756,13 @@ export const updateStudent = async (
       stateStudentId: data.stateStudentId,
       pen: data.pen,
       apaarId: data.apaarId,
-    }).eq('id', data.id);
+    };
+
+    if (data.password && typeof data.password === "string" && data.password.trim().length >= 6) {
+      updatePayload.password = data.password.trim();
+    }
+
+    const { error } = await supabase.from('Student').update(updatePayload).eq('id', data.id);
 
     if (error) throw error;
 
