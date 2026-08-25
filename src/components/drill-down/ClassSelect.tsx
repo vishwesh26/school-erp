@@ -32,11 +32,9 @@ const ClassSelect = async ({ gradeId }: { gradeId: string | number }) => {
                 </div>
                 <div className="flex items-center gap-3">
                     <TableSearch />
+                    {role === "admin" && <StudentCredentialsPDFModal />}
                     {canManageClass && (
-                        <>
-                            <StudentCredentialsPDFModal />
-                            <FormContainer table="class" type="create" />
-                        </>
+                        <FormContainer table="class" type="create" />
                     )}
                 </div>
             </div>

@@ -33,6 +33,19 @@ export async function fetchStudentsForCredentials(classId?: string | number): Pr
   try {
     const supabase = createClient();
 
+    // 0. Authorization check: Admin only
+    const { data: { user } } = await supabase.auth.getUser();
+    const role = user?.user_metadata?.role;
+    if (role !== "admin") {
+      return {
+        success: false,
+        classes: [],
+        groupedByClass: [],
+        totalStudents: 0,
+        error: "Unauthorized: Access restricted to administrators only.",
+      };
+    }
+
     // 1. Fetch active classes for filter dropdown
     const { data: classList, error: classErr } = await supabase
       .from("Class")

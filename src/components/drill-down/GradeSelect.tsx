@@ -6,7 +6,11 @@ import StudentCredentialsPDFModal from "@/components/StudentCredentialsPDFModal"
 
 const GradeSelect = async () => {
     const supabase = createClient();
-    const { data: grades, error } = await supabase.from('Grade').select('*').order('level', { ascending: true });
+    const [{ data: { user } }, { data: grades, error }] = await Promise.all([
+        supabase.auth.getUser(),
+        supabase.from('Grade').select('*').order('level', { ascending: true })
+    ]);
+    const role = user?.user_metadata?.role;
 
     if (error) {
         return <div className="text-red-500">Error loading grades.</div>;
@@ -21,7 +25,7 @@ const GradeSelect = async () => {
                 </div>
                 <div className="flex items-center gap-3">
                     <TableSearch />
-                    <StudentCredentialsPDFModal />
+                    {role === "admin" && <StudentCredentialsPDFModal />}
                 </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">

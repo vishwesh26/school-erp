@@ -267,14 +267,14 @@ const StudentListPage = async ({
               students={allStudentsInClass || []}
               className={classNameForDisplay}
             />
+            {role === "admin" && (
+              <StudentCredentialsPDFModal
+                initialClassId={classId}
+                initialClassName={classNameForDisplay}
+              />
+            )}
             {["admin", "teacher"].includes(role) && (
-              <>
-                <StudentCredentialsPDFModal
-                  initialClassId={classId}
-                  initialClassName={classNameForDisplay}
-                />
-                <FormContainer table="student" type="create" />
-              </>
+              <FormContainer table="student" type="create" />
             )}
           </div>
         </div>
