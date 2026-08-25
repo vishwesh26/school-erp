@@ -10,6 +10,7 @@ import Link from "next/link";
 import GradeSelect from "@/components/drill-down/GradeSelect";
 import ClassSelect from "@/components/drill-down/ClassSelect";
 import StudentListDownloadButton from "@/components/StudentListDownloadButton";
+import StudentCredentialsPDFModal from "@/components/StudentCredentialsPDFModal";
 import { formatGrade, formatClassName } from "@/lib/utils";
 
 const StudentListPage = async ({
@@ -261,13 +262,19 @@ const StudentListPage = async ({
         </div>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
           <TableSearch />
-          <div className="flex items-center gap-4 self-end">
+          <div className="flex flex-wrap items-center gap-2.5 self-end">
             <StudentListDownloadButton
               students={allStudentsInClass || []}
               className={classNameForDisplay}
             />
             {["admin", "teacher"].includes(role) && (
-              <FormContainer table="student" type="create" />
+              <>
+                <StudentCredentialsPDFModal
+                  initialClassId={classId}
+                  initialClassName={classNameForDisplay}
+                />
+                <FormContainer table="student" type="create" />
+              </>
             )}
           </div>
         </div>

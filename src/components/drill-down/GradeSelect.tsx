@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { formatGrade } from "@/lib/utils";
 import TableSearch from "@/components/TableSearch";
+import StudentCredentialsPDFModal from "@/components/StudentCredentialsPDFModal";
 
 const GradeSelect = async () => {
     const supabase = createClient();
@@ -13,12 +14,15 @@ const GradeSelect = async () => {
 
     return (
         <div className="p-6 bg-white/80 backdrop-blur-md rounded-2xl m-4 mt-0 shadow-sm border border-gray-100/80 animate-fade-in">
-            <div className="flex items-center justify-between mb-6 pb-2 border-b border-gray-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-2 border-b border-gray-100 gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800 tracking-tight">Select Grade</h1>
                     <p className="text-xs text-gray-400 font-medium">Choose a grade to view students & classes</p>
                 </div>
-                <TableSearch />
+                <div className="flex items-center gap-3">
+                    <TableSearch />
+                    <StudentCredentialsPDFModal />
+                </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                 {grades?.map((grade) => (

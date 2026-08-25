@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import TableSearch from "@/components/TableSearch";
 import FormContainer from "@/components/FormContainer";
+import StudentCredentialsPDFModal from "@/components/StudentCredentialsPDFModal";
 import { formatClassName } from "@/lib/utils";
 
 const ClassSelect = async ({ gradeId }: { gradeId: string | number }) => {
@@ -32,7 +33,10 @@ const ClassSelect = async ({ gradeId }: { gradeId: string | number }) => {
                 <div className="flex items-center gap-3">
                     <TableSearch />
                     {canManageClass && (
-                        <FormContainer table="class" type="create" />
+                        <>
+                            <StudentCredentialsPDFModal />
+                            <FormContainer table="class" type="create" />
+                        </>
                     )}
                 </div>
             </div>
