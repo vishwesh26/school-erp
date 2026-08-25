@@ -206,7 +206,7 @@ export async function registerStudent(prevState: any, formData: FormData) {
                 email: authEmail,
                 password: password,
                 email_confirm: true,
-                user_metadata: { role: "student", actual_email: data.email }
+                user_metadata: { role: "student", actual_email: data.email, temp_password: password }
             });
 
             if (authError) {
@@ -238,9 +238,10 @@ export async function registerStudent(prevState: any, formData: FormData) {
     }
 
     // 5. Create or Update Student Record
-    const studentPayload = {
+    const studentPayload: any = {
         id: authUserId,
         username: username,
+        password: password,
         rollNumber: rollNumber,
         name: data.name,
         surname: data.surname,

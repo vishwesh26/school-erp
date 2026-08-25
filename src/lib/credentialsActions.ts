@@ -68,24 +68,43 @@ export async function fetchStudentsForCredentials(classId?: string | number): Pr
       }
     }
 
-    const { data: studentList, error: studentErr } = await query;
+    const adminClient = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    const [{ data: studentList, error: studentErr }, { data: authUserData }] = await Promise.all([
+      query,
+      adminClient.auth.admin.listUsers(),
+    ]);
+
     if (studentErr) throw studentErr;
 
+    const userMap: { [id: string]: any } = {};
+    (authUserData?.users || []).forEach((u: any) => {
+      userMap[u.id] = u;
+    });
+
     // Format & map students
-    const formattedStudents: StudentCredentialItem[] = (studentList || []).map((s: any) => ({
-      id: s.id,
-      name: s.name || "",
-      surname: s.surname || "",
-      username: s.username || s.rollNumber || "N/A",
-      password: s.password || null,
-      rollNumber: s.rollNumber || "N/A",
-      email: s.email || (s.username ? `${s.username.toLowerCase()}@dcpems.internal` : "N/A"),
-      phone: s.phone || "",
-      birthday: s.birthday || "",
-      classId: s.classId,
-      className: s.Class?.name || "Unassigned",
-      gradeLevel: s.grade?.level,
-    }));
+    const formattedStudents: StudentCredentialItem[] = (studentList || []).map((s: any) => {
+      const authUser = userMap[s.id];
+      const foundPassword = s.password || authUser?.user_metadata?.temp_password || null;
+
+      return {
+        id: s.id,
+        name: s.name || "",
+        surname: s.surname || "",
+        username: s.username || s.rollNumber || "N/A",
+        password: foundPassword,
+        rollNumber: s.rollNumber || "N/A",
+        email: s.email || (s.username ? `${s.username.toLowerCase()}@dcpems.internal` : "N/A"),
+        phone: s.phone || "",
+        birthday: s.birthday || "",
+        classId: s.classId,
+        className: s.Class?.name || "Unassigned",
+        gradeLevel: s.grade?.level,
+      };
+    });
 
     // Group students class-wise
     const groupMap: { [key: string]: ClassGroup } = {};
