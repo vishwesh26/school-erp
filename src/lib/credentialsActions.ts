@@ -56,34 +56,83 @@ export async function fetchStudentsForCredentials(classId?: string | number): Pr
 
     if (classErr) throw classErr;
 
-    // 2. Fetch students with Class and Grade info
-    let query = supabase
-      .from("Student")
-      .select("id, name, surname, username, rollNumber, email, phone, birthday, classId, Class(id, name), grade:Grade!gradeId(level)");
-
-    if (classId && classId !== "all") {
-      const parsedId = typeof classId === "string" ? parseInt(classId, 10) : classId;
-      if (!isNaN(parsedId)) {
-        query = query.eq("classId", parsedId);
-      }
-    }
-
     const adminClient = createAdminClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const [{ data: studentList, error: studentErr }, { data: authUserData }] = await Promise.all([
-      query,
-      adminClient.auth.admin.listUsers(),
+    // 2. Concurrently fetch all students (batched to bypass PostgREST 1000 limit) and auth users (paginated)
+    const fetchAllStudents = async () => {
+      const BATCH_SIZE = 1000;
+      let all: any[] = [];
+      let from = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        let q = adminClient
+          .from("Student")
+          .select("id, name, surname, username, rollNumber, email, phone, birthday, classId, Class(id, name), grade:Grade!gradeId(level)")
+          .order("id", { ascending: true })
+          .range(from, from + BATCH_SIZE - 1);
+
+        if (classId && classId !== "all") {
+          const parsedId = typeof classId === "string" ? parseInt(classId, 10) : classId;
+          if (!isNaN(parsedId)) {
+            q = q.eq("classId", parsedId);
+          }
+        }
+
+        const { data, error } = await q;
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          all.push(...data);
+          if (data.length < BATCH_SIZE) {
+            hasMore = false;
+          } else {
+            from += BATCH_SIZE;
+          }
+        } else {
+          hasMore = false;
+        }
+      }
+      return all;
+    };
+
+    const fetchAllAuthUsers = async () => {
+      const map: { [id: string]: any } = {};
+      let page = 1;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data, error } = await adminClient.auth.admin.listUsers({
+          page,
+          perPage: 1000,
+        });
+
+        if (error) {
+          console.warn("Could not list auth users page " + page, error);
+          break;
+        }
+
+        const users = data?.users || [];
+        users.forEach((u: any) => {
+          map[u.id] = u;
+        });
+
+        if (users.length < 1000) {
+          hasMore = false;
+        } else {
+          page++;
+        }
+      }
+      return map;
+    };
+
+    const [studentList, userMap] = await Promise.all([
+      fetchAllStudents(),
+      fetchAllAuthUsers(),
     ]);
-
-    if (studentErr) throw studentErr;
-
-    const userMap: { [id: string]: any } = {};
-    (authUserData?.users || []).forEach((u: any) => {
-      userMap[u.id] = u;
-    });
 
     // Format & map students
     const formattedStudents: StudentCredentialItem[] = (studentList || []).map((s: any) => {
@@ -185,62 +234,93 @@ export async function syncStudentAuthPasswords(params: {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    let query = adminClient
-      .from("Student")
-      .select("id, rollNumber, birthday, username");
+    // Fetch all students in batches to bypass 1000 limit
+    const BATCH_SIZE = 1000;
+    let students: any[] = [];
+    let from = 0;
+    let hasMore = true;
 
-    if (params.classId && params.classId !== "all") {
-      const cid = typeof params.classId === "string" ? parseInt(params.classId, 10) : params.classId;
-      if (!isNaN(cid)) {
-        query = query.eq("classId", cid);
+    while (hasMore) {
+      let query = adminClient
+        .from("Student")
+        .select("id, rollNumber, birthday, username")
+        .order("id", { ascending: true })
+        .range(from, from + BATCH_SIZE - 1);
+
+      if (params.classId && params.classId !== "all") {
+        const cid = typeof params.classId === "string" ? parseInt(params.classId, 10) : params.classId;
+        if (!isNaN(cid)) {
+          query = query.eq("classId", cid);
+        }
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        students.push(...data);
+        if (data.length < BATCH_SIZE) {
+          hasMore = false;
+        } else {
+          from += BATCH_SIZE;
+        }
+      } else {
+        hasMore = false;
       }
     }
 
-    const { data: students, error } = await query;
-    if (error) throw error;
     if (!students || students.length === 0) {
       return { success: true, updatedCount: 0 };
     }
 
     let count = 0;
-    for (const st of students) {
-      let targetPassword = params.defaultPassword || "dcpems@123";
+    const CONCURRENCY = 25;
 
-      if (params.passwordFormat === "roll" && st.rollNumber && st.rollNumber !== "N/A") {
-        targetPassword = `pass@${st.rollNumber}`;
-      } else if (params.passwordFormat === "dob" && st.birthday) {
-        try {
-          const d = new Date(st.birthday);
-          const dd = String(d.getDate()).padStart(2, "0");
-          const mm = String(d.getMonth() + 1).padStart(2, "0");
-          const yyyy = d.getFullYear();
-          targetPassword = `${dd}${mm}${yyyy}`;
-        } catch {
-          targetPassword = params.defaultPassword || "dcpems@123";
-        }
-      }
+    for (let i = 0; i < students.length; i += CONCURRENCY) {
+      const chunk = students.slice(i, i + CONCURRENCY);
+      await Promise.all(
+        chunk.map(async (st) => {
+          let targetPassword = params.defaultPassword || "dcpems@123";
 
-      if (targetPassword.length < 6) {
-        targetPassword = `${targetPassword}123`;
-      }
+          if (params.passwordFormat === "roll" && st.rollNumber && st.rollNumber !== "N/A") {
+            targetPassword = `pass@${st.rollNumber}`;
+          } else if (params.passwordFormat === "dob" && st.birthday) {
+            try {
+              const d = new Date(st.birthday);
+              const dd = String(d.getDate()).padStart(2, "0");
+              const mm = String(d.getMonth() + 1).padStart(2, "0");
+              const yyyy = d.getFullYear();
+              targetPassword = `${dd}${mm}${yyyy}`;
+            } catch {
+              targetPassword = params.defaultPassword || "dcpems@123";
+            }
+          }
 
-      // 1. Update Supabase Auth Password
-      try {
-        await adminClient.auth.admin.updateUserById(st.id, {
-          password: targetPassword,
-        });
-      } catch (authErr) {
-        console.warn(`Could not update Auth password for user ${st.id}:`, authErr);
-      }
+          if (targetPassword.length < 6) {
+            targetPassword = `${targetPassword}123`;
+          }
 
-      // 2. Update Student Table password if column exists
-      try {
-        await adminClient.from("Student").update({ password: targetPassword }).eq("id", st.id);
-      } catch (dbErr) {
-        // Safe fallback if column doesn't exist
-      }
+          // 1. Update Supabase Auth Password & metadata
+          try {
+            await adminClient.auth.admin.updateUserById(st.id, {
+              password: targetPassword,
+              user_metadata: {
+                temp_password: targetPassword,
+              },
+            });
+            count++;
+          } catch (authErr) {
+            console.warn(`Could not update Auth password for user ${st.id}:`, authErr);
+          }
 
-      count++;
+          // 2. Update Student Table password if column exists
+          try {
+            await adminClient.from("Student").update({ password: targetPassword }).eq("id", st.id);
+          } catch (dbErr) {
+            // Safe fallback if column doesn't exist
+          }
+        })
+      );
     }
 
     return { success: true, updatedCount: count };

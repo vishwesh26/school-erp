@@ -135,6 +135,83 @@ export default function StudentCredentialsPDFModal({
         }
     };
 
+    // Direct Browser Print & Vector PDF Handler (handles 1488+ students instantly with vector sharpness)
+    const handlePrint = () => {
+        if (!pdfContainerRef.current) return;
+        const printWindow = window.open("", "_blank");
+        if (!printWindow) {
+            alert("Popup blocked! Please allow popups to open the print dialog.");
+            return;
+        }
+
+        const orientation = layoutMode === "table" ? "landscape" : "portrait";
+        const content = pdfContainerRef.current.innerHTML;
+
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <title>Student_Credentials_${selectedClassId === "all" ? "All_Classes" : "Class"}</title>
+                    <style>
+                        @page {
+                            size: A4 ${orientation};
+                            margin: 8mm;
+                        }
+                        body {
+                            font-family: 'Times New Roman', serif;
+                            color: #000;
+                            margin: 0;
+                            padding: 0;
+                            background: #fff;
+                        }
+                        .class-pdf-page {
+                            page-break-after: always;
+                            break-after: page;
+                            padding-bottom: 20px;
+                        }
+                        .class-pdf-page:last-child {
+                            page-break-after: auto;
+                            break-after: auto;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            border: 1px solid #000;
+                            font-size: 8.5pt;
+                        }
+                        th, td {
+                            border: 1px solid #000;
+                            padding: 4px 6px;
+                        }
+                        th {
+                            background-color: #f1f5f9 !important;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                        tr:nth-child(even) {
+                            background-color: #f8fafc !important;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${content}
+                    <script>
+                        window.onload = function() {
+                            setTimeout(function() {
+                                window.focus();
+                                window.print();
+                                window.close();
+                            }, 500);
+                        };
+                    </script>
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+    };
+
     // PDF Download Handler
     const handleDownloadPDF = async () => {
         if (typeof window === "undefined" || !pdfContainerRef.current) return;
@@ -155,11 +232,14 @@ export default function StudentCredentialsPDFModal({
             const layoutTag = layoutMode === "table" ? "Roster" : "Cards";
             const filename = `DCPEMS_Student_Credentials_${classNameTag}_${layoutTag}.pdf`;
 
+            // Adjust scale dynamically for large cohorts (> 250 students) to avoid browser canvas limits
+            const canvasScale = totalStudents > 250 ? 1.1 : 2;
+
             const opt = {
                 margin: layoutMode === "table" ? [8, 8, 8, 8] : [6, 6, 6, 6],
                 filename: filename,
-                image: { type: "jpeg" as const, quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, windowWidth: 1200 },
+                image: { type: "jpeg" as const, quality: 0.95 },
+                html2canvas: { scale: canvasScale, useCORS: true, windowWidth: 1200 },
                 jsPDF: {
                     unit: "mm" as const,
                     format: "a4" as const,
@@ -173,7 +253,7 @@ export default function StudentCredentialsPDFModal({
             if (wrapper) wrapper.style.display = "none";
         } catch (error) {
             console.error("Error generating credentials PDF:", error);
-            alert("An error occurred while generating the PDF. Please try again.");
+            alert("An error occurred while generating the PDF. Please try again or use the Print/Browser PDF button.");
         } finally {
             setGeneratingPdf(false);
         }
@@ -645,21 +725,54 @@ export default function StudentCredentialsPDFModal({
                                 Cancel
                             </button>
 
-                            <div className="flex items-center gap-3">
+                            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                                 {activeTab === "config" && (
                                     <button
                                         type="button"
                                         onClick={() => setActiveTab("preview")}
-                                        className="px-4 py-2 text-xs sm:text-sm font-bold text-gray-700 bg-white border border-gray-300 hover:bg-gray-100 rounded-xl transition shadow-2xs cursor-pointer"
+                                        className="px-3.5 py-2 text-xs sm:text-sm font-bold text-gray-700 bg-white border border-gray-300 hover:bg-gray-100 rounded-xl transition shadow-2xs cursor-pointer"
                                     >
                                         Preview Output
                                     </button>
                                 )}
                                 <button
                                     type="button"
+                                    onClick={handlePrint}
+                                    disabled={totalStudents === 0}
+                                    className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-md active:scale-95 transition disabled:opacity-50 cursor-pointer"
+                                    title="Instant high-resolution printing or vector PDF export using browser print dialog"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={2}
+                                        stroke="currentColor"
+                                        className="w-4 h-4 text-orange-400"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M6.72 13.829c-.24-1.044.57-2.079 1.63-2.079h7.3c1.06 0 1.87 1.035 1.63 2.079l-1.05 4.57A2.25 2.25 0 0 1 14.035 20H9.965a2.25 2.25 0 0 1-2.195-1.721l-1.05-4.57Z"
+                                        />
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M18 10V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v4"
+                                        />
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"
+                                        />
+                                    </svg>
+                                    <span>Print / Vector PDF</span>
+                                </button>
+                                <button
+                                    type="button"
                                     onClick={handleDownloadPDF}
                                     disabled={generatingPdf || totalStudents === 0}
-                                    className="flex items-center gap-2 bg-gradient-to-r from-[#f16122] to-[#d84e12] hover:from-[#e05315] hover:to-[#c4430a] text-white px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-lg shadow-orange-500/25 active:scale-95 transition disabled:opacity-50 cursor-pointer"
+                                    className="flex items-center gap-2 bg-gradient-to-r from-[#f16122] to-[#d84e12] hover:from-[#e05315] hover:to-[#c4430a] text-white px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-lg shadow-orange-500/25 active:scale-95 transition disabled:opacity-50 cursor-pointer"
                                 >
                                     {generatingPdf ? (
                                         <>

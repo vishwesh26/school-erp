@@ -188,40 +188,63 @@ const StudentListPage = async ({
   );
 
   // Fetch ALL students for the selected class (for Export)
-  let exportQuery: any;
+  let allStudentsInClass: any[] = [];
   if (isAlumniView) {
-    exportQuery = supabase
+    const exportQuery = supabase
       .from('StudentHistory')
       .select('*, Student(id, name, surname, rollNumber, email, phone, bloodType, parent:Parent(name, surname))')
       .eq('status', 'Passed Out')
       .eq('academicYearId', academicYearId);
+
+    const { data: exportRaw, error: exportErr } = await exportQuery.order('Student(name)', { ascending: true });
+    if (exportErr) console.error("Export Query Error:", exportErr);
+    allStudentsInClass = (exportRaw as any[])?.map(h => ({
+      ...h.Student,
+      parentName: h.Student?.parent ? `${h.Student.parent.name || ''} ${h.Student.parent.surname || ''}`.trim() : 'N/A'
+    })) || [];
   } else {
-    exportQuery = supabase.from('Student').select('id, name, surname, rollNumber, email, phone, bloodType, parent:Parent(name, surname)');
-    if (classId) {
-      exportQuery = exportQuery.eq('classId', classId);
+    // Paginate in chunks of 1000 to bypass PostgREST limit and fetch all students
+    const BATCH_SIZE = 1000;
+    let exportRaw: any[] = [];
+    let fromExp = 0;
+    let hasMoreExp = true;
+
+    while (hasMoreExp) {
+      let q = supabase
+        .from('Student')
+        .select('id, name, surname, rollNumber, email, phone, bloodType, parent:Parent(name, surname)')
+        .order('name', { ascending: true })
+        .range(fromExp, fromExp + BATCH_SIZE - 1);
+
+      if (classId) {
+        q = q.eq('classId', classId);
+      }
+      if (queryParams.search) {
+        q = q.ilike('name', `%${queryParams.search}%`);
+      }
+
+      const { data: chunk, error: expErr } = await q;
+      if (expErr) {
+        console.error("Export Query Error:", expErr);
+        break;
+      }
+      if (chunk && chunk.length > 0) {
+        exportRaw.push(...chunk);
+        if (chunk.length < BATCH_SIZE) {
+          hasMoreExp = false;
+        } else {
+          fromExp += BATCH_SIZE;
+        }
+      } else {
+        hasMoreExp = false;
+      }
     }
-    if (queryParams.search) {
-      exportQuery = exportQuery.ilike('name', `%${queryParams.search}%`);
-    }
+
+    allStudentsInClass = exportRaw.map(s => ({
+      ...s,
+      parentName: s.parent ? `${s.parent.name || ''} ${s.parent.surname || ''}`.trim() : 'N/A'
+    }));
   }
-
-  const { data: exportRaw, error: exportErr } = isAlumniView
-    ? await exportQuery.order('Student(name)', { ascending: true })
-    : await exportQuery.order('name', { ascending: true });
-
-  if (exportErr) {
-    console.error("Export Query Error:", exportErr);
-  }
-
-  const allStudentsInClass = isAlumniView
-    ? (exportRaw as any[])?.map(h => ({
-        ...h.Student,
-        parentName: h.Student?.parent ? `${h.Student.parent.name || ''} ${h.Student.parent.surname || ''}`.trim() : 'N/A'
-      }))
-    : (exportRaw as any[])?.map(s => ({
-        ...s,
-        parentName: s.parent ? `${s.parent.name || ''} ${s.parent.surname || ''}`.trim() : 'N/A'
-      }));
 
   // Fetch Session/Class Name for the heading/export
   let classNameForDisplay = "Global Search Results";
