@@ -31,17 +31,27 @@ const SettingsPage = async () => {
         return <div>Error loading user data.</div>
     }
 
+    if (role === "parent") {
+        return (
+            <div className="p-6 bg-white rounded-2xl m-4 border border-slate-200 shadow-sm max-w-2xl">
+                <h1 className="text-xl font-bold text-slate-800 mb-2">Settings</h1>
+                <p className="text-sm text-slate-500">
+                    Profile editing is disabled for parent accounts. If you need to update any contact or personal information, please contact the school administration.
+                </p>
+            </div>
+        );
+    }
+
     // Map role to table name for FormContainer
-    const tableMap: { [key: string]: "teacher" | "student" | "parent" } = {
+    const tableMap: { [key: string]: "teacher" | "student" } = {
         teacher: "teacher",
         student: "student",
-        parent: "parent",
         admin: "teacher" // Admin might use teacher form or none? Let's assume admin uses teacher form or disable for now.
     };
 
     const table = tableMap[role as string];
 
-    if (!table) return <div>Settings not available for this role.</div>
+    if (!table) return <div>Settings not available for this role.</div>;
 
     return (
         <div className="p-4 bg-white rounded-md m-4 min-h-[calc(100vh-100px)]">

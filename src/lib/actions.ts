@@ -1870,6 +1870,15 @@ export const updateParent = async (
     return { success: false, error: true };
   }
   try {
+    const authSupabase = createServerClient();
+    const { data: { user } } = await authSupabase.auth.getUser();
+    const role = user?.user_metadata?.role;
+
+    if (role === "parent") {
+      console.warn("Unauthorized attempt by parent to update profile:", user?.id);
+      return { success: false, error: true };
+    }
+
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!

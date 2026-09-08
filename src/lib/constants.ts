@@ -137,7 +137,7 @@ export const menuItems = [
                 icon: "/setting.png",
                 label: "Settings",
                 href: "/settings",
-                visible: ["admin", "teacher", "student", "parent", "reception", "accountant"],
+                visible: ["admin", "teacher", "student", "reception", "accountant"],
             },
             {
                 icon: "/view.png",

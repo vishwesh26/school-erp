@@ -32,6 +32,11 @@ const FormContainer = async ({ table, type, data, id }: FormContainerProps) => {
   const role = user?.user_metadata?.role;
   const currentUserId = user?.id;
 
+  // Restrict parents from accessing any form or profile modification
+  if (role === "parent") {
+    return null;
+  }
+
   // Protect class deletion: Admin only
   if (table === "class" && type === "delete" && role !== "admin") {
     return null;

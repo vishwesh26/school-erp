@@ -3,7 +3,6 @@ import Image from "next/image";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import FormContainer from "@/components/FormContainer";
 import StudentAttendanceCard from "@/components/StudentAttendanceCard";
 import { Suspense } from "react";
 import Announcements from "@/components/Announcements";
@@ -267,7 +266,7 @@ const ProfilePage = async () => {
                             My Lessons
                         </Link>
                         {role === "student" && <Link className="p-3 rounded-md bg-lamaPurpleLight" href={`/list/results?studentId=${userId}`}>My Results</Link>}
-                        <Link className="p-3 rounded-md bg-pink-50" href="/settings">Settings</Link>
+                        {role !== "parent" && <Link className="p-3 rounded-md bg-pink-50" href="/settings">Settings</Link>}
                     </div>
                 </div>
                 {role === "teacher" && (

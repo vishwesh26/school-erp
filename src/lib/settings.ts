@@ -31,5 +31,5 @@ export const routeAccessMap: RouteAccessMap = {
   "/admin/documents": ["admin"],
   "/list/lessons": ["admin", "teacher", "student", "parent", "accountant"],
   "/profile": ["admin", "teacher", "student", "parent", "accountant"],
-  "/settings": ["admin", "teacher", "student", "parent", "accountant"],
+  "/settings": ["admin", "teacher", "student", "accountant"],
 };
