@@ -21,6 +21,14 @@ const nextConfig = {
                         value: 'no-cache, no-store, max-age=0, must-revalidate',
                     },
                     {
+                        key: 'Pragma',
+                        value: 'no-cache',
+                    },
+                    {
+                        key: 'Expires',
+                        value: '0',
+                    },
+                    {
                         key: 'CDN-Cache-Control',
                         value: 'no-store',
                     },

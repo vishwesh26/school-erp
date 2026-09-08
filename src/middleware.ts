@@ -47,10 +47,25 @@ export async function middleware(request: NextRequest) {
     if (pattern.test(request.nextUrl.pathname)) {
       const allowedRoles = routeAccessMap[route];
       if (!allowedRoles.includes(role)) {
-        return NextResponse.redirect(new URL(role ? `/${role}` : "/sign-in", request.url));
+        const redirectResponse = NextResponse.redirect(new URL(role ? `/${role}` : "/sign-in", request.url));
+        redirectResponse.headers.set(
+          "Cache-Control",
+          "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+        );
+        return redirectResponse;
       }
     }
   }
+
+  // Ensure all HTML / page responses are never cached by CDN or browser
+  response.headers.set(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+  );
+  response.headers.set("CDN-Cache-Control", "no-store");
+  response.headers.set("Surrogate-Control", "no-store");
+  response.headers.set("Pragma", "no-cache");
+  response.headers.set("Expires", "0");
 
   return response;
 }
