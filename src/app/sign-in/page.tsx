@@ -112,6 +112,9 @@ export default function LoginPage() {
                   className="w-full pl-11 pr-4 py-3 rounded-xl bg-gray-50/80 border border-gray-200 text-gray-900 placeholder-gray-400 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#f16122] focus:border-transparent focus:bg-white transition-all"
                 />
               </div>
+              <p className="text-[11px] text-gray-500 pl-1">
+                Students: Enter <span className="font-medium text-gray-700">Class-Roll (e.g. 3B-004)</span>, Username, or Roll No
+              </p>
             </div>
 
             {/* Password Input */}

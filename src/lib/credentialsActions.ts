@@ -305,6 +305,7 @@ export async function syncStudentAuthPasswords(params: {
             await adminClient.auth.admin.updateUserById(st.id, {
               password: targetPassword,
               user_metadata: {
+                role: "student",
                 temp_password: targetPassword,
               },
             });
