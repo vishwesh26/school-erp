@@ -35,28 +35,32 @@ export const createSubject = async (
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
+    const teacherId = data.teacherId || (Array.isArray(data.teachers) ? data.teachers[0] : (data.teachers as string | null)) || null;
+
     // 1. Create Subject
     const { data: subject, error } = await supabase.from('Subject').insert({
       name: data.name,
+      teacherId: teacherId,
     }).select('id').single();
 
     if (error) throw error;
 
-    // 2. Insert Teachers (if any)
-    if (data.teachers && data.teachers.length > 0) {
-      const relations = data.teachers.map(teacherId => ({
-        A: subject.id, // Subject ID
-        B: teacherId   // Teacher ID
-      }));
-      const { error: relError } = await supabase.from('_SubjectToTeacher').insert(relations);
-      if (relError) throw relError;
+    // 2. Insert Teacher into join table (if any) to keep _SubjectToTeacher in sync
+    if (teacherId && subject?.id) {
+      const { error: relError } = await supabase.from('_SubjectToTeacher').insert([
+        {
+          A: subject.id,
+          B: teacherId,
+        }
+      ]);
+      if (relError) console.error("Error inserting into _SubjectToTeacher:", relError);
     }
 
-    // revalidatePath("/list/subjects");
+    revalidatePath("/list/subjects");
     return { success: true, error: false };
-  } catch (err) {
+  } catch (err: any) {
     console.log(err);
-    return { success: false, error: true };
+    return { success: false, error: true, message: err?.message || "Failed to create subject" };
   }
 };
 
@@ -70,35 +74,43 @@ export const updateSubject = async (
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // 1. Update Subject Name
-    const { error } = await supabase.from('Subject').update({
+    const subjectId = parseInt(String(data.id));
+    const teacherId = data.teacherId !== undefined ? data.teacherId : (Array.isArray(data.teachers) ? (data.teachers[0] || null) : (data.teachers as string | null));
+
+    // 1. Update Subject Name & teacherId
+    const updatePayload: { name: string; teacherId?: string | null } = {
       name: data.name,
-    }).eq('id', data.id);
+    };
+    if (teacherId !== undefined) {
+      updatePayload.teacherId = teacherId;
+    }
+
+    const { error } = await supabase.from('Subject').update(updatePayload).eq('id', subjectId);
 
     if (error) throw error;
 
-    // 2. Sync Teachers
-    // We replace all existing relations with the new list
-    if (data.teachers) {
-      // Clear existing
-      await supabase.from('_SubjectToTeacher').delete().eq('A', data.id);
+    // 2. Sync Teachers in _SubjectToTeacher
+    if (teacherId !== undefined) {
+      // Clear existing relations
+      await supabase.from('_SubjectToTeacher').delete().eq('A', subjectId);
 
-      // Insert new
-      if (data.teachers.length > 0) {
-        const relations = data.teachers.map(teacherId => ({
-          A: data.id,
-          B: teacherId
-        }));
-        const { error: relError } = await supabase.from('_SubjectToTeacher').insert(relations);
-        if (relError) throw relError;
+      // Insert new single relation if assigned
+      if (teacherId) {
+        const { error: relError } = await supabase.from('_SubjectToTeacher').insert([
+          {
+            A: subjectId,
+            B: teacherId,
+          }
+        ]);
+        if (relError) console.error("Error inserting into _SubjectToTeacher:", relError);
       }
     }
 
-    // revalidatePath("/list/subjects");
+    revalidatePath("/list/subjects");
     return { success: true, error: false };
-  } catch (err) {
+  } catch (err: any) {
     console.log(err);
-    return { success: false, error: true };
+    return { success: false, error: true, message: err?.message || "Failed to update subject" };
   }
 };
 
@@ -159,6 +171,7 @@ export const deleteSubject = async (
     const { error } = await supabase.from('Subject').delete().eq('id', parseInt(id));
     if (error) throw error;
 
+    revalidatePath("/list/subjects");
     return { success: true, error: false };
   } catch (err) {
     console.log(err);

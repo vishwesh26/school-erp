@@ -55,10 +55,14 @@ const SubjectForm = ({
   }, [state, router, type, setOpen]);
 
   const { teachers = [] } = relatedData || {};
+  const initialTeacherId =
+    data?.teacherId ||
+    (Array.isArray(data?.teachers) ? data.teachers[0] : data?.teachers) ||
+    "";
 
   return (
-    <form className="flex flex-col gap-8" onSubmit={onSubmit}>
-      <h1 className="text-xl font-semibold">
+    <form className="flex flex-col gap-6" onSubmit={onSubmit}>
+      <h1 className="text-xl font-bold text-[#4e282c]">
         {type === "create" ? "Create a new subject" : "Update the subject"}
       </h1>
 
@@ -80,34 +84,38 @@ const SubjectForm = ({
             hidden
           />
         )}
-        <div className="flex flex-col gap-2 w-full md:w-1/4">
-          <label className="text-xs text-gray-500">Teachers</label>
+        <div className="flex flex-col gap-2 w-full md:w-5/12">
+          <label className="text-xs font-semibold text-gray-700">
+            Assigned Teacher
+          </label>
           <select
-            multiple
-            className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
-            {...register("teachers")}
-            defaultValue={data?.teachers}
+            className="ring-[1.5px] ring-gray-300 p-2.5 rounded-lg text-sm w-full bg-white focus:outline-none focus:ring-2 focus:ring-[#4e282c]"
+            {...register("teacherId")}
+            defaultValue={initialTeacherId}
           >
+            <option value="">-- Select Teacher (Optional) --</option>
             {teachers.map(
               (teacher: { id: string; name: string; surname: string }) => (
                 <option value={teacher.id} key={teacher.id}>
-                  {teacher.name + " " + teacher.surname}
+                  {teacher.name} {teacher.surname}
                 </option>
               )
             )}
           </select>
-          {errors.teachers?.message && (
-            <p className="text-xs text-red-400">
-              {errors.teachers.message.toString()}
+          {errors.teacherId?.message && (
+            <p className="text-xs text-red-500 font-medium">
+              {errors.teacherId.message.toString()}
             </p>
           )}
         </div>
       </div>
       {state.error && (
-        <span className="text-red-500">Something went wrong!</span>
+        <span className="text-red-500 text-sm font-medium">
+          {state.message || "Something went wrong!"}
+        </span>
       )}
-      <button className="bg-blue-400 text-white p-2 rounded-md">
-        {type === "create" ? "Create" : "Update"}
+      <button className="bg-[#4e282c] hover:bg-[#3d1f22] transition-colors text-white py-2.5 px-6 rounded-lg font-medium shadow-sm">
+        {type === "create" ? "Create Subject" : "Update Subject"}
       </button>
     </form>
   );
