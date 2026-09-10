@@ -35,7 +35,7 @@ export default function StudentCredentialsPDFModal({
 
     // Credential configuration
     const [defaultPassword, setDefaultPassword] = useState<string>("dcpems@123");
-    const [passwordFormat, setPasswordFormat] = useState<"fixed" | "roll" | "dob" | "db">("fixed");
+    const [passwordFormat, setPasswordFormat] = useState<"fixed" | "roll" | "dob" | "db">("db");
     const [layoutMode, setLayoutMode] = useState<"table" | "cards">("table");
     const [activeTab, setActiveTab] = useState<"config" | "preview">("config");
 
@@ -74,8 +74,8 @@ export default function StudentCredentialsPDFModal({
 
     // Helper to calculate displayed password
     const getStudentPassword = (student: StudentCredentialItem): string => {
-        if (passwordFormat === "db" && student.password) {
-            return student.password;
+        if (passwordFormat === "db") {
+            return student.password || (student.rollNumber && student.rollNumber !== "N/A" ? `pass@${student.rollNumber}` : defaultPassword || "dcpems@123");
         }
         if (passwordFormat === "fixed") {
             return defaultPassword || "dcpems@123";
@@ -96,11 +96,16 @@ export default function StudentCredentialsPDFModal({
                 return defaultPassword || "dcpems@123";
             }
         }
-        return student.password || defaultPassword || "dcpems@123";
+        return student.password || (student.rollNumber && student.rollNumber !== "N/A" ? `pass@${student.rollNumber}` : defaultPassword || "dcpems@123");
     };
 
     // 1-Click Sync to Supabase Auth
     const handleSyncAuthPasswords = async () => {
+        if (passwordFormat === "db") {
+            alert("Each student's active system password (e.g. pass@<roll>) is already preserved and active in the system. To overwrite and mass-reset passwords to a new scheme, please choose 'Roll No Based', 'Common Password', or 'DOB'.");
+            return;
+        }
+
         const targetDesc = selectedClassId === "all" ? "ALL students across all classes" : "students in this class";
         if (
             !confirm(
@@ -115,7 +120,7 @@ export default function StudentCredentialsPDFModal({
         try {
             const res = await syncStudentAuthPasswords({
                 classId: selectedClassId,
-                passwordFormat: passwordFormat === "db" ? "fixed" : passwordFormat,
+                passwordFormat: passwordFormat,
                 defaultPassword,
             });
 
@@ -466,10 +471,10 @@ export default function StudentCredentialsPDFModal({
                                             </button>
                                         </div>
 
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                                             <label
                                                 className={`p-3 rounded-xl border cursor-pointer flex flex-col gap-1 transition-all ${
-                                                    passwordFormat === "fixed"
+                                                    passwordFormat === "db"
                                                         ? "border-[#f16122] bg-white shadow-xs text-[#4e282c]"
                                                         : "border-gray-200 bg-white/60 text-gray-600 hover:bg-white"
                                                 }`}
@@ -478,14 +483,14 @@ export default function StudentCredentialsPDFModal({
                                                     <input
                                                         type="radio"
                                                         name="pwdFormat"
-                                                        checked={passwordFormat === "fixed"}
-                                                        onChange={() => setPasswordFormat("fixed")}
+                                                        checked={passwordFormat === "db"}
+                                                        onChange={() => setPasswordFormat("db")}
                                                         className="text-[#f16122] focus:ring-[#f16122]"
                                                     />
-                                                    <span className="text-xs font-bold">Standard Password</span>
+                                                    <span className="text-xs font-bold">Active System Passwords</span>
                                                 </div>
-                                                <span className="text-[11px] text-gray-400 pl-5">
-                                                    Common initial password for all
+                                                <span className="text-[11px] text-gray-500 pl-5">
+                                                    Current saved active passwords (pass@&#60;roll&#62;)
                                                 </span>
                                             </label>
 
@@ -506,8 +511,30 @@ export default function StudentCredentialsPDFModal({
                                                     />
                                                     <span className="text-xs font-bold">Roll No Based</span>
                                                 </div>
-                                                <span className="text-[11px] text-gray-400 pl-5">
+                                                <span className="text-[11px] text-gray-500 pl-5">
                                                     e.g. pass@001, pass@002
+                                                </span>
+                                            </label>
+
+                                            <label
+                                                className={`p-3 rounded-xl border cursor-pointer flex flex-col gap-1 transition-all ${
+                                                    passwordFormat === "fixed"
+                                                        ? "border-[#f16122] bg-white shadow-xs text-[#4e282c]"
+                                                        : "border-gray-200 bg-white/60 text-gray-600 hover:bg-white"
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <input
+                                                        type="radio"
+                                                        name="pwdFormat"
+                                                        checked={passwordFormat === "fixed"}
+                                                        onChange={() => setPasswordFormat("fixed")}
+                                                        className="text-[#f16122] focus:ring-[#f16122]"
+                                                    />
+                                                    <span className="text-xs font-bold">Common Password</span>
+                                                </div>
+                                                <span className="text-[11px] text-gray-500 pl-5">
+                                                    Common initial password for all
                                                 </span>
                                             </label>
 
@@ -528,7 +555,7 @@ export default function StudentCredentialsPDFModal({
                                                     />
                                                     <span className="text-xs font-bold">DOB (DDMMYYYY)</span>
                                                 </div>
-                                                <span className="text-[11px] text-gray-400 pl-5">
+                                                <span className="text-[11px] text-gray-500 pl-5">
                                                     Student birth date format
                                                 </span>
                                             </label>

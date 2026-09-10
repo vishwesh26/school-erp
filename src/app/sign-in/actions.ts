@@ -315,6 +315,16 @@ export async function login(prevState: any, formData: FormData) {
                         // Determine the preferred email to update in auth
                         const targetAuthEmail = cand.email.endsWith('@dcpems.internal') ? cand.email : (authUser?.email || cand.email);
 
+                        // Preserve official roll password in metadata so it is not overwritten by dcpems@123
+                        let preservedTempPassword = currentAuthPwd;
+                        if (!preservedTempPassword && cand.rollNumber) {
+                            const r = cand.rollNumber.length < 3 && /^\d+$/.test(cand.rollNumber) ? cand.rollNumber.padStart(3, '0') : cand.rollNumber;
+                            preservedTempPassword = `pass@${r}`;
+                        }
+                        if (!preservedTempPassword) {
+                            preservedTempPassword = rawPassword;
+                        }
+
                         // Password is valid for this student! Sync to Supabase Auth and login
                         await adminSupabase.auth.admin.updateUserById(cand.studentId, {
                             email: targetAuthEmail,
@@ -322,7 +332,7 @@ export async function login(prevState: any, formData: FormData) {
                             password: rawPassword,
                             user_metadata: {
                                 role: 'student',
-                                temp_password: rawPassword,
+                                temp_password: preservedTempPassword,
                             },
                         });
 
