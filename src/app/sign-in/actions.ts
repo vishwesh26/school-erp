@@ -90,11 +90,23 @@ export async function login(prevState: any, formData: FormData) {
             try {
                 const { data: stByEmail } = await adminSupabase
                     .from('Student')
-                    .select('id, username, rollNumber, birthday, email')
+                    .select('id, username, rollNumber, birthday, email, parentId')
                     .ilike('email', cleanInput)
                     .limit(5);
 
                 await registerStudentCandidates(stByEmail || []);
+
+                // Sibling resolution: if student has a parent, also register sibling students
+                for (const s of (stByEmail || [])) {
+                    if (s.parentId) {
+                        const { data: siblings } = await adminSupabase
+                            .from('Student')
+                            .select('id, username, rollNumber, birthday, email')
+                            .eq('parentId', s.parentId)
+                            .neq('id', s.id);
+                        await registerStudentCandidates(siblings || []);
+                    }
+                }
             } catch (err) {}
 
             // Check if entered email belongs to a Parent
@@ -117,8 +129,8 @@ export async function login(prevState: any, formData: FormData) {
             candidateList.push({ email: `${lowerInput}@dcpems.internal` });
         }
 
-        // 3. Class + Roll pattern (e.g. "1E-001", "3B-004", "3B 4", "3b-4", "6A-026", "Class 3B Roll 4")
-        const classRollMatch = cleanInput.match(/^(?:Class\s*)?([0-9]{1,2}\s*[A-Za-z]+|\bNursery\b|\bLKG\b|\bUKG\b)[\s\-_,.:]*(?:Roll|No)?[\s\-_.:]*([0-9]+)$/i);
+        // 3. Class + Roll pattern (e.g. "1E-001", "3B-004", "NurseryA-005", "Nursery B 3", "Class 3B Roll 4")
+        const classRollMatch = cleanInput.match(/^(?:Class\s*)?([0-9]{1,2}\s*[A-Za-z]+|Nursery\s*[A-Za-z]?|LKG\s*[A-Za-z]?|UKG\s*[A-Za-z]?)[\s\-_,.:]*(?:Roll|No)?[\s\-_.:]*([0-9]+)$/i);
         if (classRollMatch) {
             const rawClass = classRollMatch[1].replace(/\s+/g, '');
             const rawRollInt = parseInt(classRollMatch[2], 10);
@@ -220,16 +232,21 @@ export async function login(prevState: any, formData: FormData) {
             } catch (err) {}
         }
 
-        // Deduplicate candidates preserving student metadata
-        const seenEmails = new Set<string>();
-        const uniqueCandidates: CandidateUser[] = [];
+        // Deduplicate candidates while merging and preserving student metadata
+        const candidateMap = new Map<string, CandidateUser>();
         for (const c of candidateList) {
             const key = (c.email || '').toLowerCase().trim();
-            if (key && !seenEmails.has(key)) {
-                seenEmails.add(key);
-                uniqueCandidates.push(c);
+            if (!key) continue;
+            const existing = candidateMap.get(key);
+            if (existing) {
+                if (!existing.studentId && c.studentId) existing.studentId = c.studentId;
+                if (!existing.rollNumber && c.rollNumber) existing.rollNumber = c.rollNumber;
+                if (!existing.birthday && c.birthday) existing.birthday = c.birthday;
+            } else {
+                candidateMap.set(key, { ...c });
             }
         }
+        const uniqueCandidates: CandidateUser[] = Array.from(candidateMap.values());
 
         let authData: any = null;
         let lastError: any = null;
