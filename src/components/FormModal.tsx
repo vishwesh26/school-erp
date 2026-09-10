@@ -104,7 +104,8 @@ const forms: {
     setOpen: Dispatch<SetStateAction<boolean>>,
     type: "create" | "update" | "transfer",
     data?: any,
-    relatedData?: any
+    relatedData?: any,
+    onSuccess?: () => void
   ) => JSX.Element;
 } = {
   librarian: (setOpen, type, data, relatedData) => (
@@ -172,12 +173,13 @@ const forms: {
       relatedData={relatedData}
     />
   ),
-  lesson: (setOpen, type, data, relatedData) => (
+  lesson: (setOpen, type, data, relatedData, onSuccess) => (
     <LessonForm
       type={type as "create" | "update"}
       data={data}
       setOpen={setOpen}
       relatedData={relatedData}
+      onSuccess={onSuccess}
     />
   ),
   result: (setOpen, type, data, relatedData) => (
@@ -243,7 +245,8 @@ const FormModal = ({
   data,
   id,
   relatedData,
-}: FormContainerProps & { relatedData?: any }) => {
+  onSuccess,
+}: FormContainerProps & { relatedData?: any; onSuccess?: () => void }) => {
   const [open, setOpen] = useState(false);
 
   const Form = () => {
@@ -258,6 +261,7 @@ const FormModal = ({
       if (state.success) {
         toast(`${table} has been deleted!`);
         setOpen(false);
+        onSuccess?.();
         router.refresh();
       }
     }, [state, router]);
@@ -273,7 +277,7 @@ const FormModal = ({
         </button>
       </form>
     ) : (type === "create" || type === "update" || type === "transfer") && forms[table] ? (
-      forms[table](setOpen, type, data, relatedData)
+      forms[table](setOpen, type, data, relatedData, onSuccess)
     ) : (
       "Form not found!"
     );

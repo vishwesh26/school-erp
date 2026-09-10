@@ -23,7 +23,7 @@ import { sendNotificationEmail } from "./mail";
 
 
 
-type CurrentState = { success: boolean; error: boolean };
+type CurrentState = { success: boolean; error: boolean; message?: string };
 
 export const createSubject = async (
   currentState: CurrentState,
@@ -1159,14 +1159,18 @@ export const createLesson = async (
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const { error } = await supabase.from('Lesson').insert(data);
+    const { id, ...insertPayload } = data as any;
+
+    const { error } = await supabase.from('Lesson').insert(insertPayload);
 
     if (error) throw error;
 
+    revalidatePath("/teacher");
+    revalidatePath("/list/lessons");
     return { success: true, error: false };
-  } catch (err) {
-    console.log(err);
-    return { success: false, error: true };
+  } catch (err: any) {
+    console.error("createLesson error:", err);
+    return { success: false, error: true, message: err?.message || "Failed to create lesson" };
   }
 };
 
@@ -1180,14 +1184,23 @@ export const updateLesson = async (
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const { error } = await supabase.from('Lesson').update(data).eq('id', data.id);
+    const { id, ...updatePayload } = data as any;
+    const lessonId = parseInt(String(id));
+
+    if (isNaN(lessonId) || !lessonId) {
+      throw new Error("Invalid lesson ID for update");
+    }
+
+    const { error } = await supabase.from('Lesson').update(updatePayload).eq('id', lessonId);
 
     if (error) throw error;
 
+    revalidatePath("/teacher");
+    revalidatePath("/list/lessons");
     return { success: true, error: false };
-  } catch (err) {
-    console.log(err);
-    return { success: false, error: true };
+  } catch (err: any) {
+    console.error("updateLesson error:", err);
+    return { success: false, error: true, message: err?.message || "Failed to update lesson" };
   }
 };
 
@@ -1203,6 +1216,9 @@ export const deleteLesson = async (
     );
 
     const lessonId = parseInt(id);
+    if (isNaN(lessonId)) {
+      throw new Error("Invalid lesson ID for deletion");
+    }
 
     // Conflict cleanup
     // 1. Attendance
@@ -1228,10 +1244,12 @@ export const deleteLesson = async (
 
     if (error) throw error;
 
+    revalidatePath("/teacher");
+    revalidatePath("/list/lessons");
     return { success: true, error: false };
-  } catch (err) {
-    console.log(err);
-    return { success: false, error: true };
+  } catch (err: any) {
+    console.error("deleteLesson error:", err);
+    return { success: false, error: true, message: err?.message || "Failed to delete lesson" };
   }
 };
 

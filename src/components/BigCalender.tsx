@@ -5,7 +5,7 @@ import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { useState, useMemo } from "react";
 import FormModal from "./FormModal";
-import { adjustScheduleToCurrentWeek } from "@/lib/utils";
+import { adjustScheduleToCurrentWeek, formatClassName } from "@/lib/utils";
 
 const localizer = momentLocalizer(moment);
 
@@ -57,7 +57,8 @@ const BigCalendar = ({
     return adjustScheduleToCurrentWeek(lessonsWithDates, date);
   }, [data, date]);
 
-  const canEdit = (role === "admin" || role === "teacher") && selectedEvent?.rawLesson;
+  const isTeacherOwner = role === "teacher" && (!currentUserId || !selectedEvent?.rawLesson?.teacherId || selectedEvent?.rawLesson?.teacherId === currentUserId);
+  const canEdit = (role === "admin" || isTeacherOwner) && !!selectedEvent?.rawLesson;
 
   return (
     <div className="relative h-full">
@@ -97,11 +98,13 @@ const BigCalendar = ({
                     type="update"
                     data={selectedEvent.rawLesson}
                     relatedData={relatedData}
+                    onSuccess={() => setSelectedEvent(null)}
                   />
                   <FormModal
                     table="lesson"
                     type="delete"
                     id={selectedEvent.id}
+                    onSuccess={() => setSelectedEvent(null)}
                   />
                 </div>
               )}
@@ -114,7 +117,7 @@ const BigCalendar = ({
               </div>
               <div className="flex justify-between items-center">
                 <span className="font-semibold text-gray-500">Class:</span>
-                <span className="font-medium text-gray-800">{selectedEvent.class?.name || "N/A"}</span>
+                <span className="font-medium text-gray-800">{formatClassName(selectedEvent.class?.name) || "N/A"}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="font-semibold text-gray-500">Teacher:</span>

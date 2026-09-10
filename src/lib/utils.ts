@@ -20,10 +20,10 @@ const dayMap: { [key: string]: number } = {
   SATURDAY: 6,
 };
 
-export const adjustScheduleToCurrentWeek = (
-  lessons: { title: string; start: Date; end: Date; day?: string }[],
+export const adjustScheduleToCurrentWeek = <T extends { title: string; start: Date; end: Date; day?: string }>(
+  lessons: T[],
   referenceDate: Date = new Date()
-): { title: string; start: Date; end: Date }[] => {
+): (T & { start: Date; end: Date })[] => {
   const latestMonday = getLatestMonday(referenceDate);
 
   return lessons.map((lesson) => {
@@ -46,17 +46,20 @@ export const adjustScheduleToCurrentWeek = (
     adjustedStartDate.setHours(
       lesson.start.getHours(),
       lesson.start.getMinutes(),
-      lesson.start.getSeconds()
+      lesson.start.getSeconds(),
+      0
     );
 
     const adjustedEndDate = new Date(adjustedStartDate);
     adjustedEndDate.setHours(
       lesson.end.getHours(),
       lesson.end.getMinutes(),
-      lesson.end.getSeconds()
+      lesson.end.getSeconds(),
+      0
     );
 
     return {
+      ...lesson,
       title: lesson.title,
       start: adjustedStartDate,
       end: adjustedEndDate,
