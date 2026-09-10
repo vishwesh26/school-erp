@@ -1,12 +1,10 @@
 import Announcements from "@/components/Announcements";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
-import BigCalendar from "@/components/BigCalender";
 import EventCalendar from "@/components/EventCalendar";
 import { createClient } from "@/lib/supabase/server";
 import StudentAttendanceCard from "@/components/StudentAttendanceCard";
+import StudentDashboardClient from "@/components/dashboard/StudentDashboardClient";
 import { Suspense } from "react";
-import Image from "next/image";
-import { formatGrade, formatClassName } from "@/lib/utils";
 
 const StudentPage = async () => {
   const supabase = createClient();
@@ -21,7 +19,7 @@ const StudentPage = async () => {
 
   const classId = student?.classId;
 
-  // Fetch lesson count
+  // 1. Fetch lesson count
   let lessonCount = 0;
   if (classId) {
     const { count } = await supabase
@@ -31,60 +29,68 @@ const StudentPage = async () => {
     lessonCount = count || 0;
   }
 
-  return (
-    <div className="p-4 flex gap-4 flex-col">
-      {/* SUMMARY CARDS */}
-      <div className="flex gap-4 justify-between flex-wrap">
-        {/* CARD */}
-        <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[24%] shadow-sm">
-          <Image src="/singleAttendance.png" alt="" width={24} height={24} className="w-6 h-6" />
-          <Suspense fallback="loading...">
-            <StudentAttendanceCard id={userId!} />
-          </Suspense>
-        </div>
-        {/* CARD */}
-        <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[24%] shadow-sm">
-          <Image src="/singleBranch.png" alt="" width={24} height={24} className="w-6 h-6" />
-          <div>
-            <h1 className="text-xl font-semibold">
-              {student?.grade?.level !== undefined ? formatGrade(student.grade.level) : formatGrade(student?.class?.name)}
-            </h1>
-            <span className="text-sm text-gray-400">Grade</span>
-          </div>
-        </div>
-        {/* CARD */}
-        <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[24%] shadow-sm">
-          <Image src="/singleLesson.png" alt="" width={24} height={24} className="w-6 h-6" />
-          <div>
-            <h1 className="text-xl font-semibold">{lessonCount}</h1>
-            <span className="text-sm text-gray-400">Lessons</span>
-          </div>
-        </div>
-        {/* CARD */}
-        <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[24%] shadow-sm">
-          <Image src="/singleClass.png" alt="" width={24} height={24} className="w-6 h-6" />
-          <div>
-            <h1 className="text-xl font-semibold">{formatClassName(student?.class?.name) || "-"}</h1>
-            <span className="text-sm text-gray-400">Class</span>
-          </div>
-        </div>
-      </div>
+  // 2. Fetch homework/assignments for this class (Demo 4 style)
+  let homeworkItems: any[] = [];
+  if (classId) {
+    const { data: assignments } = await supabase
+      .from("Assignment")
+      .select("*, subject:Subject(*), teacher:Teacher(*)")
+      .eq("classId", classId)
+      .order("dueDate", { ascending: false })
+      .limit(6);
 
-      <div className="flex gap-4 flex-col xl:flex-row">
-        {/* LEFT */}
-        <div className="w-full xl:w-2/3">
-          <div className="h-full bg-white p-4 rounded-md shadow-sm">
-            <h1 className="text-xl font-semibold mb-4">Schedule ({formatClassName(student?.class?.name) || "-"})</h1>
-            {classId && <BigCalendarContainer type="classId" id={classId} />}
-          </div>
-        </div>
-        {/* RIGHT */}
-        <div className="w-full xl:w-1/3 flex flex-col gap-8">
-          <EventCalendar />
-          <Announcements classId={classId} />
-        </div>
-      </div>
-    </div>
+    homeworkItems = (assignments || []).map((a: any) => ({
+      id: a.id,
+      title: a.title,
+      subjectName: a.subject?.name || "General",
+      className: student?.class?.name,
+      teacherName: a.teacher ? `${a.teacher.name} ${a.teacher.surname || ""}`.trim() : undefined,
+      assignedDate: a.startDate || a.createdAt,
+      dueDate: a.dueDate,
+      status: new Date(a.dueDate) < new Date() ? "Pending" : "Assigned",
+    }));
+  }
+
+  // 3. Fetch classmates (Demo 5 style)
+  let classmates: any[] = [];
+  if (classId) {
+    const { data: studentsData } = await supabase
+      .from("Student")
+      .select("id, name, surname, img, rollNumber")
+      .eq("classId", classId)
+      .order("rollNumber", { ascending: true });
+
+    classmates = (studentsData || []).map((s: any) => ({
+      id: s.id,
+      name: s.name,
+      surname: s.surname,
+      img: s.img,
+      rollNumber: s.rollNumber,
+      className: student?.class?.name,
+    }));
+  }
+
+  return (
+    <StudentDashboardClient
+      student={student}
+      lessonCount={lessonCount}
+      homeworkItems={homeworkItems}
+      classmates={classmates}
+      attendanceSlot={
+        <Suspense fallback={<div className="h-6 w-16 bg-slate-100 animate-pulse rounded" />}>
+          <StudentAttendanceCard id={userId!} />
+        </Suspense>
+      }
+      scheduleSlot={
+        classId ? (
+          <BigCalendarContainer type="classId" id={classId} />
+        ) : (
+          <div className="py-12 text-center text-slate-400 text-sm">No class schedule assigned.</div>
+        )
+      }
+      calendarSlot={<EventCalendar />}
+      announcementsSlot={<Announcements classId={classId} />}
+    />
   );
 };
 

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Image from "next/image";
+import Link from "next/link";
 
 const UserCard = async ({
   type,
@@ -21,34 +22,95 @@ const UserCard = async ({
     .from(tableName)
     .select('*', { count: 'exact', head: true });
 
-  const gradients: Record<string, string> = {
-    admin: "from-slate-900 via-slate-800 to-slate-900 text-white",
-    teacher: "from-amber-600 via-orange-500 to-amber-600 text-white",
-    student: "from-rose-600 via-pink-500 to-rose-600 text-white",
-    parent: "from-teal-600 via-emerald-500 to-teal-600 text-white",
-    librarian: "from-purple-600 via-indigo-600 to-purple-600 text-white",
-    inquiry: "from-blue-600 via-cyan-600 to-blue-600 text-white",
+  const cardConfig: Record<
+    string,
+    { bg: string; border: string; icon: string; link: string; badge: string }
+  > = {
+    admin: {
+      bg: "bg-gradient-to-br from-[#4e282c] via-[#631f24] to-[#4e282c] text-white",
+      border: "border-white/20",
+      icon: "/setting.png",
+      link: "/settings",
+      badge: "bg-white/20 text-white",
+    },
+    teacher: {
+      bg: "bg-gradient-to-br from-[#f16122] via-[#e05417] to-[#f16122] text-white",
+      border: "border-white/20",
+      icon: "/teacher.png",
+      link: "/list/teachers",
+      badge: "bg-white/20 text-white",
+    },
+    student: {
+      bg: "bg-gradient-to-br from-rose-700 via-rose-600 to-pink-600 text-white",
+      border: "border-white/20",
+      icon: "/student.png",
+      link: "/list/students",
+      badge: "bg-white/20 text-white",
+    },
+    parent: {
+      bg: "bg-gradient-to-br from-teal-700 via-emerald-600 to-teal-700 text-white",
+      border: "border-white/20",
+      icon: "/parent.png",
+      link: "/list/parents",
+      badge: "bg-white/20 text-white",
+    },
+    librarian: {
+      bg: "bg-gradient-to-br from-indigo-900 via-purple-800 to-indigo-950 text-white",
+      border: "border-white/20",
+      icon: "/subject.png",
+      link: "/list/librarians",
+      badge: "bg-white/20 text-white",
+    },
+    inquiry: {
+      bg: "bg-gradient-to-br from-blue-700 via-cyan-600 to-blue-700 text-white",
+      border: "border-white/20",
+      icon: "/assignment.png",
+      link: "/list/inquiries",
+      badge: "bg-white/20 text-white",
+    },
   };
 
-  const bgStyle = gradients[type] || "from-lamaSky to-lamaSky/90 text-white";
+  const config = cardConfig[type] || {
+    bg: "bg-gradient-to-br from-[#4e282c] to-[#f16122] text-white",
+    border: "border-white/20",
+    icon: "/more.png",
+    link: "#",
+    badge: "bg-white/20 text-white",
+  };
 
   return (
-    <div className={`rounded-2xl bg-gradient-to-br ${bgStyle} p-5 flex-1 min-w-[140px] hover-lift transition-all duration-300 animate-slide-up shadow-md hover:shadow-xl cursor-pointer border border-white/15 relative overflow-hidden group`}>
-      {/* Decorative ambient glow circle */}
-      <div className="absolute -right-4 -bottom-4 w-20 h-20 rounded-full bg-white/10 blur-xl group-hover:scale-150 transition-transform duration-500" />
-      
+    <Link
+      href={config.link}
+      className={`rounded-3xl ${config.bg} p-4 sm:p-5 flex-1 min-w-[130px] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-sm hover:shadow-md cursor-pointer border ${config.border} relative overflow-hidden group block`}
+    >
+      {/* Decorative ambient glow */}
+      <div className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-white/10 blur-xl group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
+
       <div className="flex justify-between items-center relative z-10">
-        <span className="text-[10px] font-black bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full text-white tracking-wider uppercase border border-white/20 shadow-xs">
-          {currentYear?.name ? currentYear.name.replace('-', '/') : "2026/27"}
+        <span
+          className={`text-[10px] font-black ${config.badge} backdrop-blur-md px-2.5 py-1 rounded-full tracking-wider uppercase border border-white/20 shadow-2xs`}
+        >
+          {currentYear?.name ? currentYear.name.replace("-", "/") : "2026/27"}
         </span>
-        <Image src="/more.png" alt="" width={18} height={18} className="invert brightness-200 hover:rotate-90 transition-transform duration-200 opacity-80" />
+
+        <div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center p-1.5 transition-transform group-hover:rotate-12">
+          <Image
+            src={config.icon}
+            alt=""
+            width={16}
+            height={16}
+            className="invert brightness-200 object-contain"
+          />
+        </div>
       </div>
-      
-      <div className="relative z-10 mt-4">
-        <h1 className="text-3xl font-black tracking-tight">{count || 0}</h1>
-        <h2 className="capitalize text-xs font-bold opacity-90 mt-1 uppercase tracking-wider">{type}s</h2>
+
+      <div className="relative z-10 mt-3.5">
+        <h1 className="text-2xl sm:text-3xl font-black tracking-tight">{count || 0}</h1>
+        <h2 className="capitalize text-xs font-extrabold opacity-90 mt-1 uppercase tracking-wider">
+          Total {type}s
+        </h2>
       </div>
-    </div>
+    </Link>
   );
 };
 

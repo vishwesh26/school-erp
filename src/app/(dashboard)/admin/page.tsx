@@ -3,6 +3,7 @@ import AttendanceChartContainer from "@/components/AttendanceChartContainer";
 import CountChartContainer from "@/components/CountChartContainer";
 import EventCalendarContainer from "@/components/EventCalendarContainer";
 import UserCard from "@/components/UserCard";
+import AdminDashboardClient from "@/components/dashboard/AdminDashboardClient";
 import { Suspense } from "react";
 
 const AdminPage = ({
@@ -11,50 +12,44 @@ const AdminPage = ({
   searchParams: { [keys: string]: string | undefined };
 }) => {
   return (
-    <div className="p-4 flex gap-4 flex-col md:flex-row">
-      {/* LEFT */}
-      <div className="w-full lg:w-2/3 flex flex-col gap-8">
-        {/* USER CARDS */}
-        <div className="flex gap-4 justify-between flex-wrap">
-          <Suspense fallback={<div>Loading...</div>}>
+    <AdminDashboardClient
+      userCardsSlot={
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <Suspense fallback={<div className="h-28 bg-white rounded-2xl animate-pulse" />}>
             <UserCard type="admin" />
           </Suspense>
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<div className="h-28 bg-white rounded-2xl animate-pulse" />}>
             <UserCard type="teacher" />
           </Suspense>
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<div className="h-28 bg-white rounded-2xl animate-pulse" />}>
             <UserCard type="student" />
           </Suspense>
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<div className="h-28 bg-white rounded-2xl animate-pulse" />}>
             <UserCard type="librarian" />
           </Suspense>
         </div>
-        {/* MIDDLE CHARTS */}
-        <div className="flex gap-4 flex-col lg:flex-row">
-          {/* COUNT CHART */}
-          <div className="w-full lg:w-1/3 h-[450px]">
-            <Suspense fallback={<div>Loading...</div>}>
-              <CountChartContainer />
-            </Suspense>
-          </div>
-          {/* ATTENDANCE CHART */}
-          <div className="w-full lg:w-2/3 h-[450px]">
-            <Suspense fallback={<div>Loading...</div>}>
-              <AttendanceChartContainer />
-            </Suspense>
-          </div>
-        </div>
-      </div>
-      {/* RIGHT */}
-      <div className="w-full lg:w-1/3 flex flex-col gap-8">
-        <Suspense fallback={<div>Loading...</div>}>
+      }
+      countChartSlot={
+        <Suspense fallback={<div className="h-full bg-white rounded-2xl animate-pulse" />}>
+          <CountChartContainer />
+        </Suspense>
+      }
+      attendanceChartSlot={
+        <Suspense fallback={<div className="h-full bg-white rounded-2xl animate-pulse" />}>
+          <AttendanceChartContainer />
+        </Suspense>
+      }
+      eventCalendarSlot={
+        <Suspense fallback={<div className="h-64 bg-white rounded-2xl animate-pulse" />}>
           <EventCalendarContainer searchParams={searchParams} />
         </Suspense>
-        <Suspense fallback={<div>Loading...</div>}>
+      }
+      announcementsSlot={
+        <Suspense fallback={<div className="h-64 bg-white rounded-2xl animate-pulse" />}>
           <Announcements />
         </Suspense>
-      </div>
-    </div>
+      }
+    />
   );
 };
 
