@@ -86,11 +86,17 @@ const AttendanceTeacherView = ({
                         .lte("date", endOfDay.toISOString())
                         .is("lessonId", null);
 
-                    if (attendanceRes) {
-                        attendanceRes.forEach((rec: any) => {
-                            initialAttendance[rec.studentId] = rec.present;
-                        });
-                    }
+                    const hasExistingRecords = attendanceRes && attendanceRes.length > 0;
+
+                    studentIds.forEach((id: string) => {
+                        // If record exists in DB, use it; otherwise default to TRUE (Present by default!)
+                        if (hasExistingRecords) {
+                            const found = attendanceRes.find((r: any) => r.studentId === id);
+                            initialAttendance[id] = found ? found.present : true;
+                        } else {
+                            initialAttendance[id] = true;
+                        }
+                    });
                 }
                 setAttendance(initialAttendance);
                 setLoading(false);
@@ -107,6 +113,24 @@ const AttendanceTeacherView = ({
             ...prev,
             [studentId]: !prev[studentId],
         }));
+    };
+
+    const markAllPresent = () => {
+        const updated: { [key: string]: boolean } = {};
+        students.forEach((s) => {
+            updated[s.id] = true;
+        });
+        setAttendance(updated);
+        toast.info("All students marked Present");
+    };
+
+    const markAllAbsent = () => {
+        const updated: { [key: string]: boolean } = {};
+        students.forEach((s) => {
+            updated[s.id] = false;
+        });
+        setAttendance(updated);
+        toast.info("All students marked Absent");
     };
 
     const handleSubmit = async () => {
@@ -135,15 +159,35 @@ const AttendanceTeacherView = ({
 
             {/* CONTROLS */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 pb-4 border-b border-gray-100">
-                {/* DATE SELECTOR */}
-                <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-gray-600 uppercase tracking-wider">Attendance Date</label>
-                    <input
-                        type="date"
-                        className="p-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-lamaSky bg-white shadow-2xs"
-                        value={date}
-                        onChange={(e) => setDate(e.target.value)}
-                    />
+                {/* DATE SELECTOR & BULK ACTIONS */}
+                <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-gray-600 uppercase tracking-wider">Attendance Date</label>
+                        <input
+                            type="date"
+                            className="p-2.5 border border-gray-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-[#4e282c] bg-white shadow-2xs"
+                            value={date}
+                            onChange={(e) => setDate(e.target.value)}
+                        />
+                    </div>
+                    <div className="flex items-center gap-2 self-end mt-2 sm:mt-0">
+                        <button
+                            type="button"
+                            onClick={markAllPresent}
+                            disabled={students.length === 0}
+                            className="px-3 py-2 text-xs font-bold rounded-lg bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition shadow-xs disabled:opacity-50"
+                        >
+                            ✓ All Present
+                        </button>
+                        <button
+                            type="button"
+                            onClick={markAllAbsent}
+                            disabled={students.length === 0}
+                            className="px-3 py-2 text-xs font-bold rounded-lg bg-rose-100 text-rose-800 hover:bg-rose-200 transition shadow-xs disabled:opacity-50"
+                        >
+                            ✗ All Absent
+                        </button>
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-3 self-end md:self-auto flex-wrap">
@@ -156,7 +200,7 @@ const AttendanceTeacherView = ({
                     <button
                         onClick={handleSubmit}
                         disabled={loading || students.length === 0}
-                        className="bg-lamaSky text-white px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-opacity-90 disabled:opacity-50 transition-all shadow-sm active:scale-95"
+                        className="bg-[#4e282c] hover:bg-[#3d1f22] text-white px-6 py-2.5 rounded-lg font-bold text-sm disabled:opacity-50 transition-all shadow-sm active:scale-95"
                     >
                         {loading ? "Saving..." : "Save Attendance"}
                     </button>

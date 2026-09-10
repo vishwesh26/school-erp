@@ -72,6 +72,7 @@ const StudentListPage = async ({
     if (classId) {
       query = query.eq('classId', classId);
     }
+    query = query.order('rollNumber', { ascending: true });
   }
 
   if (queryParams.search) {

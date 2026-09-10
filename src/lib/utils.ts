@@ -127,6 +127,15 @@ export const formatClassName = (name: string | undefined | null): string => {
 export const formatDate = (val: any, locale: string = "en-GB"): string => {
   if (!val) return "-";
   try {
+    if (typeof val === "string") {
+      const match = val.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (match) {
+        const [_, y, m, day] = match;
+        // Parse explicitly at midday local time to prevent negative timezone shift crossing date boundary
+        const d = new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(day, 10), 12, 0, 0);
+        return new Intl.DateTimeFormat(locale).format(d);
+      }
+    }
     const d = typeof val === "string" || typeof val === "number" ? new Date(val) : val instanceof Date ? val : new Date(val);
     if (!d || isNaN(d.getTime())) return "-";
     return new Intl.DateTimeFormat(locale).format(d);
@@ -138,9 +147,16 @@ export const formatDate = (val: any, locale: string = "en-GB"): string => {
 export const formatDateISO = (val: any): string => {
   if (!val) return "";
   try {
-    const d = typeof val === "string" || typeof val === "number" ? new Date(val) : val instanceof Date ? val : new Date(val);
+    if (typeof val === "string") {
+      const match = val.match(/^(\d{4}-\d{2}-\d{2})/);
+      if (match) return match[1];
+    }
+    const d = typeof val === "number" ? new Date(val) : val instanceof Date ? val : new Date(val);
     if (!d || isNaN(d.getTime())) return "";
-    return d.toISOString().split("T")[0];
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   } catch {
     return "";
   }

@@ -578,37 +578,59 @@ export const createStudent = async (
         .eq('classId', data.classId);
 
       if (count != null && count >= classData.capacity) {
-        return { success: false, error: true };
+        return {
+          success: false,
+          error: true,
+          message: `Class capacity limit reached (${classData.capacity} students max). Increase capacity in Class Settings.`
+        };
       }
     }
 
+    const authEmail = (data.email && data.email.trim().length > 0)
+      ? data.email.trim()
+      : `${(data.username || `student_${Date.now()}`).toLowerCase().replace(/[^a-z0-9_-]/g, '')}@dcpems.internal`;
+
+    const authPassword = (data.password && typeof data.password === "string" && data.password.trim().length >= 6)
+      ? data.password.trim()
+      : (data.rollNumber ? `pass@${data.rollNumber}` : "dcpems@123");
+
     const { data: user, error } = await supabase.auth.admin.createUser({
-      email: data.email || undefined,
-      password: data.password,
+      email: authEmail,
+      password: authPassword,
       user_metadata: { role: "student" },
       email_confirm: true
     });
 
-    let userId;
+    let userId: string = "";
     if (error) {
       if (error.message.includes("already been registered")) {
-        const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
-        if (listError) {
-          console.error("[CREATE_STUDENT_LIST_ERROR]", listError);
-          return { success: false, error: true };
+        // Paginated search across auth users
+        let foundExisting = false;
+        let page = 1;
+        while (!foundExisting && page <= 5) {
+          const { data: listRes } = await supabase.auth.admin.listUsers({ page, perPage: 1000 });
+          const users = listRes?.users || [];
+          if (users.length === 0) break;
+          const matched = users.find(u => (u.email || '').toLowerCase() === authEmail.toLowerCase());
+          if (matched) {
+            userId = matched.id;
+            await supabase.auth.admin.updateUserById(userId, {
+              password: authPassword,
+              user_metadata: { role: 'student' }
+            });
+            foundExisting = true;
+            break;
+          }
+          if (users.length < 1000) break;
+          page++;
         }
-        const existingUser = users.find(u => u.email === data.email);
-        if (existingUser) {
-          userId = existingUser.id;
-          // Update role to student
-          await supabase.auth.admin.updateUserById(userId, { user_metadata: { role: 'student' } });
-        } else {
+        if (!foundExisting) {
           console.error("[CREATE_STUDENT_AUTH_ERROR]", error);
-          return { success: false, error: true };
+          return { success: false, error: true, message: error.message };
         }
       } else {
         console.error("[CREATE_STUDENT_AUTH_ERROR]", error);
-        return { success: false, error: true };
+        return { success: false, error: true, message: error.message };
       }
     } else {
       userId = user.user.id;
@@ -713,13 +735,19 @@ export const updateStudent = async (
     );
     // Supabase update logic omitted
 
-    // If new password is provided, update it via Auth API
+    // If new password or email is provided, update it via Auth API
+    const authUpdatePayload: any = {};
     if (data.password && typeof data.password === "string" && data.password.trim().length >= 6) {
+      authUpdatePayload.password = data.password.trim();
+    }
+    if (data.email && typeof data.email === "string" && data.email.trim().includes('@')) {
+      authUpdatePayload.email = data.email.trim();
+      authUpdatePayload.email_confirm = true;
+    }
+
+    if (Object.keys(authUpdatePayload).length > 0) {
       try {
-        await supabase.auth.admin.updateUserById(
-          data.id,
-          { password: data.password.trim() }
-        );
+        await supabase.auth.admin.updateUserById(data.id, authUpdatePayload);
       } catch (authError) {
         console.warn("[UPDATE_STUDENT_AUTH_ERROR]", authError);
       }
