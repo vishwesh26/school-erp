@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import AttendanceDownloadButton from "./AttendanceDownloadButton";
+import MonthlyAttendanceModal from "./MonthlyAttendanceModal";
 import { formatClassName } from "@/lib/utils";
 
 type ClassType = {
@@ -191,6 +192,11 @@ const AttendanceTeacherView = ({
                 </div>
 
                 <div className="flex items-center gap-3 self-end md:self-auto flex-wrap">
+                    <MonthlyAttendanceModal
+                        initialClassId={classId}
+                        initialClassName={className}
+                        triggerLabel="Monthly Attendance PDF"
+                    />
                     <AttendanceDownloadButton
                         students={students}
                         attendance={attendance}
@@ -200,7 +206,7 @@ const AttendanceTeacherView = ({
                     <button
                         onClick={handleSubmit}
                         disabled={loading || students.length === 0}
-                        className="bg-[#4e282c] hover:bg-[#3d1f22] text-white px-6 py-2.5 rounded-lg font-bold text-sm disabled:opacity-50 transition-all shadow-sm active:scale-95"
+                        className="bg-[#4e282c] hover:bg-[#3d1f22] text-white px-6 py-2.5 rounded-lg font-bold text-sm disabled:opacity-50 transition-all shadow-sm active:scale-95 cursor-pointer"
                     >
                         {loading ? "Saving..." : "Save Attendance"}
                     </button>

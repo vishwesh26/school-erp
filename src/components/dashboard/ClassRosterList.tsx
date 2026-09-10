@@ -18,6 +18,7 @@ interface ClassRosterListProps {
   students: RosterStudent[];
   title?: string;
   className?: string;
+  actionSlot?: React.ReactNode;
 }
 
 const pastelPalette = [
@@ -33,12 +34,13 @@ const ClassRosterList: React.FC<ClassRosterListProps> = ({
   students,
   title = "My Class",
   className: customClass,
+  actionSlot,
 }) => {
   return (
     <div className={`bg-white rounded-3xl border border-slate-100 shadow-xs p-4 sm:p-6 transition-all ${customClass || ""}`}>
       {/* HEADER (MATCHING DEMO 5) */}
-      <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 mb-4">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="w-2.5 h-2.5 rounded-full bg-[#f16122]"></span>
           <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight">
             {title}
@@ -48,12 +50,15 @@ const ClassRosterList: React.FC<ClassRosterListProps> = ({
           </span>
         </div>
 
-        <Link
-          href="/list/students"
-          className="text-xs font-bold text-[#f16122] hover:text-[#4e282c] transition-colors"
-        >
-          View Directory →
-        </Link>
+        <div className="flex items-center gap-3">
+          {actionSlot}
+          <Link
+            href="/list/students"
+            className="text-xs font-bold text-[#f16122] hover:text-[#4e282c] transition-colors"
+          >
+            View Directory →
+          </Link>
+        </div>
       </div>
 
       {/* STUDENT CARDS GRID (DEMO 5 STYLE) */}

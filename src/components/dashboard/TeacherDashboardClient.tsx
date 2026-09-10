@@ -6,6 +6,7 @@ import DashboardHeader from "./DashboardHeader";
 import QuickLauncherGrid, { LauncherTile } from "./QuickLauncherGrid";
 import HomeworkCardList, { HomeworkItem } from "./HomeworkCardList";
 import ClassRosterList, { RosterStudent } from "./ClassRosterList";
+import MonthlyAttendanceModal from "../MonthlyAttendanceModal";
 import { formatClassName } from "@/lib/utils";
 
 interface TeacherDashboardClientProps {
@@ -31,6 +32,7 @@ const TeacherDashboardClient: React.FC<TeacherDashboardClientProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [isMonthlyModalOpen, setIsMonthlyModalOpen] = useState<boolean>(false);
 
   const teacherName = `${teacher?.name || "Teacher"} ${teacher?.surname || ""}`.trim();
   const supervisedClassName = supervisedClass?.name
@@ -52,6 +54,13 @@ const TeacherDashboardClient: React.FC<TeacherDashboardClientProps> = ({
       title: "Attendance",
       href: "/list/attendance",
       icon: "/singleAttendance.png",
+    },
+    {
+      id: "monthly_attendance",
+      title: "Monthly Att. PDF",
+      onClick: () => setIsMonthlyModalOpen(true),
+      icon: "/singleAttendance.png",
+      badge: "PDF",
     },
     {
       id: "homework",
@@ -254,9 +263,29 @@ const TeacherDashboardClient: React.FC<TeacherDashboardClientProps> = ({
       {/* 4. MY CLASS TAB (DEMO 5 STYLE) */}
       {activeTab === "class" && (
         <div className="animate-fade-in">
-          <ClassRosterList students={classStudents} title={`My Supervised Class Roster (${supervisedClassName})`} />
+          <ClassRosterList
+            students={classStudents}
+            title={`My Supervised Class Roster (${supervisedClassName})`}
+            actionSlot={
+              <MonthlyAttendanceModal
+                initialClassId={supervisedClass?.id}
+                initialClassName={supervisedClass?.name}
+                buttonVariant="compact"
+                triggerLabel="Monthly Attendance PDF"
+              />
+            }
+          />
         </div>
       )}
+
+      {/* Controlled Monthly Attendance Modal for Quick Launcher Grid */}
+      <MonthlyAttendanceModal
+        isOpen={isMonthlyModalOpen}
+        onClose={() => setIsMonthlyModalOpen(false)}
+        showTrigger={false}
+        initialClassId={supervisedClass?.id}
+        initialClassName={supervisedClass?.name}
+      />
     </div>
   );
 };
