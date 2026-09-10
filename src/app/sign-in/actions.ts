@@ -40,26 +40,61 @@ export async function login(prevState: any, formData: FormData) {
             candidateList.push({ email: lowerInput });
         }
 
+        // Helper to register student candidates with actual auth email from Supabase Auth
+        const registerStudentCandidates = async (students: any[]) => {
+            await Promise.all(
+                (students || []).slice(0, 10).map(async (s) => {
+                    const defaultInternalEmail = s.username ? `${s.username.toLowerCase()}@dcpems.internal` : null;
+                    let actualAuthEmail: string | null = null;
+
+                    try {
+                        const { data: userRes } = await adminSupabase.auth.admin.getUserById(s.id);
+                        if (userRes?.user?.email) {
+                            actualAuthEmail = userRes.user.email;
+                        }
+                    } catch (e) {}
+
+                    if (actualAuthEmail) {
+                        candidateList.push({
+                            email: actualAuthEmail,
+                            studentId: s.id,
+                            rollNumber: s.rollNumber,
+                            birthday: s.birthday,
+                        });
+                    }
+
+                    if (defaultInternalEmail && defaultInternalEmail !== actualAuthEmail?.toLowerCase()) {
+                        candidateList.push({
+                            email: defaultInternalEmail,
+                            studentId: s.id,
+                            rollNumber: s.rollNumber,
+                            birthday: s.birthday,
+                        });
+                    }
+
+                    if (s.email) {
+                        candidateList.push({
+                            email: s.email,
+                            studentId: s.id,
+                            rollNumber: s.rollNumber,
+                            birthday: s.birthday,
+                        });
+                    }
+                })
+            );
+        };
+
         // 2. Email or internal email candidate
         if (cleanInput.includes('@')) {
             // Check if entered email matches Student.email
             try {
                 const { data: stByEmail } = await adminSupabase
                     .from('Student')
-                    .select('id, username, rollNumber, birthday')
+                    .select('id, username, rollNumber, birthday, email')
                     .ilike('email', cleanInput)
                     .limit(5);
 
-                (stByEmail || []).forEach(s => {
-                    if (s.username) {
-                        candidateList.push({
-                            email: `${s.username.toLowerCase()}@dcpems.internal`,
-                            studentId: s.id,
-                            rollNumber: s.rollNumber,
-                            birthday: s.birthday,
-                        });
-                    }
-                });
+                await registerStudentCandidates(stByEmail || []);
             } catch (err) {}
 
             // Check if entered email belongs to a Parent
@@ -72,24 +107,17 @@ export async function login(prevState: any, formData: FormData) {
 
                 (parentByEmail || []).forEach(p => {
                     if (p.email) candidateList.push({ email: p.email });
-                    (p.students || []).forEach((s: any) => {
-                        if (s.username) {
-                            candidateList.push({
-                                email: `${s.username.toLowerCase()}@dcpems.internal`,
-                                studentId: s.id,
-                                rollNumber: s.rollNumber,
-                                birthday: s.birthday,
-                            });
-                        }
-                    });
                 });
+
+                const parentStudents = (parentByEmail || []).flatMap(p => p.students || []);
+                await registerStudentCandidates(parentStudents);
             } catch (err) {}
         } else {
             // Default internal email format if no @ in input
             candidateList.push({ email: `${lowerInput}@dcpems.internal` });
         }
 
-        // 3. Class + Roll pattern (e.g. "3B-004", "3B 4", "3b-4", "6A-026", "Class 3B Roll 4")
+        // 3. Class + Roll pattern (e.g. "1E-001", "3B-004", "3B 4", "3b-4", "6A-026", "Class 3B Roll 4")
         const classRollMatch = cleanInput.match(/^(?:Class\s*)?([0-9]{1,2}\s*[A-Za-z]+|\bNursery\b|\bLKG\b|\bUKG\b)[\s\-_,.:]*(?:Roll|No)?[\s\-_.:]*([0-9]+)$/i);
         if (classRollMatch) {
             const rawClass = classRollMatch[1].replace(/\s+/g, '');
@@ -111,20 +139,11 @@ export async function login(prevState: any, formData: FormData) {
                         const classIds = classRows.map(c => c.id);
                         const { data: matchedStudents } = await adminSupabase
                             .from('Student')
-                            .select('id, username, rollNumber, birthday')
+                            .select('id, username, rollNumber, birthday, email')
                             .in('classId', classIds)
                             .in('rollNumber', rollVariants);
 
-                        (matchedStudents || []).forEach(s => {
-                            if (s.username) {
-                                candidateList.push({
-                                    email: `${s.username.toLowerCase()}@dcpems.internal`,
-                                    studentId: s.id,
-                                    rollNumber: s.rollNumber,
-                                    birthday: s.birthday,
-                                });
-                            }
-                        });
+                        await registerStudentCandidates(matchedStudents || []);
                     }
                 } catch (err) {}
             }
@@ -159,17 +178,7 @@ export async function login(prevState: any, formData: FormData) {
                 .or(uniqueFilters.join(','))
                 .limit(10);
 
-            (directStudents || []).forEach(s => {
-                if (s.username) {
-                    candidateList.push({
-                        email: `${s.username.toLowerCase()}@dcpems.internal`,
-                        studentId: s.id,
-                        rollNumber: s.rollNumber,
-                        birthday: s.birthday,
-                    });
-                }
-                if (s.email) candidateList.push({ email: s.email });
-            });
+            await registerStudentCandidates(directStudents || []);
         } catch (err) {}
 
         // 5. Name-based lookup for Student
@@ -184,17 +193,7 @@ export async function login(prevState: any, formData: FormData) {
                     .or(`and(name.ilike.%${first}%,surname.ilike.%${last}%),and(name.ilike.%${last}%,surname.ilike.%${first}%)`)
                     .limit(10);
 
-                (nameStudents || []).forEach(s => {
-                    if (s.username) {
-                        candidateList.push({
-                            email: `${s.username.toLowerCase()}@dcpems.internal`,
-                            studentId: s.id,
-                            rollNumber: s.rollNumber,
-                            birthday: s.birthday,
-                        });
-                    }
-                    if (s.email) candidateList.push({ email: s.email });
-                });
+                await registerStudentCandidates(nameStudents || []);
             } catch (err) {}
         }
 
@@ -296,8 +295,13 @@ export async function login(prevState: any, formData: FormData) {
                     );
 
                     if (isMatch) {
+                        // Determine the preferred email to update in auth
+                        const targetAuthEmail = cand.email.endsWith('@dcpems.internal') ? cand.email : (authUser?.email || cand.email);
+
                         // Password is valid for this student! Sync to Supabase Auth and login
                         await adminSupabase.auth.admin.updateUserById(cand.studentId, {
+                            email: targetAuthEmail,
+                            email_confirm: true,
                             password: rawPassword,
                             user_metadata: {
                                 role: 'student',
@@ -305,13 +309,22 @@ export async function login(prevState: any, formData: FormData) {
                             },
                         });
 
-                        const retryAuth = await supabase.auth.signInWithPassword({
-                            email: cand.email,
-                            password: rawPassword,
-                        });
+                        // Try all possible candidate emails for this user
+                        const emailsToTry = Array.from(new Set([targetAuthEmail, authUser?.email, cand.email].filter(Boolean) as string[]));
 
-                        if (!retryAuth.error && retryAuth.data?.user) {
-                            authData = retryAuth.data;
+                        for (const tryEmail of emailsToTry) {
+                            const retryAuth = await supabase.auth.signInWithPassword({
+                                email: tryEmail,
+                                password: rawPassword,
+                            });
+
+                            if (!retryAuth.error && retryAuth.data?.user) {
+                                authData = retryAuth.data;
+                                break;
+                            }
+                        }
+
+                        if (authData?.user) {
                             break;
                         }
                     }
