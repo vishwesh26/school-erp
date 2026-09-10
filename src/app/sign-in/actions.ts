@@ -29,30 +29,84 @@ export async function login(prevState: any, formData: FormData) {
             candidateEmails.push(`${rawInput.toLowerCase()}@dcpems.internal`);
         }
 
-        // 3. Perform database lookups across user tables to resolve username/rollNumber/email
+        // Handle common spelling/transliteration variations (e.g. Dikshit -> Dixit, Sraddha -> Shraddha)
+        const lowerInput = rawInput.toLowerCase();
+        const normalized = lowerInput
+            .replace(/dikshit/g, 'dixit')
+            .replace(/sraddha/g, 'shraddha')
+            .replace(/shradha/g, 'shraddha');
+
+        const searchTerms = Array.from(new Set([rawInput, lowerInput, normalized]));
+
+        // 3. Perform database lookups across user tables to resolve username/rollNumber/email/phone/name
         const adminSupabase = createAdminClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.SUPABASE_SERVICE_ROLE_KEY!
         );
 
         const tables = ['Student', 'Teacher', 'Parent', 'Admin', 'Librarian', 'Accountant', 'Receptionist'];
-        for (const table of tables) {
-            try {
-                const query = adminSupabase.from(table).select('email, username');
-                if (table === 'Student') {
-                    query.or(`username.ilike.${rawInput},email.ilike.${rawInput},rollNumber.ilike.${rawInput}`);
-                } else {
-                    query.or(`username.ilike.${rawInput},email.ilike.${rawInput}`);
-                }
 
-                const { data } = await query.limit(1);
+        for (const term of searchTerms) {
+            for (const table of tables) {
+                try {
+                    // Direct field match
+                    let orFilter = `username.ilike."${term}",email.ilike."${term}"`;
+                    if (table === 'Student') {
+                        orFilter += `,rollNumber.ilike."${term}",phone.ilike."${term}"`;
+                    } else if (table === 'Teacher' || table === 'Parent') {
+                        orFilter += `,phone.ilike."${term}"`;
+                    }
 
-                if (data && data.length > 0) {
-                    if (data[0].email) candidateEmails.push(data[0].email);
-                    if (data[0].username) candidateEmails.push(`${data[0].username.toLowerCase()}@dcpems.internal`);
+                    const { data: directData } = await adminSupabase
+                        .from(table)
+                        .select('email, username')
+                        .or(orFilter)
+                        .limit(2);
+
+                    if (directData && directData.length > 0) {
+                        for (const row of directData) {
+                            if (row.email) candidateEmails.push(row.email);
+                            if (row.username) candidateEmails.push(`${row.username.toLowerCase()}@dcpems.internal`);
+                        }
+                    }
+
+                    // Name-based lookups for Teacher, Student, Parent
+                    if (table === 'Teacher' || table === 'Student' || table === 'Parent') {
+                        const words = term.split(/\s+/).filter(Boolean);
+                        if (words.length >= 2) {
+                            const first = words[0];
+                            const last = words[words.length - 1];
+                            const { data: nameData } = await adminSupabase
+                                .from(table)
+                                .select('email, username')
+                                .or(`and(name.ilike.%${first}%,surname.ilike.%${last}%),and(name.ilike.%${last}%,surname.ilike.%${first}%)`)
+                                .limit(2);
+
+                            if (nameData && nameData.length > 0) {
+                                for (const row of nameData) {
+                                    if (row.email) candidateEmails.push(row.email);
+                                    if (row.username) candidateEmails.push(`${row.username.toLowerCase()}@dcpems.internal`);
+                                }
+                            }
+                        } else if (words.length === 1 && words[0].length >= 3) {
+                            const word = words[0];
+                            const { data: singleData } = await adminSupabase
+                                .from(table)
+                                .select('email, username')
+                                .or(`name.ilike.%${word}%,surname.ilike.%${word}%`)
+                                .limit(2);
+
+                            if (singleData && singleData.length > 0) {
+                                for (const row of singleData) {
+                                    if (row.email) candidateEmails.push(row.email);
+                                    if (row.username) candidateEmails.push(`${row.username.toLowerCase()}@dcpems.internal`);
+                                }
+                            }
+                        }
+                    }
+                } catch (tblErr) {
+                    // Ignore individual table lookup error
                 }
-            } catch (tblErr) {
-                // Ignore individual table lookup error
             }
         }
 
