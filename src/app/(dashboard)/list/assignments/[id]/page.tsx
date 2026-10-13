@@ -10,6 +10,10 @@ const SingleAssignmentPage = async ({
     params: { id: string };
 }) => {
     const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id;
+    const role = user?.user_metadata?.role;
+
     const { data: assignment, error } = await supabase
         .from("Assignment")
         .select("*, subject:Subject(*), class:Class(*), teacher:Teacher(*)")
@@ -18,6 +22,25 @@ const SingleAssignmentPage = async ({
 
     if (error || !assignment) {
         return notFound();
+    }
+
+    // Role-based access control: Students can only view assignments for their own class
+    if (userId) {
+        let isStudent = role === "student";
+        if (isStudent || !role) {
+            const { data: student } = await supabase
+                .from("Student")
+                .select("classId")
+                .eq("id", userId)
+                .maybeSingle();
+
+            if (student) {
+                isStudent = true;
+                if (!student.classId || student.classId !== assignment.classId) {
+                    return notFound();
+                }
+            }
+        }
     }
 
     return (

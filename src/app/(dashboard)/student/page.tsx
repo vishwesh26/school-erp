@@ -15,7 +15,7 @@ const StudentPage = async () => {
     .from('Student')
     .select('*, class:Class(*), grade:Grade!gradeId(level)')
     .eq('id', userId)
-    .single();
+    .maybeSingle();
 
   const classId = student?.classId;
 

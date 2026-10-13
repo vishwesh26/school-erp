@@ -193,7 +193,7 @@ const ParentPage = async () => {
                         📊 Exam Results
                       </Link>
                       <Link
-                        href={`/list/assignments`}
+                        href={student.classId ? `/list/assignments?classId=${student.classId}` : `/list/assignments`}
                         className="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-lg border border-slate-200 shadow-2xs transition-all flex items-center gap-1.5"
                       >
                         📝 Assignments
