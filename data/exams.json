@@ -125,7 +125,10 @@
       "chiefInvigilator": "Prof. Verma"
     },
     "timetablePdfUrl": "/sample_exam_schedule_term1.pdf",
-    "timetablePdfName": "Maths_Class8_Midterm_Timetable_Schedule.pdf"
+    "timetablePdfName": "Maths_Class8_Midterm_Timetable_Schedule.pdf",
+    "questionBankTitle": "Mathematics Official Reference Question Bank (Model Papers & Practice)",
+    "questionBankPdfName": "Class8_Maths_Model_Questions_Reference.pdf",
+    "questionBankPdfUrl": "/sample_exam_schedule_term1.pdf"
   },
   {
     "id": "exam-sci-midterm",
@@ -253,7 +256,10 @@
       "chiefInvigilator": "Dr. Sharma"
     },
     "timetablePdfUrl": "/sample_exam_schedule_term1.pdf",
-    "timetablePdfName": "Science_Class8_Midterm_Timetable_Schedule.pdf"
+    "timetablePdfName": "Science_Class8_Midterm_Timetable_Schedule.pdf",
+    "questionBankTitle": "Science & Tech Official Reference Question Bank (Biology, Chemistry & Physics)",
+    "questionBankPdfName": "Class8_Science_Model_Questions_Reference.pdf",
+    "questionBankPdfUrl": "/sample_exam_schedule_term1.pdf"
   },
   {
     "id": "exam-eng-midterm",
@@ -364,7 +370,10 @@
       "chiefInvigilator": "Mrs. Anjali Deshmukh"
     },
     "timetablePdfUrl": "/sample_exam_schedule_term1.pdf",
-    "timetablePdfName": "English_Class8_Midterm_Timetable_Schedule.pdf"
+    "timetablePdfName": "English_Class8_Midterm_Timetable_Schedule.pdf",
+    "questionBankTitle": "English Literature & Grammar Reference Question Bank",
+    "questionBankPdfName": "Class8_English_Question_Bank_Reference.pdf",
+    "questionBankPdfUrl": "/sample_exam_schedule_term1.pdf"
   },
   {
     "id": "exam-cs-midterm",
@@ -475,6 +484,9 @@
       "chiefInvigilator": "Mrs. Patil"
     },
     "timetablePdfUrl": "/sample_exam_schedule_term1.pdf",
-    "timetablePdfName": "Computer_Class8_Midterm_Timetable_Schedule.pdf"
+    "timetablePdfName": "Computer_Class8_Midterm_Timetable_Schedule.pdf",
+    "questionBankTitle": "Computer Applications & Python Reference Question Bank",
+    "questionBankPdfName": "Class8_Computer_Question_Bank_Reference.pdf",
+    "questionBankPdfUrl": "/sample_exam_schedule_term1.pdf"
   }
 ]

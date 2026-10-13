@@ -15,7 +15,7 @@ interface ExamCalendarViewProps {
   classId?: number | string;
   className?: string;
   role?: string;
-  onSelectExam?: (exam: ExamItem, tab?: "syllabus" | "pattern" | "marks" | "timetable") => void;
+  onSelectExam?: (exam: ExamItem, tab?: "syllabus" | "pattern" | "marks" | "timetable" | "questionBank") => void;
 }
 
 const ExamCalendarView: React.FC<ExamCalendarViewProps> = ({
@@ -37,7 +37,7 @@ const ExamCalendarView: React.FC<ExamCalendarViewProps> = ({
   const [selectedDay, setSelectedDay] = useState<ExamCalendarDay | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(!initialData);
   const [modalExam, setModalExam] = useState<ExamItem | null>(null);
-  const [modalDefaultTab, setModalDefaultTab] = useState<"syllabus" | "pattern" | "marks" | "timetable">("syllabus");
+  const [modalDefaultTab, setModalDefaultTab] = useState<"syllabus" | "pattern" | "marks" | "timetable" | "questionBank">("syllabus");
 
   const fetchMonth = async (yr: number, mo: number) => {
     setIsLoading(true);
@@ -97,7 +97,7 @@ const ExamCalendarView: React.FC<ExamCalendarViewProps> = ({
   const dayHeaders = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const activeExamsToShow = selectedDay ? selectedDay.exams : [];
 
-  const handleOpenDetail = (exam: ExamItem, tab: "syllabus" | "pattern" | "marks" | "timetable" = "syllabus") => {
+  const handleOpenDetail = (exam: ExamItem, tab: "syllabus" | "pattern" | "marks" | "timetable" | "questionBank" = "syllabus") => {
     if (onSelectExam) {
       onSelectExam(exam, tab);
     } else {
@@ -106,7 +106,9 @@ const ExamCalendarView: React.FC<ExamCalendarViewProps> = ({
     }
   };
 
-  const examsWithTimetablePdf = calendarData?.days.flatMap((d) => d.exams).filter((e) => Boolean(e.timetablePdfUrl)) || [];
+  const allExamsInMonth = calendarData?.days.flatMap((d) => d.exams) || [];
+  const examsWithTimetablePdf = allExamsInMonth.filter((e) => Boolean(e.timetablePdfUrl));
+  const examsWithQbPdf = allExamsInMonth.filter((e) => Boolean(e.questionBankPdfUrl || e.questionBankTitle));
 
   return (
     <div className="bg-white rounded-3xl border border-slate-100 shadow-xs p-4 sm:p-6 flex flex-col gap-6">
@@ -121,7 +123,7 @@ const ExamCalendarView: React.FC<ExamCalendarViewProps> = ({
               Online Exam Schedule & Timetable Calendar
             </h2>
             <p className="text-xs text-slate-500 font-medium">
-              Click any calendar date to find upcoming exams, Syllabus, Paper Pattern, Marks Distribution & Timetable PDF
+              Click any calendar date to find upcoming exams, Syllabus, Paper Pattern, Marks Distribution, Timetable PDF & Question Bank
             </p>
           </div>
         </div>
@@ -197,9 +199,11 @@ const ExamCalendarView: React.FC<ExamCalendarViewProps> = ({
               📄
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 block">Schedule PDFs</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 block">PDF Documents</span>
               <span className="text-xs font-extrabold text-slate-800">
-                {examsWithTimetablePdf.length > 0 ? `${examsWithTimetablePdf.length} Uploaded` : "Available"}
+                {examsWithTimetablePdf.length + examsWithQbPdf.length > 0
+                  ? `${examsWithTimetablePdf.length} Schedules • ${examsWithQbPdf.length} Q-Banks`
+                  : "All Available"}
               </span>
             </div>
           </div>
@@ -303,6 +307,7 @@ const ExamCalendarView: React.FC<ExamCalendarViewProps> = ({
                         >
                           <span className="truncate">{e.subjectName}</span>
                           {e.timetablePdfUrl && <span className="text-[8px] flex-shrink-0">📄</span>}
+                          {e.questionBankPdfUrl && <span className="text-[8px] flex-shrink-0">📑</span>}
                         </div>
                       ))}
                     </div>
@@ -343,7 +348,7 @@ const ExamCalendarView: React.FC<ExamCalendarViewProps> = ({
             <div className="py-8 text-center text-slate-400">
               <p className="text-xs font-bold text-slate-500">No exams scheduled on this date.</p>
               <p className="text-[11px] text-slate-400 mt-0.5">
-                Select a highlighted date with exams to review syllabus, paper pattern, marks distribution, and timetable PDF.
+                Select a highlighted date with exams to review syllabus, paper pattern, marks distribution, timetable PDF & reference question bank.
               </p>
             </div>
           ) : (
@@ -382,36 +387,46 @@ const ExamCalendarView: React.FC<ExamCalendarViewProps> = ({
                     </div>
                   </div>
 
-                  {/* 4 QUICK ACCESS BUTTONS: SYLLABUS, PATTERN, MARKS DISTRIBUTION, TIMETABLE PDF */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-2 border-t border-slate-100">
+                  {/* 5 QUICK ACCESS BUTTONS: SYLLABUS, PATTERN, MARKS DISTRIBUTION, TIMETABLE PDF, Q-BANK PDF */}
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 pt-2 border-t border-slate-100">
                     <button
                       type="button"
                       onClick={() => handleOpenDetail(exam, "syllabus")}
-                      className="px-2 py-1.5 rounded-xl bg-slate-100 hover:bg-[#4e282c] hover:text-white text-slate-700 text-[11px] font-bold transition-all text-center cursor-pointer"
+                      className="px-1.5 py-1.5 rounded-xl bg-slate-100 hover:bg-[#4e282c] hover:text-white text-slate-700 text-[11px] font-bold transition-all text-center cursor-pointer"
                     >
                       📖 Syllabus
                     </button>
                     <button
                       type="button"
                       onClick={() => handleOpenDetail(exam, "pattern")}
-                      className="px-2 py-1.5 rounded-xl bg-slate-100 hover:bg-[#f16122] hover:text-white text-slate-700 text-[11px] font-bold transition-all text-center cursor-pointer"
+                      className="px-1.5 py-1.5 rounded-xl bg-slate-100 hover:bg-[#f16122] hover:text-white text-slate-700 text-[11px] font-bold transition-all text-center cursor-pointer"
                     >
                       📋 Pattern
                     </button>
                     <button
                       type="button"
                       onClick={() => handleOpenDetail(exam, "marks")}
-                      className="px-2 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-800 text-[11px] font-bold transition-all text-center border border-emerald-200 cursor-pointer"
+                      className="px-1.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-800 text-[11px] font-bold transition-all text-center border border-emerald-200 cursor-pointer"
                     >
                       🎯 Marks
                     </button>
                     <button
                       type="button"
                       onClick={() => handleOpenDetail(exam, "timetable")}
-                      className="px-2 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 text-[11px] font-black transition-all text-center border border-indigo-200 flex items-center justify-center gap-1 cursor-pointer"
+                      className="px-1.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 text-[11px] font-black transition-all text-center border border-indigo-200 flex items-center justify-center gap-1 cursor-pointer"
+                      title="View or download Timetable PDF"
                     >
                       <span>📄</span>
-                      <span>PDF</span>
+                      <span>Timetable</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenDetail(exam, "questionBank")}
+                      className="px-1.5 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-600 hover:text-white text-teal-800 text-[11px] font-black transition-all text-center border border-teal-200 flex items-center justify-center gap-1 cursor-pointer col-span-2 sm:col-span-1"
+                      title="View or download Reference Question Bank PDF"
+                    >
+                      <span>📑</span>
+                      <span>Q-Bank</span>
                     </button>
                   </div>
                 </div>

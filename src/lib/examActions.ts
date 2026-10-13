@@ -76,6 +76,10 @@ export interface ExamItem {
   timetable: ExamTimetable;
   timetablePdfUrl?: string;
   timetablePdfName?: string;
+  // Question Bank PDF for Reference
+  questionBankPdfUrl?: string;
+  questionBankPdfName?: string;
+  questionBankTitle?: string;
   computedStatus?: "active" | "upcoming" | "past";
 }
 
@@ -137,6 +141,10 @@ export interface CreateExamInput {
   // Timetable PDF Upload
   timetablePdfUrl?: string;
   timetablePdfName?: string;
+  // Question Bank PDF for Reference
+  questionBankPdfUrl?: string;
+  questionBankPdfName?: string;
+  questionBankTitle?: string;
 }
 
 const DATA_FILE_PATH = path.join(process.cwd(), "data", "exams.json");
@@ -574,6 +582,9 @@ export async function createExamScheduleAction(data: CreateExamInput) {
       },
       timetablePdfUrl: data.timetablePdfUrl,
       timetablePdfName: data.timetablePdfName,
+      questionBankPdfUrl: data.questionBankPdfUrl,
+      questionBankPdfName: data.questionBankPdfName,
+      questionBankTitle: data.questionBankTitle,
     };
 
     fileExams.unshift(newExam);

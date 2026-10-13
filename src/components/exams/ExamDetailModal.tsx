@@ -7,7 +7,7 @@ interface ExamDetailModalProps {
   exam: ExamItem | null;
   isOpen: boolean;
   onClose: () => void;
-  defaultTab?: "syllabus" | "pattern" | "marks" | "timetable";
+  defaultTab?: "syllabus" | "pattern" | "marks" | "timetable" | "questionBank";
 }
 
 const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
@@ -16,7 +16,7 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
   onClose,
   defaultTab = "syllabus",
 }) => {
-  const [activeTab, setActiveTab] = useState<"syllabus" | "pattern" | "marks" | "timetable">(defaultTab);
+  const [activeTab, setActiveTab] = useState<"syllabus" | "pattern" | "marks" | "timetable" | "questionBank">(defaultTab);
   const [isGeneratingPrint, setIsGeneratingPrint] = useState(false);
 
   React.useEffect(() => {
@@ -27,7 +27,7 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
 
   if (!isOpen || !exam) return null;
 
-  // Handler to open uploaded PDF or generate printable timetable datesheet
+  // Handler to open uploaded Timetable PDF or generate printable timetable datesheet
   const handleOpenTimetablePdf = () => {
     if (exam.timetablePdfUrl) {
       try {
@@ -180,6 +180,115 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
     }, 1000);
   };
 
+  // Handler to open uploaded Question Bank PDF or generate printable reference problem sheet
+  const handleOpenQuestionBankPdf = () => {
+    if (exam.questionBankPdfUrl) {
+      try {
+        if (exam.questionBankPdfUrl.startsWith("data:")) {
+          const parts = exam.questionBankPdfUrl.split(",");
+          const mime = parts[0].match(/:(.*?);/)?.[1] || "application/pdf";
+          const binary = atob(parts[1]);
+          const array = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) {
+            array[i] = binary.charCodeAt(i);
+          }
+          const blob = new Blob([array], { type: mime });
+          const blobUrl = URL.createObjectURL(blob);
+          const win = window.open(blobUrl, "_blank");
+          if (!win) {
+            const link = document.createElement("a");
+            link.href = blobUrl;
+            link.download = exam.questionBankPdfName || `${exam.title.replace(/\s+/g, "_")}_QuestionBank_Reference.pdf`;
+            link.click();
+          }
+          return;
+        } else {
+          window.open(exam.questionBankPdfUrl, "_blank");
+          return;
+        }
+      } catch (err) {
+        console.error("Failed to open question bank PDF", err);
+      }
+    }
+
+    // Default: Printable Reference Question Bank & Model Practice Paper
+    generatePrintableQuestionBank();
+  };
+
+  const generatePrintableQuestionBank = () => {
+    setIsGeneratingPrint(true);
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      const unitsHtml = (exam.syllabus?.units || [])
+        .map(
+          (u, idx) => `
+          <div style="margin-bottom: 20px; padding: 14px; background: #f8fafc; border-left: 4px solid #059669; border-radius: 6px;">
+            <h3 style="font-size: 14px; margin: 0 0 6px 0; color: #065f46;">Unit ${idx + 1}: ${u.unitName} (${u.weightage} Marks)</h3>
+            <p style="font-size: 12px; color: #475569; margin: 0 0 10px 0;"><strong>Prescribed Syllabus Topics:</strong> ${u.topics?.join(", ") || "Key syllabus concepts"}</p>
+            <div style="font-size: 12px; font-weight: 500; color: #1e293b; line-height: 1.6;">
+              <p style="margin: 6px 0;"><strong>Q1 (Conceptual Definitions & Recall):</strong> State the fundamental definitions and key theorems covering ${u.unitName}. (2 Marks)</p>
+              <p style="margin: 6px 0;"><strong>Q2 (Short Derivation & Calculations):</strong> Solve model problems and establish proof for core principles in ${u.topics?.[0] || u.unitName}. (3 Marks)</p>
+              <p style="margin: 6px 0;"><strong>Q3 (Analytical Long Application):</strong> Contextual examination problem evaluating practical understanding and multi-step derivations. (5 Marks)</p>
+            </div>
+          </div>
+        `
+        )
+        .join("");
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${exam.questionBankTitle || `${exam.subjectName} Reference Question Bank`}</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 36px; color: #1e293b; line-height: 1.5; }
+            .header { border-bottom: 3px solid #059669; padding-bottom: 16px; margin-bottom: 20px; }
+            .school-name { font-size: 22px; font-weight: 900; color: #4e282c; text-transform: uppercase; margin: 0; }
+            .sub-title { font-size: 13px; color: #059669; font-weight: 800; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+            .exam-title { font-size: 19px; font-weight: 800; color: #0f172a; margin-top: 12px; }
+            .meta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; background: #f0fdf4; padding: 14px; border-radius: 8px; margin: 18px 0; border: 1px solid #bbf7d0; font-size: 13px; }
+            .section-title { font-size: 14px; font-weight: 800; color: #065f46; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; margin-top: 24px; text-transform: uppercase; letter-spacing: 0.5px; }
+            .footer { margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 12px; font-size: 11px; color: #64748b; text-align: center; }
+            @media print { body { padding: 20px; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1 class="school-name">DCPEMS Examination Board</h1>
+            <div class="sub-title">OFFICIAL REFERENCE QUESTION BANK & MODEL PRACTICE MATERIAL (2026-27)</div>
+            <div class="exam-title">${exam.questionBankTitle || `${exam.title} - Question Bank for Reference`}</div>
+          </div>
+
+          <div class="meta-grid">
+            <div><strong>Subject:</strong> ${exam.subjectName}</div>
+            <div><strong>Class:</strong> ${exam.className}</div>
+            <div><strong>Exam Date:</strong> ${exam.examDate}</div>
+            <div><strong>Total Marks:</strong> ${exam.totalMarks}</div>
+            <div><strong>Prescribed Book:</strong> ${exam.syllabus?.prescribedBook || "Standard Textbook"}</div>
+            <div><strong>Faculty In-Charge:</strong> ${exam.teacherName || "Assigned Faculty"}</div>
+          </div>
+
+          <div class="section-title">Curated Model Practice Problem Sets & Reference Questions</div>
+          ${unitsHtml}
+
+          <div class="footer">
+            DCPEMS School ERP • Academic Reference Material • Strictly for Student Revision & Examination Preparation
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+            };
+          </script>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+    setTimeout(() => {
+      setIsGeneratingPrint(false);
+    }, 1000);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs animate-fade-in overflow-y-auto">
       <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col my-auto overflow-hidden">
@@ -208,27 +317,31 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
             </p>
           </div>
 
-          <div className="flex items-center gap-2 self-end sm:self-auto">
+          <div className="flex items-center gap-2 self-end sm:self-auto flex-wrap">
             <button
               onClick={handleOpenTimetablePdf}
               type="button"
               disabled={isGeneratingPrint}
-              className="px-4 py-2 rounded-xl bg-[#f16122] hover:bg-[#d85218] text-white text-xs font-black shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
               title="View or download exam timetable PDF"
             >
               <span>📄</span>
-              <span>
-                {exam.timetablePdfUrl
-                  ? "View / Download Timetable PDF"
-                  : isGeneratingPrint
-                  ? "Generating PDF..."
-                  : "Download Timetable PDF"}
-              </span>
+              <span>Timetable PDF</span>
+            </button>
+            <button
+              onClick={handleOpenQuestionBankPdf}
+              type="button"
+              disabled={isGeneratingPrint}
+              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+              title="View or download question bank PDF for reference"
+            >
+              <span>📑</span>
+              <span>Q-Bank PDF</span>
             </button>
             <button
               onClick={onClose}
               type="button"
-              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm transition-all"
+              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm transition-all cursor-pointer"
             >
               ✕
             </button>
@@ -240,7 +353,7 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab("syllabus")}
-            className={`py-3 px-3.5 text-xs font-black border-b-2 transition-all flex items-center gap-1.5 whitespace-nowrap ${
+            className={`py-3 px-3.5 text-xs font-black border-b-2 transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
               activeTab === "syllabus"
                 ? "border-[#4e282c] text-[#4e282c] bg-white rounded-t-xl"
                 : "border-transparent text-slate-500 hover:text-slate-800"
@@ -256,7 +369,7 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab("pattern")}
-            className={`py-3 px-3.5 text-xs font-black border-b-2 transition-all flex items-center gap-1.5 whitespace-nowrap ${
+            className={`py-3 px-3.5 text-xs font-black border-b-2 transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
               activeTab === "pattern"
                 ? "border-[#f16122] text-[#f16122] bg-white rounded-t-xl"
                 : "border-transparent text-slate-500 hover:text-slate-800"
@@ -272,7 +385,7 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab("marks")}
-            className={`py-3 px-3.5 text-xs font-black border-b-2 transition-all flex items-center gap-1.5 whitespace-nowrap ${
+            className={`py-3 px-3.5 text-xs font-black border-b-2 transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
               activeTab === "marks"
                 ? "border-emerald-600 text-emerald-700 bg-white rounded-t-xl"
                 : "border-transparent text-slate-500 hover:text-slate-800"
@@ -288,7 +401,7 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab("timetable")}
-            className={`py-3 px-3.5 text-xs font-black border-b-2 transition-all flex items-center gap-1.5 whitespace-nowrap ${
+            className={`py-3 px-3.5 text-xs font-black border-b-2 transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
               activeTab === "timetable"
                 ? "border-indigo-600 text-indigo-700 bg-white rounded-t-xl"
                 : "border-transparent text-slate-500 hover:text-slate-800"
@@ -301,6 +414,22 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
                 PDF
               </span>
             )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("questionBank")}
+            className={`py-3 px-3.5 text-xs font-black border-b-2 transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+              activeTab === "questionBank"
+                ? "border-teal-600 text-teal-800 bg-white rounded-t-xl"
+                : "border-transparent text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            <span>📑</span>
+            <span>Question Bank (Reference PDF)</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-teal-100 text-teal-800 font-bold">
+              {exam.questionBankPdfUrl ? "PDF Attached" : "Reference"}
+            </span>
           </button>
         </div>
 
@@ -567,6 +696,82 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
               </div>
             </div>
           )}
+
+          {/* 5. QUESTION BANK (REFERENCE PDF) TAB */}
+          {activeTab === "questionBank" && (
+            <div className="flex flex-col gap-4 animate-fade-in">
+              {/* UPLOADED QUESTION BANK PDF BANNER */}
+              <div className="bg-teal-50/80 p-5 rounded-3xl border border-teal-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center text-2xl flex-shrink-0 shadow-2xs">
+                    📑
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h4 className="text-sm sm:text-base font-black text-teal-950">
+                        {exam.questionBankTitle || `${exam.subjectName} Reference Question Bank PDF`}
+                      </h4>
+                      <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-md bg-teal-100 text-teal-800">
+                        Reference PDF
+                      </span>
+                    </div>
+                    <p className="text-xs text-teal-800">
+                      {exam.questionBankPdfName
+                        ? `Official reference question bank: ${exam.questionBankPdfName}`
+                        : "Curated model practice questions, previous year question trends & sample revision material."}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleOpenQuestionBankPdf}
+                  disabled={isGeneratingPrint}
+                  className="px-5 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-black shadow-md transition-all flex items-center justify-center gap-2 flex-shrink-0 cursor-pointer"
+                >
+                  <span>⬇</span>
+                  <span>{isGeneratingPrint ? "Generating PDF..." : "View / Download Q-Bank PDF"}</span>
+                </button>
+              </div>
+
+              {/* REFERENCE STUDY MODULES PREVIEW */}
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <h5 className="text-xs font-black uppercase tracking-wider text-slate-500">
+                    Syllabus-Aligned Practice Modules & Problem Sets
+                  </h5>
+                  <span className="text-[11px] text-teal-700 font-bold">
+                    For Student Preparation & Revision
+                  </span>
+                </div>
+
+                <div className="space-y-2.5">
+                  {exam.syllabus?.units?.map((unit, uIdx) => (
+                    <div
+                      key={uIdx}
+                      className="p-4 rounded-2xl border border-slate-200 bg-white shadow-2xs flex flex-col gap-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-black text-slate-900">
+                          Module {uIdx + 1}: {unit.unitName}
+                        </span>
+                        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-teal-50 text-teal-700 border border-teal-200">
+                          {unit.weightage} Marks Weightage
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-600 font-medium">
+                        Topics: {unit.topics?.join(", ") || "Key analytical concepts"}
+                      </p>
+                      <div className="mt-1 pt-2 border-t border-slate-100 text-[11px] text-slate-500 flex items-center gap-2">
+                        <span>💡 Reference Tip:</span>
+                        <span>Practice both 1-mark objective questions and 5-mark long derivations from {exam.syllabus?.prescribedBook || "prescribed textbook"}.</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* FOOTER */}
@@ -577,7 +782,7 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
           <button
             onClick={onClose}
             type="button"
-            className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all"
+            className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all cursor-pointer"
           >
             Close
           </button>

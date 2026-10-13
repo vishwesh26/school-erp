@@ -44,7 +44,7 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
   const [selectedClassFilter, setSelectedClassFilter] = useState("all");
 
   const [selectedExam, setSelectedExam] = useState<ExamItem | null>(null);
-  const [detailDefaultTab, setDetailDefaultTab] = useState<"syllabus" | "pattern" | "marks" | "timetable">("syllabus");
+  const [detailDefaultTab, setDetailDefaultTab] = useState<"syllabus" | "pattern" | "marks" | "timetable" | "questionBank">("syllabus");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | number | null>(null);
 
@@ -69,7 +69,7 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
     }
   };
 
-  const handleOpenExamDetail = (exam: ExamItem, tab: "syllabus" | "pattern" | "marks" | "timetable" = "syllabus") => {
+  const handleOpenExamDetail = (exam: ExamItem, tab: "syllabus" | "pattern" | "marks" | "timetable" | "questionBank" = "syllabus") => {
     setSelectedExam(exam);
     setDetailDefaultTab(tab);
   };
@@ -105,7 +105,7 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
       ? pastExams
       : filteredExams;
 
-  const examsWithPdf = exams.filter((e) => Boolean(e.timetablePdfUrl));
+  const examsWithPdf = exams.filter((e) => Boolean(e.timetablePdfUrl || e.questionBankPdfUrl));
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in w-full">
@@ -162,17 +162,17 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
           </div>
         </div>
 
-        {/* TIMETABLE SCHEDULE PDFS */}
+        {/* STUDY RESOURCES & PDFS */}
         <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-3.5 border-l-4 border-l-emerald-500">
           <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
-            <span className="text-xl">📄</span>
+            <span className="text-xl">📑</span>
           </div>
           <div>
             <h3 className="text-base sm:text-xl font-black text-slate-900">
               {examsWithPdf.length > 0 ? examsWithPdf.length : exams.length}
             </h3>
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-600 block mt-0.5">
-              Timetable PDFs
+              Q-Banks & PDFs
             </span>
           </div>
         </div>
@@ -408,7 +408,7 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
                       </div>
                     </div>
 
-                    {/* ACTION BUTTONS: SYLLABUS, PATTERN, MARKS DISTRIBUTION, TIMETABLE PDF */}
+                    {/* ACTION BUTTONS: SYLLABUS, PATTERN, MARKS DISTRIBUTION, TIMETABLE PDF, Q-BANK PDF */}
                     <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
                       <div className="grid grid-cols-2 gap-2">
                         <button
@@ -427,24 +427,34 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
                         </button>
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <button
                           type="button"
                           onClick={() => handleOpenExamDetail(exam, "marks")}
-                          className="flex-1 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-800 text-xs font-black transition-all text-center border border-emerald-200 flex items-center justify-center gap-1 cursor-pointer"
+                          className="flex-1 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-800 text-[11px] font-bold transition-all text-center border border-emerald-200 flex items-center justify-center gap-1 cursor-pointer"
                         >
                           <span>🎯</span>
-                          <span>Marks Distribution</span>
+                          <span>Marks</span>
                         </button>
 
                         <button
                           type="button"
                           onClick={() => handleOpenExamDetail(exam, "timetable")}
-                          className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 text-xs font-black transition-all border border-indigo-200 flex items-center gap-1 cursor-pointer"
+                          className="px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 text-[11px] font-black transition-all border border-indigo-200 flex items-center gap-1 cursor-pointer"
                           title="View or download Timetable PDF"
                         >
                           <span>📄</span>
-                          <span>PDF</span>
+                          <span>Timetable</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleOpenExamDetail(exam, "questionBank")}
+                          className="px-2.5 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-600 hover:text-white text-teal-800 text-[11px] font-black transition-all border border-teal-200 flex items-center gap-1 cursor-pointer"
+                          title="View or download Reference Question Bank PDF"
+                        >
+                          <span>📑</span>
+                          <span>Q-Bank</span>
                         </button>
 
                         {canManage && (

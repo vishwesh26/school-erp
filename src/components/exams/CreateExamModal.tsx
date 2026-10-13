@@ -78,6 +78,12 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
   const [timetablePdfName, setTimetablePdfName] = useState<string | null>(null);
   const [timetablePdfSize, setTimetablePdfSize] = useState<string | null>(null);
 
+  // Question Bank Reference PDF upload state
+  const [questionBankPdfUrl, setQuestionBankPdfUrl] = useState<string | null>(null);
+  const [questionBankPdfName, setQuestionBankPdfName] = useState<string | null>(null);
+  const [questionBankPdfSize, setQuestionBankPdfSize] = useState<string | null>(null);
+  const [questionBankTitle, setQuestionBankTitle] = useState("");
+
   // Syllabus
   const [syllabusUnitsText, setSyllabusUnitsText] = useState(
     "Unit 1: Number Systems & Rational Numbers\nUnit 2: Linear Equations & Word Problems\nUnit 3: Quadrilaterals & Geometry\nUnit 4: Squares, Roots & Exponents"
@@ -122,7 +128,7 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Handle PDF file selection
+  // Handle Timetable PDF file selection
   const handlePdfFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setErrorMsg(null);
     const file = e.target.files?.[0];
@@ -157,6 +163,43 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
     setTimetablePdfUrl(null);
     setTimetablePdfName(null);
     setTimetablePdfSize(null);
+  };
+
+  // Handle Question Bank Reference PDF file selection
+  const handleQbPdfFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setErrorMsg(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+      setErrorMsg("Please upload a valid PDF file for the Question Bank (.pdf).");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setErrorMsg("Question Bank PDF file size must be less than 10MB.");
+      return;
+    }
+
+    const sizeStr = file.size > 1024 * 1024
+      ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
+      : `${Math.round(file.size / 1024)} KB`;
+
+    setQuestionBankPdfName(file.name);
+    setQuestionBankPdfSize(sizeStr);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result as string;
+      setQuestionBankPdfUrl(base64);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveQbPdf = () => {
+    setQuestionBankPdfUrl(null);
+    setQuestionBankPdfName(null);
+    setQuestionBankPdfSize(null);
   };
 
   // Section modifiers
@@ -237,6 +280,10 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
         // PDF Timetable
         timetablePdfUrl: timetablePdfUrl || undefined,
         timetablePdfName: timetablePdfName || undefined,
+        // Question Bank PDF for Reference
+        questionBankPdfUrl: questionBankPdfUrl || undefined,
+        questionBankPdfName: questionBankPdfName || undefined,
+        questionBankTitle: questionBankTitle.trim() || (chosenSubject ? `${chosenSubject.name} Reference Question Bank` : undefined),
         // Syllabus
         syllabusUnitsText,
         prescribedBook,
@@ -276,14 +323,14 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
                 Schedule Online Exam & Resources
               </h3>
               <p className="text-xs text-slate-500 font-medium">
-                Upload Exam Timetable PDF, Configure Syllabus, Online Pattern & Marks Distribution
+                Upload Timetable PDF & Reference Question Bank, Configure Syllabus, Online Pattern & Marks
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             type="button"
-            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm"
+            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm cursor-pointer"
           >
             ✕
           </button>
@@ -298,65 +345,143 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
             </div>
           )}
 
-          {/* 1. TIMETABLE SCHEDULE PDF UPLOAD BLOCK */}
-          <div className="bg-gradient-to-r from-indigo-50/70 via-indigo-50/30 to-purple-50/40 p-4 sm:p-5 rounded-2xl border border-indigo-200/80 flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">📄</span>
-                <div>
-                  <h4 className="text-xs font-black text-indigo-950 uppercase tracking-wide">
-                    Upload Exam Timetable / Schedule PDF
-                  </h4>
-                  <p className="text-[11px] text-indigo-800">
-                    Students will find and download this official timetable document on their exam calendar
-                  </p>
+          {/* 1. PDF UPLOADS ROW: TIMETABLE PDF + REFERENCE QUESTION BANK PDF */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* TIMETABLE SCHEDULE PDF UPLOAD BLOCK */}
+            <div className="bg-gradient-to-br from-indigo-50/80 to-purple-50/40 p-4 rounded-2xl border border-indigo-200/80 flex flex-col justify-between gap-3">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">📄</span>
+                    <h4 className="text-xs font-black text-indigo-950 uppercase tracking-wide">
+                      Exam Timetable PDF
+                    </h4>
+                  </div>
+                  <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-700">
+                    Schedule
+                  </span>
                 </div>
+                <p className="text-[11px] text-indigo-800">
+                  Official exam schedule document for students
+                </p>
               </div>
-              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-700">
-                PDF Upload
-              </span>
+
+              {timetablePdfName ? (
+                <div className="bg-white p-3 rounded-xl border border-indigo-200 flex items-center justify-between shadow-2xs">
+                  <div className="flex items-center gap-2.5 overflow-hidden">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs font-black flex-shrink-0">
+                      PDF
+                    </div>
+                    <div className="truncate">
+                      <span className="text-xs font-bold text-slate-900 block truncate">
+                        {timetablePdfName}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-semibold">
+                        {timetablePdfSize || "Ready"}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemovePdf}
+                    className="px-2 py-1 text-xs font-black text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                <label className="border-2 border-dashed border-indigo-300 hover:border-indigo-500 bg-white/70 hover:bg-white rounded-xl p-3.5 flex flex-col items-center justify-center gap-1 cursor-pointer transition-all text-center">
+                  <span className="text-xl">📤</span>
+                  <span className="text-xs font-bold text-indigo-900">
+                    Upload Timetable PDF
+                  </span>
+                  <span className="text-[9px] text-slate-400">
+                    Max size 10MB (.pdf)
+                  </span>
+                  <input
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    onChange={handlePdfFileChange}
+                    className="hidden"
+                  />
+                </label>
+              )}
             </div>
 
-            {timetablePdfName ? (
-              <div className="bg-white p-3.5 rounded-xl border border-indigo-200 flex items-center justify-between shadow-2xs">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-sm font-black flex-shrink-0">
-                    PDF
+            {/* REFERENCE QUESTION BANK PDF UPLOAD BLOCK */}
+            <div className="bg-gradient-to-br from-emerald-50/80 to-teal-50/40 p-4 rounded-2xl border border-emerald-200/80 flex flex-col justify-between gap-3">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">📑</span>
+                    <h4 className="text-xs font-black text-emerald-950 uppercase tracking-wide">
+                      Question Bank PDF (Reference)
+                    </h4>
                   </div>
-                  <div>
-                    <span className="text-xs font-bold text-slate-900 block truncate max-w-[240px] sm:max-w-md">
-                      {timetablePdfName}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-semibold">
-                      {timetablePdfSize || "Document ready for students"}
-                    </span>
-                  </div>
+                  <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">
+                    Reference
+                  </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleRemovePdf}
-                  className="px-2.5 py-1 text-xs font-black text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                >
-                  Remove ✕
-                </button>
+                <p className="text-[11px] text-emerald-800">
+                  Model questions & reference problems for student prep
+                </p>
               </div>
-            ) : (
-              <label className="border-2 border-dashed border-indigo-300 hover:border-indigo-500 bg-white/60 hover:bg-white rounded-xl p-4 flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-all">
-                <span className="text-2xl">📤</span>
-                <span className="text-xs font-bold text-indigo-900">
-                  Click to select and upload Timetable PDF
-                </span>
-                <span className="text-[10px] text-slate-500 font-medium">
-                  Accepted format: .pdf (Max size 10MB)
-                </span>
-                <input
-                  type="file"
-                  accept="application/pdf,.pdf"
-                  onChange={handlePdfFileChange}
-                  className="hidden"
-                />
-              </label>
-            )}
+
+              {questionBankPdfName ? (
+                <div className="bg-white p-3 rounded-xl border border-emerald-200 flex items-center justify-between shadow-2xs">
+                  <div className="flex items-center gap-2.5 overflow-hidden">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-black flex-shrink-0">
+                      PDF
+                    </div>
+                    <div className="truncate">
+                      <span className="text-xs font-bold text-slate-900 block truncate">
+                        {questionBankPdfName}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-semibold">
+                        {questionBankPdfSize || "Ready"}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveQbPdf}
+                    className="px-2 py-1 text-xs font-black text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                <label className="border-2 border-dashed border-emerald-300 hover:border-emerald-500 bg-white/70 hover:bg-white rounded-xl p-3.5 flex flex-col items-center justify-center gap-1 cursor-pointer transition-all text-center">
+                  <span className="text-xl">📥</span>
+                  <span className="text-xs font-bold text-emerald-900">
+                    Upload Question Bank PDF
+                  </span>
+                  <span className="text-[9px] text-slate-400">
+                    Practice & Reference Bank (.pdf)
+                  </span>
+                  <input
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    onChange={handleQbPdfFileChange}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </div>
+          </div>
+
+          {/* OPTIONAL QUESTION BANK TITLE */}
+          <div>
+            <label className="text-xs font-bold text-slate-700 block mb-1">
+              Reference Question Bank Title (Optional)
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. Official Model Practice & Revision Question Bank 2026-27"
+              value={questionBankTitle}
+              onChange={(e) => setQuestionBankTitle(e.target.value)}
+              className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-hidden"
+            />
           </div>
 
           {/* 2. BASIC EXAM METRICS */}
@@ -554,7 +679,7 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
                 <button
                   type="button"
                   onClick={handleAddSection}
-                  className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-black transition-colors"
+                  className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-black transition-colors cursor-pointer"
                 >
                   + Add Section
                 </button>
@@ -610,7 +735,7 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
                       type="button"
                       onClick={() => handleRemoveSection(idx)}
                       disabled={marksSections.length <= 1}
-                      className="text-xs text-rose-500 hover:text-rose-700 disabled:opacity-30 font-bold p-1"
+                      className="text-xs text-rose-500 hover:text-rose-700 disabled:opacity-30 font-bold p-1 cursor-pointer"
                       title="Remove Section"
                     >
                       ✕
