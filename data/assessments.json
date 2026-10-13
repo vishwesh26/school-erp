@@ -1,0 +1,322 @@
+[
+  {
+    "id": "quiz-bio-101",
+    "title": "Cell Biology & Photosynthesis Quiz",
+    "description": "Comprehensive assessment covering cellular structure, chloroplast functions, and light-dependent reactions.",
+    "classId": 43,
+    "className": "8A",
+    "subjectId": 7,
+    "subjectName": "Biology",
+    "teacherId": "teacher-1",
+    "teacherName": "Dr. Sharma",
+    "scheduledDate": "2026-10-13",
+    "startTime": "10:00",
+    "endTime": "11:00",
+    "durationMinutes": 25,
+    "totalMarks": 20,
+    "passingMarks": 8,
+    "type": "MCQ Quiz",
+    "status": "PUBLISHED",
+    "questions": [
+      {
+        "id": "q1",
+        "question": "What is the primary function of chlorophyll in photosynthesis?",
+        "options": [
+          "Absorb light energy",
+          "Store excess water in vacuoles",
+          "Release nitrogen into cytoplasm",
+          "Break down glucose molecules"
+        ],
+        "correctAnswer": "Absorb light energy",
+        "marks": 5,
+        "explanation": "Chlorophyll pigments absorb solar radiation, primarily blue and red wavelengths, driving photosynthesis."
+      },
+      {
+        "id": "q2",
+        "question": "Which organelle is universally referred to as the powerhouse of the eukaryotic cell?",
+        "options": [
+          "Golgi Apparatus",
+          "Mitochondria",
+          "Ribosome",
+          "Endoplasmic Reticulum"
+        ],
+        "correctAnswer": "Mitochondria",
+        "marks": 5,
+        "explanation": "Mitochondria generate most of the chemical energy needed to power the cell's biochemical reactions through ATP production."
+      },
+      {
+        "id": "q3",
+        "question": "What is the main byproduct gas released during oxygenic photosynthesis?",
+        "options": [
+          "Carbon Monoxide",
+          "Oxygen (O2)",
+          "Hydrogen Sulfide",
+          "Nitrogen"
+        ],
+        "correctAnswer": "Oxygen (O2)",
+        "marks": 5,
+        "explanation": "Water molecules are split during light reactions, releasing oxygen gas as a byproduct."
+      },
+      {
+        "id": "q4",
+        "question": "Which cellular structure regulates what enters and exits the cell?",
+        "options": [
+          "Cell Wall",
+          "Plasma / Cell Membrane",
+          "Cytoplasm",
+          "Nucleolus"
+        ],
+        "correctAnswer": "Plasma / Cell Membrane",
+        "marks": 5,
+        "explanation": "The semi-permeable phospholipid bilayer selectively regulates transport of molecules."
+      }
+    ],
+    "submissions": [],
+    "createdAt": "2026-10-10T08:00:00.000Z"
+  },
+  {
+    "id": "quiz-math-201",
+    "title": "Algebra & Linear Equations Speed Quiz",
+    "description": "Weekly speed quiz on solving multi-step linear equations, variables isolation, and algebraic expressions.",
+    "classId": 43,
+    "className": "8A",
+    "subjectId": 6,
+    "subjectName": "Mathematics",
+    "teacherId": "teacher-1",
+    "teacherName": "Prof. Verma",
+    "scheduledDate": "2026-10-16",
+    "startTime": "09:30",
+    "endTime": "10:15",
+    "durationMinutes": 30,
+    "totalMarks": 20,
+    "passingMarks": 10,
+    "type": "Quiz",
+    "status": "PUBLISHED",
+    "questions": [
+      {
+        "id": "qm1",
+        "question": "Solve for x: 3x + 12 = 33",
+        "options": [
+          "5",
+          "7",
+          "9",
+          "11"
+        ],
+        "correctAnswer": "7",
+        "marks": 5,
+        "explanation": "Subtract 12 from both sides to get 3x = 21, then divide by 3 to get x = 7."
+      },
+      {
+        "id": "qm2",
+        "question": "What is the slope (m) of the linear equation y = -4x + 9?",
+        "options": [
+          "9",
+          "4",
+          "-4",
+          "-9"
+        ],
+        "correctAnswer": "-4",
+        "marks": 5,
+        "explanation": "In slope-intercept form y = mx + c, the coefficient of x is the slope, which is -4."
+      },
+      {
+        "id": "qm3",
+        "question": "Simplify the expression: 4(2x - 3) + 5x",
+        "options": [
+          "13x - 12",
+          "11x - 3",
+          "13x + 12",
+          "8x - 12"
+        ],
+        "correctAnswer": "13x - 12",
+        "marks": 5,
+        "explanation": "Distribute: 4*2x - 4*3 + 5x = 8x - 12 + 5x = 13x - 12."
+      },
+      {
+        "id": "qm4",
+        "question": "If 2x - 4 = x + 6, find the value of x.",
+        "options": [
+          "8",
+          "10",
+          "2",
+          "12"
+        ],
+        "correctAnswer": "10",
+        "marks": 5,
+        "explanation": "Subtract x from both sides: x - 4 = 6. Add 4: x = 10."
+      }
+    ],
+    "submissions": [],
+    "createdAt": "2026-10-11T09:00:00.000Z"
+  },
+  {
+    "id": "quiz-cs-301",
+    "title": "Computer Networks & Internet Protocols",
+    "description": "Assessment on IP addressing, OSI 7-layer model, DNS, and fundamental cybersecurity protocols.",
+    "classId": 43,
+    "className": "8A",
+    "subjectId": 16,
+    "subjectName": "Computer",
+    "teacherId": "teacher-2",
+    "teacherName": "Mrs. Patil",
+    "scheduledDate": "2026-10-21",
+    "startTime": "11:15",
+    "endTime": "12:00",
+    "durationMinutes": 35,
+    "totalMarks": 20,
+    "passingMarks": 8,
+    "type": "Unit Test",
+    "status": "PUBLISHED",
+    "questions": [
+      {
+        "id": "qc1",
+        "question": "Which protocol is responsible for translating domain names into IP addresses?",
+        "options": [
+          "HTTP",
+          "FTP",
+          "DNS",
+          "SMTP"
+        ],
+        "correctAnswer": "DNS",
+        "marks": 5,
+        "explanation": "DNS (Domain Name System) translates human-readable hostnames into machine-readable IP addresses."
+      },
+      {
+        "id": "qc2",
+        "question": "How many bits are in an IPv4 address?",
+        "options": [
+          "16 bits",
+          "32 bits",
+          "64 bits",
+          "128 bits"
+        ],
+        "correctAnswer": "32 bits",
+        "marks": 5,
+        "explanation": "IPv4 uses 32-bit addresses formatted as 4 octets."
+      },
+      {
+        "id": "qc3",
+        "question": "Which port number is conventionally used for secure HTTPS web traffic?",
+        "options": [
+          "80",
+          "21",
+          "443",
+          "25"
+        ],
+        "correctAnswer": "443",
+        "marks": 5,
+        "explanation": "Port 443 is designated for Transport Layer Security (HTTPS)."
+      },
+      {
+        "id": "qc4",
+        "question": "Which layer of the OSI model handles end-to-end packet routing across networks?",
+        "options": [
+          "Data Link Layer",
+          "Network Layer",
+          "Transport Layer",
+          "Application Layer"
+        ],
+        "correctAnswer": "Network Layer",
+        "marks": 5,
+        "explanation": "Layer 3 (Network Layer) is responsible for logical routing and packet forwarding."
+      }
+    ],
+    "submissions": [],
+    "createdAt": "2026-10-12T10:00:00.000Z"
+  },
+  {
+    "id": "quiz-chem-401",
+    "title": "Chemical Bonding & Valency Assessment",
+    "description": "Completed diagnostic test on ionic vs covalent bonds, electron sharing, and periodic table families.",
+    "classId": 43,
+    "className": "8A",
+    "subjectId": 5,
+    "subjectName": "Chemistry",
+    "teacherId": "teacher-1",
+    "teacherName": "Dr. Sharma",
+    "scheduledDate": "2026-10-06",
+    "startTime": "10:30",
+    "endTime": "11:15",
+    "durationMinutes": 30,
+    "totalMarks": 20,
+    "passingMarks": 8,
+    "type": "Assessment",
+    "status": "COMPLETED",
+    "questions": [
+      {
+        "id": "qch1",
+        "question": "What type of bond is formed when electrons are completely transferred between atoms?",
+        "options": [
+          "Covalent bond",
+          "Ionic bond",
+          "Metallic bond",
+          "Hydrogen bond"
+        ],
+        "correctAnswer": "Ionic bond",
+        "marks": 5,
+        "explanation": "Ionic bonds occur through the electrostatic attraction between oppositely charged ions formed by electron transfer."
+      },
+      {
+        "id": "qch2",
+        "question": "What is the valency of Carbon in methane (CH4)?",
+        "options": [
+          "2",
+          "3",
+          "4",
+          "6"
+        ],
+        "correctAnswer": "4",
+        "marks": 5,
+        "explanation": "Carbon has 4 valence electrons and forms 4 covalent bonds, making it tetravalent."
+      },
+      {
+        "id": "qch3",
+        "question": "Which of the following compounds is formed predominantly by covalent bonding?",
+        "options": [
+          "NaCl",
+          "H2O",
+          "MgCl2",
+          "CaO"
+        ],
+        "correctAnswer": "H2O",
+        "marks": 5,
+        "explanation": "Water is formed by shared electron pairs between hydrogen and oxygen atoms."
+      },
+      {
+        "id": "qch4",
+        "question": "Noble gases are chemically inert primarily because they have:",
+        "options": [
+          "Low atomic weight",
+          "A complete valence shell",
+          "No protons in nucleus",
+          "Excess negative charge"
+        ],
+        "correctAnswer": "A complete valence shell",
+        "marks": 5,
+        "explanation": "Full octet or duplet in their outer shell provides maximum stability."
+      }
+    ],
+    "submissions": [
+      {
+        "id": "sub-1",
+        "quizId": "quiz-chem-401",
+        "studentId": "student-1",
+        "studentName": "Rahul Sharma",
+        "className": "8A",
+        "rollNumber": "12",
+        "score": 20,
+        "totalMarks": 20,
+        "percentage": 100,
+        "passed": true,
+        "submittedAt": "2026-10-06T11:10:00.000Z",
+        "answers": {
+          "qch1": "Ionic bond",
+          "qch2": "4",
+          "qch3": "H2O",
+          "qch4": "A complete valence shell"
+        }
+      }
+    ],
+    "createdAt": "2026-10-01T09:00:00.000Z"
+  }
+]

@@ -8,6 +8,7 @@ import HomeworkCardList, { HomeworkItem } from "./HomeworkCardList";
 import ClassRosterList, { RosterStudent } from "./ClassRosterList";
 import MonthlyAttendanceModal from "../MonthlyAttendanceModal";
 import { formatClassName } from "@/lib/utils";
+import TeacherAssessmentView from "../assessments/TeacherAssessmentView";
 
 interface TeacherDashboardClientProps {
   teacher: any;
@@ -18,6 +19,7 @@ interface TeacherDashboardClientProps {
   scheduleSlot: React.ReactNode;
   announcementsSlot: React.ReactNode;
   createLessonModalSlot?: React.ReactNode;
+  assessmentData?: any;
 }
 
 const TeacherDashboardClient: React.FC<TeacherDashboardClientProps> = ({
@@ -29,6 +31,7 @@ const TeacherDashboardClient: React.FC<TeacherDashboardClientProps> = ({
   scheduleSlot,
   announcementsSlot,
   createLessonModalSlot,
+  assessmentData,
 }) => {
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -41,6 +44,14 @@ const TeacherDashboardClient: React.FC<TeacherDashboardClientProps> = ({
 
   const tabs = [
     { id: "dashboard", label: "Dashboard", badge: homeworkItems.length || undefined },
+    {
+      id: "assessments",
+      label: "Assessments & Quizzes",
+      badge:
+        assessmentData?.stats?.activeCount > 0
+          ? `${assessmentData.stats.activeCount} Active`
+          : assessmentData?.stats?.upcomingCount || undefined,
+    },
     { id: "schedule", label: "Timeline / Schedule", badge: lessonCount || undefined },
     ...(supervisedClass
       ? [{ id: "class", label: `My Class (${supervisedClassName})`, badge: classStudents.length || undefined }]
@@ -49,6 +60,16 @@ const TeacherDashboardClient: React.FC<TeacherDashboardClientProps> = ({
 
   // Quick action launcher tiles tailored for teacher (matching Demo 2)
   const launcherTiles: LauncherTile[] = [
+    {
+      id: "assessments",
+      title: "Assessments",
+      onClick: () => setActiveTab("assessments"),
+      icon: "/exam.png",
+      badge:
+        assessmentData?.stats?.activeCount > 0
+          ? `${assessmentData.stats.activeCount} Active`
+          : "Create Quiz",
+    },
     {
       id: "attendance",
       title: "Attendance",
@@ -274,6 +295,26 @@ const TeacherDashboardClient: React.FC<TeacherDashboardClientProps> = ({
                 triggerLabel="Monthly Attendance PDF"
               />
             }
+          />
+        </div>
+      )}
+
+      {/* 5. ASSESSMENTS TAB */}
+      {activeTab === "assessments" && assessmentData && (
+        <div className="animate-fade-in flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setActiveTab("dashboard")}
+              type="button"
+              className="px-3.5 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 bg-white"
+            >
+              ← Back to Dashboard
+            </button>
+          </div>
+          <TeacherAssessmentView
+            initialQuizzes={assessmentData}
+            teacherId={teacher?.id}
+            teacherName={teacherName}
           />
         </div>
       )}

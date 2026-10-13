@@ -2,6 +2,7 @@ import Announcements from "@/components/Announcements";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
 import FormContainer from "@/components/FormContainer";
 import TeacherDashboardClient from "@/components/dashboard/TeacherDashboardClient";
+import { getAssessments } from "@/lib/assessmentActions";
 import { createClient } from "@/lib/supabase/server";
 
 const TeacherPage = async () => {
@@ -74,6 +75,12 @@ const TeacherPage = async () => {
     }));
   }
 
+  // 6. Fetch Assessments
+  const assessmentData = await getAssessments({
+    teacherId: userId,
+    role: "teacher",
+  });
+
   return (
     <TeacherDashboardClient
       teacher={teacher}
@@ -81,6 +88,7 @@ const TeacherPage = async () => {
       lessonCount={lessonCount}
       homeworkItems={homeworkItems}
       classStudents={classStudents}
+      assessmentData={assessmentData}
       createLessonModalSlot={
         <div className="flex items-center gap-2">
           <FormContainer table="lesson" type="create" data={{ teacherId: userId }} />

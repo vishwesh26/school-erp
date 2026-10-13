@@ -58,6 +58,12 @@ export const menuItems = [
             },
             {
                 icon: "/assignment.png",
+                label: "Assessments",
+                href: "/list/assessments",
+                visible: ["admin", "teacher", "student", "parent"],
+            },
+            {
+                icon: "/assignment.png",
                 label: "Assignments",
                 href: "/list/assignments",
                 visible: ["admin", "teacher", "student", "parent"],

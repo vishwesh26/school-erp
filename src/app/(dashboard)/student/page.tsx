@@ -4,6 +4,7 @@ import EventCalendar from "@/components/EventCalendar";
 import { createClient } from "@/lib/supabase/server";
 import StudentAttendanceCard from "@/components/StudentAttendanceCard";
 import StudentDashboardClient from "@/components/dashboard/StudentDashboardClient";
+import { getAssessments } from "@/lib/assessmentActions";
 import { Suspense } from "react";
 
 const StudentPage = async () => {
@@ -70,12 +71,21 @@ const StudentPage = async () => {
     }));
   }
 
+  // 4. Fetch Assessments / Quizzes for student
+  const assessmentData = await getAssessments({
+    classId,
+    className: student?.class?.name,
+    studentId: userId,
+    role: "student",
+  });
+
   return (
     <StudentDashboardClient
       student={student}
       lessonCount={lessonCount}
       homeworkItems={homeworkItems}
       classmates={classmates}
+      assessmentData={assessmentData}
       attendanceSlot={
         <Suspense fallback={<div className="h-6 w-16 bg-slate-100 animate-pulse rounded" />}>
           <StudentAttendanceCard id={userId!} />

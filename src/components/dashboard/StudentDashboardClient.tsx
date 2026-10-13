@@ -9,6 +9,7 @@ import ClassRosterList, { RosterStudent } from "./ClassRosterList";
 import { formatClassName, formatGrade } from "@/lib/utils";
 import StudentAttendanceCalendarModal from "../StudentAttendanceCalendarModal";
 import StudentAttendanceCalendarView from "../StudentAttendanceCalendarView";
+import StudentAssessmentView from "../assessments/StudentAssessmentView";
 
 interface StudentDashboardClientProps {
   student: any;
@@ -19,6 +20,7 @@ interface StudentDashboardClientProps {
   scheduleSlot: React.ReactNode;
   calendarSlot: React.ReactNode;
   announcementsSlot: React.ReactNode;
+  assessmentData?: any;
 }
 
 const StudentDashboardClient: React.FC<StudentDashboardClientProps> = ({
@@ -30,6 +32,7 @@ const StudentDashboardClient: React.FC<StudentDashboardClientProps> = ({
   scheduleSlot,
   calendarSlot,
   announcementsSlot,
+  assessmentData,
 }) => {
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -44,6 +47,14 @@ const StudentDashboardClient: React.FC<StudentDashboardClientProps> = ({
 
   const tabs = [
     { id: "dashboard", label: "Dashboard", badge: homeworkItems.length || undefined },
+    {
+      id: "assessments",
+      label: "Assessments & Quizzes",
+      badge:
+        assessmentData?.stats?.activeCount > 0
+          ? `${assessmentData.stats.activeCount} Active`
+          : assessmentData?.stats?.upcomingCount || undefined,
+    },
     { id: "attendance", label: "Attendance Calendar" },
     { id: "schedule", label: "Timeline / Schedule" },
     { id: "class", label: "My Class", badge: classmates.length || undefined },
@@ -51,6 +62,18 @@ const StudentDashboardClient: React.FC<StudentDashboardClientProps> = ({
 
   // Quick action launcher tiles tailored for student (matching Demo 2)
   const launcherTiles: LauncherTile[] = [
+    {
+      id: "assessments",
+      title: "Assessments",
+      onClick: () => setActiveTab("assessments"),
+      icon: "/exam.png",
+      badge:
+        assessmentData?.stats?.activeCount > 0
+          ? `${assessmentData.stats.activeCount} Active`
+          : assessmentData?.stats?.upcomingCount
+          ? `${assessmentData.stats.upcomingCount} Due`
+          : "Quizzes",
+    },
     {
       id: "attendance",
       title: "Attendance",
@@ -216,7 +239,29 @@ const StudentDashboardClient: React.FC<StudentDashboardClientProps> = ({
         </div>
       )}
 
-      {/* 3. ATTENDANCE CALENDAR TAB */}
+      {/* 3. ASSESSMENTS TAB */}
+      {activeTab === "assessments" && assessmentData && (
+        <div className="animate-fade-in flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setActiveTab("dashboard")}
+              type="button"
+              className="px-3.5 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 bg-white"
+            >
+              ← Back to Dashboard
+            </button>
+          </div>
+          <StudentAssessmentView
+            initialQuizzes={assessmentData}
+            studentId={student?.id || "student-1"}
+            studentName={studentName}
+            className={className}
+            rollNumber={student?.rollNumber}
+          />
+        </div>
+      )}
+
+      {/* 4. ATTENDANCE CALENDAR TAB */}
       {activeTab === "attendance" && (
         <div className="animate-fade-in flex flex-col gap-4">
           <div className="flex items-center justify-between">
