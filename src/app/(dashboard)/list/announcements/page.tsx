@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { formatDate, formatClassName } from "@/lib/utils";
 import Image from "next/image";
+import AnnouncementsClientView from "@/components/announcements/AnnouncementsClientView";
+import { CalendarItem } from "@/components/calendar/ModuleCalendarView";
 
 const AnnouncementListPage = async ({
   searchParams,
@@ -78,8 +80,44 @@ const AnnouncementListPage = async ({
 
   if (error) console.error(error);
 
-  return (
-    <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
+  const defaultAnnouncements: CalendarItem[] = [
+    {
+      id: "ann-exam-sched",
+      title: "Mid-Term Examination Datesheet & Hall Tickets Released",
+      dateStr: "2026-10-13",
+      className: "All Classes",
+      description: "Students must carry their official hall tickets and school identity cards to the examination hall.",
+    },
+    {
+      id: "ann-uniform",
+      title: "Transition to Winter Uniform Guidelines",
+      dateStr: "2026-10-20",
+      className: "All Classes",
+      description: "All students are instructed to report in complete prescribed winter uniforms starting November 1st.",
+    },
+    {
+      id: "ann-parent-meeting",
+      title: "Upcoming Parent-Teacher Academic Review Meeting",
+      dateStr: "2026-10-25",
+      className: "All Classes",
+      description: "PTM will be conducted to review mid-term student performance and remedial academic support schedules.",
+    },
+  ];
+
+  const dbCalendarItems: CalendarItem[] = (data || []).map((a: any) => ({
+    id: a.id,
+    title: a.title || "Announcement",
+    dateStr: a.date ? String(a.date).slice(0, 10) : "",
+    className: formatClassName(a.class?.name) || "School-wide",
+    description: a.description || undefined,
+    rawItem: a,
+  }));
+
+  const combinedCalendarItems =
+    dbCalendarItems.length > 0 ? [...dbCalendarItems, ...defaultAnnouncements] : defaultAnnouncements;
+
+  const tableView = (
+    <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-xs flex-1">
       {/* TOP */}
       <div className="flex items-center justify-between">
         <h1 className="hidden md:block text-lg font-semibold">
@@ -104,6 +142,15 @@ const AnnouncementListPage = async ({
       <Table columns={columns} renderRow={renderRow} data={data || []} />
       {/* PAGINATION */}
       <Pagination page={p} count={count || 0} />
+    </div>
+  );
+
+  return (
+    <div className="p-4 sm:p-6 flex flex-col gap-4 max-w-[1600px] mx-auto w-full">
+      <AnnouncementsClientView
+        calendarItems={combinedCalendarItems}
+        tableViewSlot={tableView}
+      />
     </div>
   );
 };

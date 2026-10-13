@@ -6,6 +6,8 @@ import { formatClassName } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/server";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import Image from "next/image";
+import LessonsClientView from "@/components/lessons/LessonsClientView";
+import { CalendarItem } from "@/components/calendar/ModuleCalendarView";
 
 const LessonListPage = async ({
   searchParams,
@@ -203,8 +205,21 @@ const LessonListPage = async ({
 
   if (error) console.error(error);
 
-  return (
-    <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
+  const calendarItems: CalendarItem[] = (data || []).map((l: any) => ({
+    id: l.id,
+    title: l.name || l.subject?.name || "Lesson",
+    dateStr: l.startTime ? String(l.startTime).slice(0, 10) : "",
+    dayOfWeek: l.day || undefined,
+    startTime: l.startTime ? String(l.startTime).slice(11, 16) : undefined,
+    endTime: l.endTime ? String(l.endTime).slice(11, 16) : undefined,
+    subjectName: l.subject?.name,
+    className: formatClassName(l.class?.name),
+    teacherName: l.teacher ? `${l.teacher.name} ${l.teacher.surname || ""}`.trim() : undefined,
+    rawItem: l,
+  }));
+
+  const tableView = (
+    <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-xs flex-1">
       {/* TOP */}
       <div className="flex items-center justify-between">
         <h1 className="hidden md:block text-lg font-semibold">All Lessons</h1>
@@ -225,6 +240,15 @@ const LessonListPage = async ({
       <Table columns={columns} renderRow={renderRow} data={data || []} />
       {/* PAGINATION */}
       <Pagination page={p} count={count || 0} />
+    </div>
+  );
+
+  return (
+    <div className="p-4 sm:p-6 flex flex-col gap-4 max-w-[1600px] mx-auto w-full">
+      <LessonsClientView
+        calendarItems={calendarItems}
+        tableViewSlot={tableView}
+      />
     </div>
   );
 };

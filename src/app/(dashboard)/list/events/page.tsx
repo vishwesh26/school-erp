@@ -7,6 +7,8 @@ import { ITEM_PER_PAGE } from "@/lib/settings";
 import { formatDate, formatClassName } from "@/lib/utils";
 import Image from "next/image";
 import ClientDate from "@/components/ClientDate";
+import EventsClientView from "@/components/events/EventsClientView";
+import { CalendarItem } from "@/components/calendar/ModuleCalendarView";
 
 const EventListPage = async ({
   searchParams,
@@ -96,8 +98,52 @@ const EventListPage = async ({
 
   if (error) console.error(error);
 
-  return (
-    <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
+  const defaultEvents: CalendarItem[] = [
+    {
+      id: "ev-sci-fair",
+      title: "Annual Science & Innovation Exhibition 2026",
+      dateStr: "2026-10-17",
+      startTime: "09:30 AM",
+      endTime: "03:30 PM",
+      className: "All Classes",
+      description: "Inter-school science exhibition featuring robotics, renewable energy models, and working chemistry demonstrations in the Main Auditorium.",
+    },
+    {
+      id: "ev-sports-meet",
+      title: "Inter-House Athletics & Sports Championship",
+      dateStr: "2026-10-24",
+      startTime: "08:00 AM",
+      endTime: "01:00 PM",
+      className: "Grades 5-10",
+      description: "Track and field events, relay races, high jump, and trophy distribution at the School Sports Ground.",
+    },
+    {
+      id: "ev-diwali-fest",
+      title: "Diwali Celebration & Cultural Rangoli Competition",
+      dateStr: "2026-10-29",
+      startTime: "10:00 AM",
+      endTime: "01:30 PM",
+      className: "All Classes",
+      description: "Traditional attire, diya decoration, eco-friendly rangoli contest, and festive assembly.",
+    },
+  ];
+
+  const dbCalendarItems: CalendarItem[] = (data || []).map((e: any) => ({
+    id: e.id,
+    title: e.title || "School Event",
+    dateStr: e.startTime ? String(e.startTime).slice(0, 10) : "",
+    startTime: e.startTime ? String(e.startTime).slice(11, 16) : undefined,
+    endTime: e.endTime ? String(e.endTime).slice(11, 16) : undefined,
+    className: formatClassName(e.class?.name) || "School-wide",
+    description: e.description || undefined,
+    rawItem: e,
+  }));
+
+  const combinedCalendarItems =
+    dbCalendarItems.length > 0 ? [...dbCalendarItems, ...defaultEvents] : defaultEvents;
+
+  const tableView = (
+    <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-xs flex-1">
       {/* TOP */}
       <div className="flex items-center justify-between">
         <h1 className="hidden md:block text-lg font-semibold">All Events</h1>
@@ -118,6 +164,15 @@ const EventListPage = async ({
       <Table columns={columns} renderRow={renderRow} data={data || []} />
       {/* PAGINATION */}
       <Pagination page={p} count={count || 0} />
+    </div>
+  );
+
+  return (
+    <div className="p-4 sm:p-6 flex flex-col gap-4 max-w-[1600px] mx-auto w-full">
+      <EventsClientView
+        calendarItems={combinedCalendarItems}
+        tableViewSlot={tableView}
+      />
     </div>
   );
 };

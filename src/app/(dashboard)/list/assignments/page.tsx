@@ -8,6 +8,8 @@ import { ITEM_PER_PAGE } from "@/lib/settings";
 import { formatDate, formatClassName } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
+import AssignmentsClientView from "@/components/assignments/AssignmentsClientView";
+import { CalendarItem } from "@/components/calendar/ModuleCalendarView";
 
 const AssignmentListPage = async ({
   searchParams,
@@ -169,8 +171,21 @@ const AssignmentListPage = async ({
 
   if (error) console.error(error);
 
-  return (
-    <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
+  const calendarItems: CalendarItem[] = (data || []).map((a: any) => ({
+    id: a.id,
+    title: `${a.subject?.name || "Subject"}: ${a.title || "Assignment"}`,
+    dateStr: a.dueDate ? String(a.dueDate).slice(0, 10) : "",
+    subjectName: a.subject?.name,
+    className: formatClassName(a.class?.name),
+    teacherName: a.teacher ? `${a.teacher.name} ${a.teacher.surname || ""}`.trim() : undefined,
+    description: a.description || undefined,
+    actionHref: `/list/assignments/${a.id}`,
+    actionLabel: "View Assignment",
+    rawItem: a,
+  }));
+
+  const tableView = (
+    <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-xs flex-1">
       {/* TOP */}
       <div className="flex items-center justify-between">
         <h1 className="hidden md:block text-lg font-semibold">
@@ -195,6 +210,15 @@ const AssignmentListPage = async ({
       <Table columns={columns} renderRow={renderRow} data={data || []} />
       {/* PAGINATION */}
       <Pagination page={p} count={count || 0} />
+    </div>
+  );
+
+  return (
+    <div className="p-4 sm:p-6 flex flex-col gap-4 max-w-[1600px] mx-auto w-full">
+      <AssignmentsClientView
+        calendarItems={calendarItems}
+        tableViewSlot={tableView}
+      />
     </div>
   );
 };
