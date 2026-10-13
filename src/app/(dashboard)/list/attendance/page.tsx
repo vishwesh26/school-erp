@@ -11,6 +11,7 @@ import GradeSelect from "@/components/drill-down/GradeSelect";
 import ClassSelect from "@/components/drill-down/ClassSelect";
 import Link from "next/link";
 import AttendanceDateFilter from "@/components/AttendanceDateFilter";
+import StudentAttendanceCalendarView from "@/components/StudentAttendanceCalendarView";
 
 const AttendanceListPage = async ({
     searchParams,
@@ -132,8 +133,19 @@ const AttendanceListPage = async ({
                 query = query.gte('date', startOfDay.toISOString()).lte('date', endOfDay.toISOString());
             }
         }
-    } else if (role === "student") {
+    }
+
+    let studentInfo: any = null;
+    if (role === "student") {
         query = query.eq('studentId', userId!);
+        if (userId) {
+            const { data: std } = await supabase
+                .from("Student")
+                .select("name, surname, rollNumber, class:Class(name)")
+                .eq("id", userId)
+                .maybeSingle();
+            studentInfo = std;
+        }
     } else if (role === "parent") {
         // Fetch children logic (skipped for now as per original)
     }
@@ -146,6 +158,32 @@ const AttendanceListPage = async ({
     if (error) console.error(error);
 
     const data = dataRes || [];
+
+    // For students: Render the rich calendar view as primary with attendance log sheet
+    if (role === "student" && userId) {
+        return (
+            <div className="flex-1 p-4 flex flex-col gap-6">
+                <StudentAttendanceCalendarView
+                    studentId={userId}
+                    studentName={studentInfo ? `${studentInfo.name || ""} ${studentInfo.surname || ""}`.trim() : undefined}
+                    className={(studentInfo?.class as any)?.name}
+                    rollNumber={studentInfo?.rollNumber}
+                />
+
+                <div className="bg-white p-4 sm:p-6 rounded-3xl border border-slate-100 shadow-xs flex flex-col gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                        <div>
+                            <h2 className="text-base font-bold text-slate-900">Attendance Log Sheet</h2>
+                            <p className="text-xs text-slate-400">Chronological history of recorded lectures</p>
+                        </div>
+                        <TableSearch />
+                    </div>
+                    <Table columns={columns} renderRow={renderRow} data={data} />
+                    <Pagination page={p} count={count || 0} />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0 shadow-sm">

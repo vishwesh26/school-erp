@@ -7,6 +7,8 @@ import QuickLauncherGrid, { LauncherTile } from "./QuickLauncherGrid";
 import HomeworkCardList, { HomeworkItem } from "./HomeworkCardList";
 import ClassRosterList, { RosterStudent } from "./ClassRosterList";
 import { formatClassName, formatGrade } from "@/lib/utils";
+import StudentAttendanceCalendarModal from "../StudentAttendanceCalendarModal";
+import StudentAttendanceCalendarView from "../StudentAttendanceCalendarView";
 
 interface StudentDashboardClientProps {
   student: any;
@@ -31,6 +33,7 @@ const StudentDashboardClient: React.FC<StudentDashboardClientProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [showAttendanceCalendar, setShowAttendanceCalendar] = useState<boolean>(false);
 
   const studentName = `${student?.name || "Student"} ${student?.surname || ""}`.trim();
   const className = formatClassName(student?.class?.name) || "-";
@@ -41,6 +44,7 @@ const StudentDashboardClient: React.FC<StudentDashboardClientProps> = ({
 
   const tabs = [
     { id: "dashboard", label: "Dashboard", badge: homeworkItems.length || undefined },
+    { id: "attendance", label: "Attendance Calendar" },
     { id: "schedule", label: "Timeline / Schedule" },
     { id: "class", label: "My Class", badge: classmates.length || undefined },
   ];
@@ -50,8 +54,9 @@ const StudentDashboardClient: React.FC<StudentDashboardClientProps> = ({
     {
       id: "attendance",
       title: "Attendance",
-      href: "/list/attendance",
+      onClick: () => setShowAttendanceCalendar(true),
       icon: "/singleAttendance.png",
+      badge: "Calendar",
     },
     {
       id: "homework",
@@ -137,13 +142,22 @@ const StudentDashboardClient: React.FC<StudentDashboardClientProps> = ({
           {/* SUMMARY CARDS IN PASTEL THEME */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             {/* ATTENDANCE CARD */}
-            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-3.5 hover:shadow-sm transition-all border-l-4 border-l-[#4e282c]">
-              <div className="w-11 h-11 rounded-xl bg-[#f4eaea] flex items-center justify-center flex-shrink-0 shadow-2xs">
+            <div
+              onClick={() => setShowAttendanceCalendar(true)}
+              className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-3.5 hover:shadow-md hover:border-slate-200 transition-all border-l-4 border-l-[#4e282c] cursor-pointer group"
+              title="Click to view full Attendance Calendar"
+            >
+              <div className="w-11 h-11 rounded-xl bg-[#f4eaea] flex items-center justify-center flex-shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
                 <Image src="/singleAttendance.png" alt="" width={24} height={24} className="w-6 h-6 object-contain" />
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 {attendanceSlot}
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5">Attendance</span>
+                <div className="flex items-center justify-between gap-1 mt-0.5">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block">Attendance</span>
+                  <span className="text-[10px] font-black text-[#f16122] bg-[#fdece7] px-1.5 py-0.5 rounded-md group-hover:bg-[#f16122] group-hover:text-white transition-colors shadow-2xs">
+                    Calendar ↗
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -202,7 +216,28 @@ const StudentDashboardClient: React.FC<StudentDashboardClientProps> = ({
         </div>
       )}
 
-      {/* 3. TIMELINE / SCHEDULE TAB */}
+      {/* 3. ATTENDANCE CALENDAR TAB */}
+      {activeTab === "attendance" && (
+        <div className="animate-fade-in flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setActiveTab("dashboard")}
+              type="button"
+              className="px-3.5 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 bg-white"
+            >
+              ← Back to Dashboard
+            </button>
+          </div>
+          <StudentAttendanceCalendarView
+            studentId={student?.id}
+            studentName={studentName}
+            className={className}
+            rollNumber={student?.rollNumber}
+          />
+        </div>
+      )}
+
+      {/* 4. TIMELINE / SCHEDULE TAB */}
       {activeTab === "schedule" && (
         <div className="bg-white p-4 sm:p-6 rounded-3xl border border-slate-100 shadow-xs animate-fade-in">
           <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
@@ -226,12 +261,22 @@ const StudentDashboardClient: React.FC<StudentDashboardClientProps> = ({
         </div>
       )}
 
-      {/* 4. MY CLASS TAB (DEMO 5 STYLE) */}
+      {/* 5. MY CLASS TAB (DEMO 5 STYLE) */}
       {activeTab === "class" && (
         <div className="animate-fade-in">
           <ClassRosterList students={classmates} title={`My Classmates (${className})`} />
         </div>
       )}
+
+      {/* ATTENDANCE CALENDAR MODAL (Triggered via Attendance Button & Attendance Card) */}
+      <StudentAttendanceCalendarModal
+        isOpen={showAttendanceCalendar}
+        onClose={() => setShowAttendanceCalendar(false)}
+        studentId={student?.id}
+        studentName={studentName}
+        className={className}
+        rollNumber={student?.rollNumber}
+      />
     </div>
   );
 };
