@@ -1,14 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
 import { ExamItem } from "@/lib/examActions";
 
 interface ExamDetailModalProps {
   exam: ExamItem | null;
   isOpen: boolean;
   onClose: () => void;
-  defaultTab?: "syllabus" | "pattern" | "timetable" | "questionBank";
+  defaultTab?: "syllabus" | "pattern" | "marks" | "timetable";
 }
 
 const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
@@ -17,8 +16,8 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
   onClose,
   defaultTab = "syllabus",
 }) => {
-  const [activeTab, setActiveTab] = useState<"syllabus" | "pattern" | "timetable" | "questionBank">(defaultTab);
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"syllabus" | "pattern" | "marks" | "timetable">(defaultTab);
+  const [isGeneratingPrint, setIsGeneratingPrint] = useState(false);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -28,86 +27,143 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
 
   if (!isOpen || !exam) return null;
 
-  const handleDownloadPdf = () => {
-    setIsDownloading(true);
+  // Handler to open uploaded PDF or generate printable timetable datesheet
+  const handleOpenTimetablePdf = () => {
+    if (exam.timetablePdfUrl) {
+      try {
+        if (exam.timetablePdfUrl.startsWith("data:")) {
+          const parts = exam.timetablePdfUrl.split(",");
+          const mime = parts[0].match(/:(.*?);/)?.[1] || "application/pdf";
+          const binary = atob(parts[1]);
+          const array = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) {
+            array[i] = binary.charCodeAt(i);
+          }
+          const blob = new Blob([array], { type: mime });
+          const blobUrl = URL.createObjectURL(blob);
+          const win = window.open(blobUrl, "_blank");
+          if (!win) {
+            const link = document.createElement("a");
+            link.href = blobUrl;
+            link.download = exam.timetablePdfName || `${exam.title.replace(/\s+/g, "_")}_Schedule.pdf`;
+            link.click();
+          }
+          return;
+        } else {
+          window.open(exam.timetablePdfUrl, "_blank");
+          return;
+        }
+      } catch (err) {
+        console.error("Failed to open base64 PDF, falling back to printable view", err);
+      }
+    }
 
-    // Create a clean printable window containing the Question Bank and Exam details
+    // Default: Printable official Exam Schedule & Timetable PDF window
+    generatePrintableTimetable();
+  };
+
+  const generatePrintableTimetable = () => {
+    setIsGeneratingPrint(true);
     const printWindow = window.open("", "_blank");
     if (printWindow) {
+      const unitsHtml = (exam.syllabus?.units || [])
+        .map(
+          (u) =>
+            `<li style="margin-bottom: 6px;"><strong>${u.unitName} (${u.weightage} Marks):</strong> ${u.topics?.join(", ") || ""}</li>`
+        )
+        .join("");
+
+      const marksHtml = (exam.marksDistribution?.sections || [])
+        .map(
+          (s) => `
+          <tr>
+            <td style="padding: 8px 10px; border: 1px solid #cbd5e1; font-weight: 700;">${s.sectionName}</td>
+            <td style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: center;">${s.questionCount}</td>
+            <td style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: center;">${s.marksPerQuestion}</td>
+            <td style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: center; font-weight: 700; color: #f16122;">${s.totalMarks}</td>
+            <td style="padding: 8px 10px; border: 1px solid #cbd5e1;">${s.description}</td>
+          </tr>`
+        )
+        .join("");
+
+      const instructionsHtml = (exam.pattern?.onlineExamInstructions || [])
+        .map((ins) => `<li style="margin-bottom: 4px;">${ins}</li>`)
+        .join("");
+
       printWindow.document.write(`
         <!DOCTYPE html>
         <html>
         <head>
-          <title>${exam.title} - Question Bank & Syllabus</title>
+          <title>${exam.title} - Official Online Exam Schedule & Blueprint</title>
           <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; }
-            .header { border-bottom: 3px solid #4e282c; padding-bottom: 20px; margin-bottom: 25px; }
-            .school-name { font-size: 24px; font-weight: 900; color: #4e282c; text-transform: uppercase; margin: 0; }
-            .sub-title { font-size: 14px; color: #f16122; font-weight: 700; margin-top: 5px; }
-            .exam-title { font-size: 20px; font-weight: 800; color: #0f172a; margin-top: 15px; }
-            .meta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #e2e8f0; font-size: 13px; }
-            .section-title { font-size: 16px; font-weight: 800; color: #4e282c; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-top: 30px; text-transform: uppercase; }
-            .question-item { margin-bottom: 15px; padding-left: 10px; border-left: 3px solid #f16122; }
-            .pattern-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-            .pattern-table th, .pattern-table td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; }
-            .pattern-table th { background: #f1f5f9; font-weight: 700; }
-            .footer { margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 15px; font-size: 11px; color: #64748b; text-align: center; }
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 36px; color: #1e293b; line-height: 1.5; }
+            .header { border-bottom: 3px solid #4e282c; padding-bottom: 16px; margin-bottom: 20px; }
+            .school-name { font-size: 22px; font-weight: 900; color: #4e282c; text-transform: uppercase; margin: 0; }
+            .sub-title { font-size: 13px; color: #f16122; font-weight: 800; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+            .exam-title { font-size: 19px; font-weight: 800; color: #0f172a; margin-top: 12px; }
+            .meta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; background: #f8fafc; padding: 14px; border-radius: 8px; margin: 18px 0; border: 1px solid #e2e8f0; font-size: 13px; }
+            .section-title { font-size: 14px; font-weight: 800; color: #4e282c; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; margin-top: 24px; text-transform: uppercase; letter-spacing: 0.5px; }
+            .pattern-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+            .pattern-table th { background: #f1f5f9; font-weight: 800; text-align: left; padding: 8px 10px; border: 1px solid #cbd5e1; }
+            .footer { margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 12px; font-size: 11px; color: #64748b; text-align: center; }
+            .badge-online { display: inline-block; padding: 3px 8px; background: #ecfdf5; color: #047857; font-weight: 800; border-radius: 4px; font-size: 11px; }
             @media print { body { padding: 20px; } }
           </style>
         </head>
         <body>
           <div class="header">
             <h1 class="school-name">DCPEMS Examination Board</h1>
-            <div class="sub-title">OFFICIAL QUESTION BANK & SYLLABUS DIRECTORY 2026-27</div>
+            <div class="sub-title">OFFICIAL ONLINE EXAMINATION TIMETABLE & SPECIFICATION (2026-27)</div>
             <div class="exam-title">${exam.title}</div>
           </div>
 
           <div class="meta-grid">
             <div><strong>Subject:</strong> ${exam.subjectName}</div>
             <div><strong>Class:</strong> ${exam.className}</div>
-            <div><strong>Exam Date:</strong> ${exam.examDate}</div>
+            <div><strong>Exam Date:</strong> ${exam.examDate} (${exam.timetable?.dayOfWeek || "Scheduled"})</div>
+            <div><strong>Writing Time:</strong> ${exam.timetable?.writingTime || `${exam.startTime} - ${exam.endTime}`}</div>
+            <div><strong>Mode:</strong> <span class="badge-online">${exam.pattern?.examMode || "Online CBT"}</span></div>
             <div><strong>Duration:</strong> ${exam.duration}</div>
-            <div><strong>Max Marks:</strong> ${exam.totalMarks}</div>
-            <div><strong>Hall / Venue:</strong> ${exam.timetable?.hallNumber || "Main Hall"}</div>
+            <div><strong>Total Marks:</strong> ${exam.totalMarks} (Passing: ${exam.passingMarks})</div>
+            <div><strong>Reporting / Login Time:</strong> ${exam.timetable?.reportingTime || "08:30 AM"}</div>
+            <div><strong>Exam Portal / Room:</strong> ${exam.timetable?.hallOrPortal || "DCPEMS Online Exam Portal"}</div>
           </div>
 
           <div class="section-title">I. Prescribed Examination Syllabus</div>
-          <ul>
-            ${exam.syllabus.units.map(u => `<li><strong>${u.unitName} (${u.weightage} Marks):</strong> ${u.topics.join(", ")}</li>`).join("")}
+          <ul style="font-size: 13px; margin-top: 8px; padding-left: 20px;">
+            ${unitsHtml || "<li>Complete Term Syllabus</li>"}
           </ul>
-          <p><strong>Prescribed Book:</strong> ${exam.syllabus.prescribedBook || "Standard Textbook"}</p>
+          <p style="font-size: 12px; margin-top: 6px;"><strong>Prescribed Book / References:</strong> ${exam.syllabus?.prescribedBook || "Standard Textbook"}</p>
+          ${exam.syllabus?.generalInstructions ? `<p style="font-size: 12px; color: #64748b;"><em>Note: ${exam.syllabus.generalInstructions}</em></p>` : ""}
 
-          <div class="section-title">II. Question Paper Pattern & Blue-Print</div>
+          <div class="section-title">II. Question Paper Pattern & Online Blueprint</div>
+          <p style="font-size: 12px; margin-top: 6px;"><strong>Structure Overview:</strong> ${exam.pattern?.sectionsSummary || "Standard Online Question Paper Format"}</p>
+          <p style="font-size: 12px;"><strong>Total Questions:</strong> ${exam.pattern?.totalQuestions || "N/A"} &nbsp;|&nbsp; <strong>Duration:</strong> ${exam.pattern?.durationLabel || exam.duration}</p>
+
+          <div class="section-title">III. Section-Wise Marks Distribution</div>
           <table class="pattern-table">
             <thead>
               <tr>
-                <th>Section</th>
-                <th>Questions</th>
-                <th>Marks Each</th>
-                <th>Total Marks</th>
-                <th>Description</th>
+                <th>Section Name</th>
+                <th style="text-align: center;">Questions</th>
+                <th style="text-align: center;">Marks / Q</th>
+                <th style="text-align: center;">Total</th>
+                <th>Description & Question Type</th>
               </tr>
             </thead>
             <tbody>
-              ${exam.pattern.sections.map(s => `
-                <tr>
-                  <td><strong>${s.sectionName}</strong></td>
-                  <td>${s.questionCount}</td>
-                  <td>${s.marksPerQuestion}</td>
-                  <td>${s.totalMarks}</td>
-                  <td>${s.description}</td>
-                </tr>
-              `).join("")}
+              ${marksHtml}
             </tbody>
           </table>
+          <p style="font-size: 11px; margin-top: 8px; color: #475569;"><strong>Scoring Policy:</strong> ${exam.marksDistribution?.scoringPolicy || "No negative marking. Step marking for subjective sections."}</p>
 
-          <div class="section-title">III. Curated Model Question Bank</div>
-          <ol>
-            ${exam.questionBank.sampleQuestions.map(q => `<li class="question-item">${q}</li>`).join("")}
+          <div class="section-title">IV. Online Examination Guidelines</div>
+          <ol style="font-size: 12px; margin-top: 8px; padding-left: 20px;">
+            ${instructionsHtml || "<li>Ensure stable connectivity and uninterrupted power supply.</li><li>Auto-submission will occur when the clock expires.</li>"}
           </ol>
 
           <div class="footer">
-            Generated from DCPEMS School ERP Portal • Confidential Examination Material • Strictly for Academic Preparation
+            DCPEMS School ERP • Official Academic Examination Schedule • Authorized for Student Revision & Verification
           </div>
           <script>
             window.onload = function() {
@@ -119,10 +175,9 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
       `);
       printWindow.document.close();
     }
-
     setTimeout(() => {
-      setIsDownloading(false);
-    }, 1200);
+      setIsGeneratingPrint(false);
+    }, 1000);
   };
 
   return (
@@ -131,12 +186,15 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
         {/* HEADER */}
         <div className="p-5 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-white via-slate-50 to-[#fdece7]/30">
           <div>
-            <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
               <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-md bg-[#FEFCE8] text-[#854d0e] border border-amber-200">
                 {exam.subjectName}
               </span>
               <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700">
                 Class {exam.className}
+              </span>
+              <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+                💻 {exam.examMode || "Online"} Exam
               </span>
               <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700">
                 📅 {exam.examDate}
@@ -146,19 +204,26 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
               {exam.title}
             </h3>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Hall: {exam.timetable?.hallNumber || exam.hallNumber || "Main Hall"} • Duration: {exam.duration} • Total Marks: {exam.totalMarks}
+              Portal / Room: {exam.timetable?.hallOrPortal || "Online Portal"} • Duration: {exam.duration} • Max Marks: {exam.totalMarks}
             </p>
           </div>
 
           <div className="flex items-center gap-2 self-end sm:self-auto">
             <button
-              onClick={handleDownloadPdf}
+              onClick={handleOpenTimetablePdf}
               type="button"
-              disabled={isDownloading}
-              className="px-4 py-2 rounded-xl bg-[#f16122] hover:bg-[#d85218] text-white text-xs font-black shadow-xs transition-all flex items-center gap-1.5"
+              disabled={isGeneratingPrint}
+              className="px-4 py-2 rounded-xl bg-[#f16122] hover:bg-[#d85218] text-white text-xs font-black shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+              title="View or download exam timetable PDF"
             >
-              <span>📑</span>
-              <span>{isDownloading ? "Preparing PDF..." : "Download Question Bank PDF"}</span>
+              <span>📄</span>
+              <span>
+                {exam.timetablePdfUrl
+                  ? "View / Download Timetable PDF"
+                  : isGeneratingPrint
+                  ? "Generating PDF..."
+                  : "Download Timetable PDF"}
+              </span>
             </button>
             <button
               onClick={onClose}
@@ -198,9 +263,25 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
             }`}
           >
             <span>📋</span>
-            <span>Question Paper Pattern</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-200 text-slate-700">
-              {exam.pattern?.sections?.length || 0} Sections
+            <span>Exam Paper Pattern</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 font-bold">
+              Online
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("marks")}
+            className={`py-3 px-3.5 text-xs font-black border-b-2 transition-all flex items-center gap-1.5 whitespace-nowrap ${
+              activeTab === "marks"
+                ? "border-emerald-600 text-emerald-700 bg-white rounded-t-xl"
+                : "border-transparent text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            <span>🎯</span>
+            <span>Marks Distribution</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 font-bold">
+              {exam.marksDistribution?.sections?.length || 0} Sections
             </span>
           </button>
 
@@ -214,23 +295,12 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
             }`}
           >
             <span>⏰</span>
-            <span>Exam Timetable & Shifts</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab("questionBank")}
-            className={`py-3 px-3.5 text-xs font-black border-b-2 transition-all flex items-center gap-1.5 whitespace-nowrap ${
-              activeTab === "questionBank"
-                ? "border-emerald-600 text-emerald-700 bg-white rounded-t-xl"
-                : "border-transparent text-slate-500 hover:text-slate-800"
-            }`}
-          >
-            <span>📑</span>
-            <span>Questions Bank - PDF</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 font-bold">
-              PDF
-            </span>
+            <span>Timetable & Schedule PDF</span>
+            {exam.timetablePdfUrl && (
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-indigo-100 text-indigo-800 font-bold">
+                PDF
+              </span>
+            )}
           </button>
         </div>
 
@@ -239,18 +309,18 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
           {/* 1. SYLLABUS TAB */}
           {activeTab === "syllabus" && (
             <div className="flex flex-col gap-4 animate-fade-in">
-              <div className="bg-[#FEFCE8]/60 p-4 rounded-2xl border border-amber-200/80 flex items-start gap-3">
+              <div className="bg-[#FEFCE8]/70 p-4 rounded-2xl border border-amber-200/80 flex items-start gap-3">
                 <span className="text-xl">📚</span>
                 <div>
                   <h4 className="text-xs font-black text-amber-900 uppercase tracking-wide">
-                    Prescribed Syllabus & Topics Covered
+                    Prescribed Syllabus & Units Covered
                   </h4>
                   <p className="text-xs text-amber-800 mt-0.5">
-                    Prescribed Book: <strong>{exam.syllabus?.prescribedBook || "Standard NCERT Textbook"}</strong>
+                    Prescribed Book: <strong>{exam.syllabus?.prescribedBook || "Standard Prescribed Textbook"}</strong>
                   </p>
                   {exam.syllabus?.generalInstructions && (
                     <p className="text-[11px] text-amber-700 mt-1 italic">
-                      Note: {exam.syllabus.generalInstructions}
+                      Coverage Note: {exam.syllabus.generalInstructions}
                     </p>
                   )}
                 </div>
@@ -260,7 +330,7 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
                 {exam.syllabus?.units?.map((unit, uIdx) => (
                   <div
                     key={uIdx}
-                    className="p-4 rounded-2xl border border-slate-200/80 bg-slate-50/50 flex flex-col gap-2"
+                    className="p-4 rounded-2xl border border-slate-200/80 bg-slate-50/50 flex flex-col gap-2 hover:bg-slate-50 transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <h5 className="text-sm font-black text-slate-900">
@@ -284,53 +354,144 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
             </div>
           )}
 
-          {/* 2. EXAM PATTERN TAB */}
+          {/* 2. EXAM PAPER PATTERN TAB */}
           {activeTab === "pattern" && (
             <div className="flex flex-col gap-4 animate-fade-in">
-              <div className="bg-indigo-50/60 p-4 rounded-2xl border border-indigo-100 flex items-center justify-between">
+              <div className="bg-amber-50/70 p-4 rounded-2xl border border-amber-200/80 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <span className="text-xl">📋</span>
                   <div>
-                    <h4 className="text-xs font-black text-indigo-900 uppercase tracking-wide">
-                      Question Paper Blueprint & Marking Scheme
+                    <h4 className="text-xs font-black text-amber-950 uppercase tracking-wide">
+                      Online Exam Paper Pattern & Format
                     </h4>
-                    <p className="text-xs text-indigo-700 mt-0.5">
-                      Total Questions: <strong>{exam.pattern?.totalQuestions || 35}</strong> • Maximum Marks: <strong>{exam.totalMarks}</strong> • Passing Threshold: <strong>{exam.passingMarks}</strong>
+                    <p className="text-xs text-amber-900 mt-0.5">
+                      Mode: <strong>{exam.pattern?.examMode || "Online Computer-Based Test"}</strong> • Total Questions: <strong>{exam.pattern?.totalQuestions || "Comprehensive"}</strong> • Duration: <strong>{exam.pattern?.durationLabel || exam.duration}</strong>
                     </p>
                   </div>
                 </div>
               </div>
 
+              {/* OVERVIEW SUMMARY */}
+              <div className="p-4 rounded-2xl border border-slate-200 bg-white shadow-2xs">
+                <h5 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-2">
+                  Paper Blueprint Structure
+                </h5>
+                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
+                  {exam.pattern?.sectionsSummary || "Online test comprising multiple-choice, short concepts, numerical calculations, and case studies."}
+                </p>
+              </div>
+
+              {/* ONLINE EXAM INSTRUCTIONS */}
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col gap-2.5">
+                <h5 className="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                  <span>💻</span>
+                  <span>Online Examination Conduct Guidelines</span>
+                </h5>
+                <ul className="list-disc list-inside space-y-1.5 text-xs text-slate-600 pl-1">
+                  {(exam.pattern?.onlineExamInstructions || [
+                    "Students must log in to the student examination portal at least 15 minutes before exam start.",
+                    "The system will automatically countdown and submit your responses when time expires.",
+                    "Switching tabs or navigating away from the active exam screen will generate proctoring alerts.",
+                    "Ensure a stable internet connection throughout the test duration.",
+                  ]).map((ins, iIdx) => (
+                    <li key={iIdx} className="leading-relaxed">
+                      {ins}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {/* 3. MARKS DISTRIBUTION TAB */}
+          {activeTab === "marks" && (
+            <div className="flex flex-col gap-4 animate-fade-in">
+              <div className="bg-emerald-50/70 p-4 rounded-2xl border border-emerald-200/80 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">🎯</span>
+                  <div>
+                    <h4 className="text-xs font-black text-emerald-950 uppercase tracking-wide">
+                      Official Marks Distribution & Section Breakdown
+                    </h4>
+                    <p className="text-xs text-emerald-900 mt-0.5">
+                      Total Marks: <strong>{exam.totalMarks}</strong> • Passing Threshold: <strong>{exam.passingMarks}</strong> ({Math.round((exam.passingMarks / exam.totalMarks) * 100)}%)
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION-WISE MARKS TABLE */}
               <div className="overflow-x-auto border border-slate-200 rounded-2xl shadow-2xs">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-100/80 text-slate-700 uppercase font-extrabold text-[11px] border-b border-slate-200">
                     <tr>
-                      <th className="p-3.5">Section</th>
-                      <th className="p-3.5">Questions Count</th>
-                      <th className="p-3.5">Marks Per Question</th>
-                      <th className="p-3.5">Total Marks</th>
-                      <th className="p-3.5">Description & Question Type</th>
+                      <th className="p-3.5">Section Name</th>
+                      <th className="p-3.5 text-center">Questions</th>
+                      <th className="p-3.5 text-center">Marks / Q</th>
+                      <th className="p-3.5 text-center">Total Marks</th>
+                      <th className="p-3.5">Question Type & Description</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
-                    {exam.pattern?.sections?.map((sec, sIdx) => (
+                    {exam.marksDistribution?.sections?.map((sec, sIdx) => (
                       <tr key={sIdx} className="hover:bg-slate-50/80">
                         <td className="p-3.5 font-black text-slate-900">{sec.sectionName}</td>
-                        <td className="p-3.5 font-bold">{sec.questionCount} Questions</td>
-                        <td className="p-3.5 font-bold">{sec.marksPerQuestion} Marks</td>
-                        <td className="p-3.5 font-black text-[#f16122]">{sec.totalMarks} Marks</td>
+                        <td className="p-3.5 text-center font-bold">{sec.questionCount}</td>
+                        <td className="p-3.5 text-center font-bold">{sec.marksPerQuestion}</td>
+                        <td className="p-3.5 text-center font-black text-[#f16122]">{sec.totalMarks}</td>
                         <td className="p-3.5 text-slate-600">{sec.description}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
+
+              {/* SCORING POLICY */}
+              <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50 text-xs flex items-start gap-2.5">
+                <span className="text-base">⚖️</span>
+                <div>
+                  <span className="font-extrabold text-slate-800 block">Scoring Policy:</span>
+                  <span className="text-slate-600 mt-0.5 block">
+                    {exam.marksDistribution?.scoringPolicy || "Step marking applicable for descriptive sections. No negative marking for objective choices."}
+                  </span>
+                </div>
+              </div>
             </div>
           )}
 
-          {/* 3. TIMETABLE TAB */}
+          {/* 4. TIMETABLE & SCHEDULE PDF TAB */}
           {activeTab === "timetable" && (
             <div className="flex flex-col gap-4 animate-fade-in">
+              {/* UPLOADED TIMETABLE PDF BANNER */}
+              <div className="bg-indigo-50/70 p-5 rounded-3xl border border-indigo-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-2xl flex-shrink-0 shadow-2xs">
+                    📄
+                  </div>
+                  <div>
+                    <h4 className="text-sm sm:text-base font-black text-indigo-950">
+                      {exam.timetablePdfName || `${exam.subjectName} Official Exam Timetable PDF`}
+                    </h4>
+                    <p className="text-xs text-indigo-800 mt-0.5">
+                      {exam.timetablePdfUrl
+                        ? "Official schedule PDF uploaded by teacher. Verified and ready for download."
+                        : "Official scheduled datesheet for this online examination with reporting slots."}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleOpenTimetablePdf}
+                  disabled={isGeneratingPrint}
+                  className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black shadow-md transition-all flex items-center justify-center gap-2 flex-shrink-0 cursor-pointer"
+                >
+                  <span>⬇</span>
+                  <span>{isGeneratingPrint ? "Generating PDF..." : "View / Download Timetable PDF"}</span>
+                </button>
+              </div>
+
+              {/* SHIFT & TIMINGS CARDS */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50 flex items-center gap-3.5">
                   <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-lg shadow-2xs">
@@ -349,9 +510,9 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
                     ⏰
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Reporting Time</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Reporting / Login Time</span>
                     <span className="text-sm font-black text-slate-900">
-                      {exam.timetable?.reportingTime || exam.reportingTime || "08:30 AM"}
+                      {exam.timetable?.reportingTime || "08:30 AM"}
                     </span>
                   </div>
                 </div>
@@ -361,7 +522,7 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
                     📖
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Question Paper Reading</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Reading & Instructions Window</span>
                     <span className="text-sm font-black text-slate-900">
                       {exam.timetable?.readingTime || "08:45 AM - 09:00 AM (15 Mins)"}
                     </span>
@@ -373,7 +534,7 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
                     ✍️
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Writing Time & Hours</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Online Test Writing Window</span>
                     <span className="text-sm font-black text-[#f16122]">
                       {exam.timetable?.writingTime || `${exam.startTime} - ${exam.endTime}`}
                     </span>
@@ -382,12 +543,12 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
 
                 <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50 flex items-center gap-3.5">
                   <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-lg shadow-2xs">
-                    🏛️
+                    💻
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Exam Hall / Venue</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Online Exam Portal / Venue</span>
                     <span className="text-sm font-black text-slate-900">
-                      {exam.timetable?.hallNumber || exam.hallNumber || "Exam Hall 2, Block A"}
+                      {exam.timetable?.hallOrPortal || "DCPEMS Online Exam Portal (Computer Lab / Online)"}
                     </span>
                   </div>
                 </div>
@@ -397,65 +558,11 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
                     👨‍🏫
                   </div>
                   <div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Chief Invigilator</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Proctor / Faculty In-Charge</span>
                     <span className="text-sm font-black text-slate-900">
                       {exam.timetable?.chiefInvigilator || exam.teacherName || "Assigned Faculty"}
                     </span>
                   </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 4. QUESTIONS BANK - PDF TAB */}
-          {activeTab === "questionBank" && (
-            <div className="flex flex-col gap-4 animate-fade-in">
-              <div className="bg-emerald-50/70 p-5 rounded-3xl border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-2xl flex-shrink-0 shadow-2xs">
-                    📑
-                  </div>
-                  <div>
-                    <h4 className="text-sm sm:text-base font-black text-emerald-950">
-                      {exam.questionBank?.title || `${exam.subjectName} Official Model Question Bank`}
-                    </h4>
-                    <p className="text-xs text-emerald-800 mt-0.5">
-                      Curated sample papers, previous year questions, and step-by-step scoring guide • {exam.questionBank?.fileSize || "2.5 MB PDF"}
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleDownloadPdf}
-                  disabled={isDownloading}
-                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-md transition-all flex items-center justify-center gap-2 flex-shrink-0"
-                >
-                  <span>⬇</span>
-                  <span>{isDownloading ? "Generating PDF..." : "Download Question Bank PDF"}</span>
-                </button>
-              </div>
-
-              {/* SAMPLE QUESTIONS PREVIEW */}
-              <div className="flex flex-col gap-2.5">
-                <h5 className="text-xs font-black uppercase tracking-wider text-slate-400">
-                  Question Bank Preview & Practice Problems
-                </h5>
-
-                <div className="flex flex-col gap-2.5">
-                  {exam.questionBank?.sampleQuestions?.map((q, qIdx) => (
-                    <div
-                      key={qIdx}
-                      className="p-4 rounded-2xl border border-slate-200/80 bg-white shadow-2xs flex items-start gap-3"
-                    >
-                      <span className="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 text-xs font-black flex items-center justify-center flex-shrink-0">
-                        {qIdx + 1}
-                      </span>
-                      <p className="text-xs sm:text-sm font-semibold text-slate-800 leading-relaxed">
-                        {q}
-                      </p>
-                    </div>
-                  ))}
                 </div>
               </div>
             </div>
@@ -465,7 +572,7 @@ const ExamDetailModal: React.FC<ExamDetailModalProps> = ({
         {/* FOOTER */}
         <div className="p-4 sm:p-5 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
           <span className="text-xs font-semibold text-slate-500">
-            DCPEMS Examination Portal 2026-27
+            DCPEMS Online Examination System 2026-27
           </span>
           <button
             onClick={onClose}

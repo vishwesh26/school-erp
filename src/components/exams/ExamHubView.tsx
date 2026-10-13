@@ -44,7 +44,7 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
   const [selectedClassFilter, setSelectedClassFilter] = useState("all");
 
   const [selectedExam, setSelectedExam] = useState<ExamItem | null>(null);
-  const [detailDefaultTab, setDetailDefaultTab] = useState<"syllabus" | "pattern" | "timetable" | "questionBank">("syllabus");
+  const [detailDefaultTab, setDetailDefaultTab] = useState<"syllabus" | "pattern" | "marks" | "timetable">("syllabus");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | number | null>(null);
 
@@ -69,7 +69,7 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
     }
   };
 
-  const handleOpenExamDetail = (exam: ExamItem, tab: "syllabus" | "pattern" | "timetable" | "questionBank" = "syllabus") => {
+  const handleOpenExamDetail = (exam: ExamItem, tab: "syllabus" | "pattern" | "marks" | "timetable" = "syllabus") => {
     setSelectedExam(exam);
     setDetailDefaultTab(tab);
   };
@@ -104,6 +104,8 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
       : activeTab === "past"
       ? pastExams
       : filteredExams;
+
+  const examsWithPdf = exams.filter((e) => Boolean(e.timetablePdfUrl));
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in w-full">
@@ -160,15 +162,17 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
           </div>
         </div>
 
-        {/* QUESTION BANKS */}
+        {/* TIMETABLE SCHEDULE PDFS */}
         <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-3.5 border-l-4 border-l-emerald-500">
           <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
-            <span className="text-xl">📑</span>
+            <span className="text-xl">📄</span>
           </div>
           <div>
-            <h3 className="text-base sm:text-xl font-black text-slate-900">{exams.length}</h3>
+            <h3 className="text-base sm:text-xl font-black text-slate-900">
+              {examsWithPdf.length > 0 ? examsWithPdf.length : exams.length}
+            </h3>
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-600 block mt-0.5">
-              Q-Banks Available
+              Timetable PDFs
             </span>
           </div>
         </div>
@@ -177,12 +181,12 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
       {/* 2. MODE SWITCHER & ACTIONS BAR */}
       <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-100 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         {/* VIEW MODE TOGGLE */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center bg-slate-100 p-1 rounded-2xl">
             <button
               type="button"
               onClick={() => setViewMode("calendar")}
-              className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${
+              className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
                 viewMode === "calendar"
                   ? "bg-[#4e282c] text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
@@ -194,7 +198,7 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
             <button
               type="button"
               onClick={() => setViewMode("cards")}
-              className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${
+              className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
                 viewMode === "cards"
                   ? "bg-[#4e282c] text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
@@ -210,7 +214,7 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveTab("upcoming")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   activeTab === "upcoming"
                     ? "bg-indigo-600 text-white"
                     : "bg-slate-50 text-slate-600 hover:bg-slate-200"
@@ -221,7 +225,7 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveTab("active")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   activeTab === "active"
                     ? "bg-[#f16122] text-white"
                     : "bg-slate-50 text-slate-600 hover:bg-slate-200"
@@ -232,7 +236,7 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveTab("all")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   activeTab === "all"
                     ? "bg-slate-800 text-white"
                     : "bg-slate-50 text-slate-600 hover:bg-slate-200"
@@ -250,10 +254,10 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
             <button
               type="button"
               onClick={() => setIsCreateModalOpen(true)}
-              className="px-5 py-2.5 rounded-xl bg-[#f16122] hover:bg-[#d85218] text-white text-xs font-black transition-all shadow-md flex items-center gap-2"
+              className="px-5 py-2.5 rounded-xl bg-[#f16122] hover:bg-[#d85218] text-white text-xs font-black transition-all shadow-md flex items-center gap-2 cursor-pointer"
             >
               <span className="text-base leading-none">+</span>
-              <span>Schedule New Exam</span>
+              <span>Schedule Online Exam</span>
             </button>
           )}
         </div>
@@ -342,13 +346,16 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
                   >
                     <div>
                       {/* TOP BADGES */}
-                      <div className="flex items-center justify-between gap-2 mb-2.5">
+                      <div className="flex items-center justify-between gap-2 mb-2.5 flex-wrap">
                         <div className="flex items-center gap-1.5">
                           <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-[#FEFCE8] text-[#854d0e] border border-amber-200">
                             {exam.subjectName}
                           </span>
                           <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
                             Class {exam.className}
+                          </span>
+                          <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            Online CBT
                           </span>
                         </div>
 
@@ -395,26 +402,26 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
                           <span className="text-slate-400">({exam.timetable?.writingTime || `${exam.startTime} - ${exam.endTime}`})</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span>🏛️</span>
-                          <span>{exam.timetable?.hallNumber || exam.hallNumber || "Exam Hall"}</span>
+                          <span>💻</span>
+                          <span className="truncate">{exam.timetable?.hallOrPortal || "Online Examination Portal"}</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* ACTION BUTTONS: SYLLABUS, PATTERN, TIMETABLE, Q-BANK */}
+                    {/* ACTION BUTTONS: SYLLABUS, PATTERN, MARKS DISTRIBUTION, TIMETABLE PDF */}
                     <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
                       <div className="grid grid-cols-2 gap-2">
                         <button
                           type="button"
                           onClick={() => handleOpenExamDetail(exam, "syllabus")}
-                          className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-[#4e282c] hover:text-white text-slate-700 text-xs font-bold transition-all text-center"
+                          className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-[#4e282c] hover:text-white text-slate-700 text-xs font-bold transition-all text-center cursor-pointer"
                         >
                           📖 Syllabus ({exam.syllabus?.units?.length || 0})
                         </button>
                         <button
                           type="button"
                           onClick={() => handleOpenExamDetail(exam, "pattern")}
-                          className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-[#f16122] hover:text-white text-slate-700 text-xs font-bold transition-all text-center"
+                          className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-[#f16122] hover:text-white text-slate-700 text-xs font-bold transition-all text-center cursor-pointer"
                         >
                           📋 Exam Pattern
                         </button>
@@ -423,20 +430,21 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => handleOpenExamDetail(exam, "questionBank")}
-                          className="flex-1 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-800 text-xs font-black transition-all text-center border border-emerald-200 flex items-center justify-center gap-1"
+                          onClick={() => handleOpenExamDetail(exam, "marks")}
+                          className="flex-1 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-800 text-xs font-black transition-all text-center border border-emerald-200 flex items-center justify-center gap-1 cursor-pointer"
                         >
-                          <span>📑</span>
-                          <span>Question Bank (PDF)</span>
+                          <span>🎯</span>
+                          <span>Marks Distribution</span>
                         </button>
 
                         <button
                           type="button"
                           onClick={() => handleOpenExamDetail(exam, "timetable")}
-                          className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 text-xs font-bold transition-all"
-                          title="View Timetable & Shift Details"
+                          className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 text-xs font-black transition-all border border-indigo-200 flex items-center gap-1 cursor-pointer"
+                          title="View or download Timetable PDF"
                         >
-                          ⏰
+                          <span>📄</span>
+                          <span>PDF</span>
                         </button>
 
                         {canManage && (
@@ -444,7 +452,7 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
                             type="button"
                             disabled={isDeleting}
                             onClick={() => handleDeleteExam(exam.id)}
-                            className="w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold flex items-center justify-center transition-all"
+                            className="w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold flex items-center justify-center transition-all cursor-pointer"
                             title="Delete exam"
                           >
                             ✕

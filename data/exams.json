@@ -1,7 +1,7 @@
 [
   {
     "id": "exam-math-midterm",
-    "title": "Mid-Term Examination - Mathematics",
+    "title": "Mid-Term Examination - Mathematics (Online)",
     "subjectId": 6,
     "subjectName": "Mathematics",
     "classId": 43,
@@ -10,11 +10,10 @@
     "examDate": "2026-10-14",
     "startTime": "09:00",
     "endTime": "12:00",
-    "reportingTime": "08:30 AM",
     "duration": "3 Hours (180 mins)",
-    "hallNumber": "Exam Hall 2, Block A",
     "totalMarks": 80,
     "passingMarks": 28,
+    "examMode": "Online",
     "syllabus": {
       "units": [
         {
@@ -55,45 +54,60 @@
         }
       ],
       "prescribedBook": "NCERT Mathematics Class 8 & Exemplar Problems",
-      "generalInstructions": "Calculators are strictly prohibited. Graph sheets and geometrical instruments will be provided by invigilator."
+      "generalInstructions": "Online exam will be administered via the student examination portal. Rough calculation sheets should be maintained."
     },
     "pattern": {
       "totalQuestions": 38,
+      "durationMinutes": 180,
+      "durationLabel": "3 Hours (180 mins)",
+      "examMode": "Online Computer-Based Test",
+      "sectionsSummary": "Divided into 5 Online Sections: Objective MCQs (20 Qs), Short Answer (11 Qs), Long Answer (4 Qs), and Applied Cases (3 Qs).",
+      "onlineExamInstructions": [
+        "Login 15 minutes before exam start time (08:45 AM).",
+        "Full screen mode is mandatory during the entire test duration.",
+        "System timer will automatically submit when time expires.",
+        "Ensure a stable internet connection and webcam verification if prompted."
+      ]
+    },
+    "marksDistribution": {
+      "totalMarks": 80,
+      "passingMarks": 28,
+      "scoringPolicy": "No negative marking for incorrect answers. Step-wise grading for descriptive sections.",
       "sections": [
         {
           "sectionName": "Section A (Objective & MCQs)",
           "questionCount": 20,
           "marksPerQuestion": 1,
           "totalMarks": 20,
-          "description": "Multiple Choice Questions (Q1 - Q18) and Assertion-Reasoning (Q19 - Q20). No negative marking."
+          "description": "20 Multiple Choice Questions (1 mark each). Instant automated grading."
         },
         {
           "sectionName": "Section B (Very Short Answer)",
           "questionCount": 5,
           "marksPerQuestion": 2,
           "totalMarks": 10,
-          "description": "Short answer questions requiring 2-3 logical steps with appropriate formulas."
+          "description": "Short answer questions requiring 2-3 logical calculation steps."
         },
         {
           "sectionName": "Section C (Short Answer)",
           "questionCount": 6,
           "marksPerQuestion": 3,
           "totalMarks": 18,
-          "description": "Analytical problem-solving questions with step-by-step mathematical working."
+          "description": "Formula application, geometric proofs, and equations."
         },
         {
           "sectionName": "Section D (Long Answer)",
           "questionCount": 4,
           "marksPerQuestion": 5,
           "totalMarks": 20,
-          "description": "Complex multi-step problems, geometric proofs, and real-world algebraic modelling."
+          "description": "Detailed multi-step mathematical problems and coordinate proofs."
         },
         {
           "sectionName": "Section E (Case-Based / Applied)",
           "questionCount": 3,
           "marksPerQuestion": 4,
           "totalMarks": 12,
-          "description": "Real-life scenario questions with sub-parts of 1, 1, and 2 marks with internal choice."
+          "description": "Contextual real-world mathematical application scenarios."
         }
       ]
     },
@@ -101,29 +115,21 @@
       "examDate": "2026-10-14",
       "dayOfWeek": "Wednesday",
       "reportingTime": "08:30 AM",
+      "startTime": "09:00",
+      "endTime": "12:00",
       "readingTime": "08:45 AM - 09:00 AM (15 Minutes)",
       "writingTime": "09:00 AM - 12:00 PM (3 Hours)",
-      "hallNumber": "Exam Hall 2, Block A",
-      "seatRange": "Roll No. 801 to 845",
-      "chiefInvigilator": "Mr. R. K. Joshi"
+      "hallOrPortal": "DCPEMS Online Exam Portal - Server 1",
+      "pdfUrl": "/sample_exam_schedule_term1.pdf",
+      "pdfName": "Maths_Class8_Midterm_Timetable_Schedule.pdf",
+      "chiefInvigilator": "Prof. Verma"
     },
-    "questionBank": {
-      "title": "Class 8 Mathematics Mid-Term Question Bank & Sample Papers 2026",
-      "fileSize": "2.8 MB",
-      "pdfUrl": "/sample_question_bank_math_class8.pdf",
-      "sampleQuestions": [
-        "Find five rational numbers between 2/3 and 4/5.",
-        "Solve the linear equation: 5x + 7/2 = 3/2 x - 14 and verify your solution.",
-        "The perimeter of a rectangular swimming pool is 154 m. Its length is 2 m more than twice its breadth. Find the length and breadth.",
-        "The four angles of a quadrilateral are in the ratio 3 : 5 : 9 : 13. Find all the angles of the quadrilateral.",
-        "Find the least number that must be added to 1300 so as to get a perfect square. Also find the square root of the perfect square.",
-        "A ladder 15 m long reaches a window which is 12 m above the ground on one side of a street. Keeping its foot at the same point, the ladder is turned to the other side of the street where it reaches a window 9 m high. Find the width of the street."
-      ]
-    }
+    "timetablePdfUrl": "/sample_exam_schedule_term1.pdf",
+    "timetablePdfName": "Maths_Class8_Midterm_Timetable_Schedule.pdf"
   },
   {
     "id": "exam-sci-midterm",
-    "title": "Mid-Term Examination - Science & Technology",
+    "title": "Mid-Term Examination - Science & Technology (Online)",
     "subjectId": 7,
     "subjectName": "Biology",
     "classId": 43,
@@ -132,11 +138,10 @@
     "examDate": "2026-10-16",
     "startTime": "09:00",
     "endTime": "12:00",
-    "reportingTime": "08:30 AM",
     "duration": "3 Hours (180 mins)",
-    "hallNumber": "Exam Hall 2, Block A",
     "totalMarks": 80,
     "passingMarks": 28,
+    "examMode": "Online",
     "syllabus": {
       "units": [
         {
@@ -177,10 +182,25 @@
         }
       ],
       "prescribedBook": "NCERT Science Class 8 & Lab Manual",
-      "generalInstructions": "Draw neat diagrams wherever applicable using HB pencil. Label all parts clearly."
+      "generalInstructions": "Online assessment includes interactive diagram tagging and multiple-choice questions."
     },
     "pattern": {
       "totalQuestions": 39,
+      "durationMinutes": 180,
+      "durationLabel": "3 Hours (180 mins)",
+      "examMode": "Online Computer-Based Test",
+      "sectionsSummary": "5 Sections covering Online MCQs (20 marks), Short Scientific Reasoning (33 marks), Long Descriptive (15 marks), and Competency Case Studies (12 marks).",
+      "onlineExamInstructions": [
+        "Login credentials will be validated via Student Roll Number.",
+        "Keep rough paper and pen ready for numerical derivations.",
+        "Diagram questions allow uploading clear image snapshots if required.",
+        "Auto-submission occurs when timer reaches 00:00."
+      ]
+    },
+    "marksDistribution": {
+      "totalMarks": 80,
+      "passingMarks": 28,
+      "scoringPolicy": "Zero negative marking. Full marks for correct scientific reasoning and labelled parts.",
       "sections": [
         {
           "sectionName": "Section A (Objective MCQs & Assertion)",
@@ -223,29 +243,21 @@
       "examDate": "2026-10-16",
       "dayOfWeek": "Friday",
       "reportingTime": "08:30 AM",
+      "startTime": "09:00",
+      "endTime": "12:00",
       "readingTime": "08:45 AM - 09:00 AM (15 Minutes)",
       "writingTime": "09:00 AM - 12:00 PM (3 Hours)",
-      "hallNumber": "Exam Hall 2, Block A",
-      "seatRange": "Roll No. 801 to 845",
-      "chiefInvigilator": "Mrs. S. Kulkarni"
+      "hallOrPortal": "DCPEMS Online Exam Portal - Server 2",
+      "pdfUrl": "/sample_exam_schedule_term1.pdf",
+      "pdfName": "Science_Class8_Midterm_Timetable_Schedule.pdf",
+      "chiefInvigilator": "Dr. Sharma"
     },
-    "questionBank": {
-      "title": "Class 8 Science Complete Question Bank & Diagram Guide 2026",
-      "fileSize": "3.4 MB",
-      "pdfUrl": "/sample_question_bank_science_class8.pdf",
-      "sampleQuestions": [
-        "Differentiate between plant cell and animal cell with well-labelled diagrams.",
-        "Explain the process of Nitrogen Fixation and draw a neat diagram of the Nitrogen Cycle.",
-        "Why is friction called a necessary evil? Give two examples each where friction is useful and where it is harmful.",
-        "Explain with an experiment why atmospheric pressure decreases with increasing altitude.",
-        "Explain the three zones of a candle flame. Which zone is the hottest and why do goldsmiths blow the outermost zone?",
-        "What are antibiotics? What precautions should be taken while taking antibiotics?"
-      ]
-    }
+    "timetablePdfUrl": "/sample_exam_schedule_term1.pdf",
+    "timetablePdfName": "Science_Class8_Midterm_Timetable_Schedule.pdf"
   },
   {
     "id": "exam-eng-midterm",
-    "title": "Mid-Term Examination - English Literature & Grammar",
+    "title": "Mid-Term Examination - English Literature & Grammar (Online)",
     "subjectId": 2,
     "subjectName": "Hindi",
     "classId": 43,
@@ -254,11 +266,10 @@
     "examDate": "2026-10-19",
     "startTime": "09:00",
     "endTime": "12:00",
-    "reportingTime": "08:30 AM",
     "duration": "3 Hours (180 mins)",
-    "hallNumber": "Exam Hall 2, Block A",
     "totalMarks": 80,
     "passingMarks": 28,
+    "examMode": "Online",
     "syllabus": {
       "units": [
         {
@@ -289,10 +300,25 @@
         }
       ],
       "prescribedBook": "Honeydew & It So Happened (NCERT)",
-      "generalInstructions": "Strictly adhere to prescribed word limits in writing section. Neat handwriting and correct spelling carry weightage."
+      "generalInstructions": "Online essay and letter responses should be typed directly into the provided text editor."
     },
     "pattern": {
       "totalQuestions": 11,
+      "durationMinutes": 180,
+      "durationLabel": "3 Hours (180 mins)",
+      "examMode": "Online Computer-Based Test",
+      "sectionsSummary": "Reading Comprehension (20m), Writing Skills (20m), Applied Grammar (10m), and Literature Analysis (30m).",
+      "onlineExamInstructions": [
+        "Check keyboard functionality before starting the examination.",
+        "Word counter is displayed for all writing tasks.",
+        "Grammar section provides instant drop-down options.",
+        "Save answers regularly using the Next Question button."
+      ]
+    },
+    "marksDistribution": {
+      "totalMarks": 80,
+      "passingMarks": 28,
+      "scoringPolicy": "Evaluation based on content accuracy, grammatical correctness, and expression.",
       "sections": [
         {
           "sectionName": "Section A: Reading Comprehension",
@@ -328,28 +354,21 @@
       "examDate": "2026-10-19",
       "dayOfWeek": "Monday",
       "reportingTime": "08:30 AM",
+      "startTime": "09:00",
+      "endTime": "12:00",
       "readingTime": "08:45 AM - 09:00 AM (15 Minutes)",
       "writingTime": "09:00 AM - 12:00 PM (3 Hours)",
-      "hallNumber": "Exam Hall 2, Block A",
-      "seatRange": "Roll No. 801 to 845",
-      "chiefInvigilator": "Mr. S. Rao"
+      "hallOrPortal": "DCPEMS Online Exam Portal - Server 1",
+      "pdfUrl": "/sample_exam_schedule_term1.pdf",
+      "pdfName": "English_Class8_Midterm_Timetable_Schedule.pdf",
+      "chiefInvigilator": "Mrs. Anjali Deshmukh"
     },
-    "questionBank": {
-      "title": "Class 8 English Mid-Term Sample Papers & Writing Formats 2026",
-      "fileSize": "1.9 MB",
-      "pdfUrl": "/sample_question_bank_english_class8.pdf",
-      "sampleQuestions": [
-        "You are the Sports Secretary of your school. Write a notice informing students about the upcoming Inter-House Football Tournament in about 50 words.",
-        "Write a letter to the Municipal Commissioner complaining about the poor condition of roads and frequent waterlogging in your locality.",
-        "What did Connie Macpherson think her visitor was? Why did she consider Christmas day the best present in the world?",
-        "How did Tilly Smith's geography lesson help save several lives on Phuket beach in Thailand?",
-        "Transform the sentences from Direct to Indirect Speech and rewrite correctly."
-      ]
-    }
+    "timetablePdfUrl": "/sample_exam_schedule_term1.pdf",
+    "timetablePdfName": "English_Class8_Midterm_Timetable_Schedule.pdf"
   },
   {
     "id": "exam-cs-midterm",
-    "title": "Mid-Term Examination - Computer Applications",
+    "title": "Mid-Term Examination - Computer Applications (Online)",
     "subjectId": 16,
     "subjectName": "Computer",
     "classId": 43,
@@ -358,11 +377,10 @@
     "examDate": "2026-10-22",
     "startTime": "09:00",
     "endTime": "11:30",
-    "reportingTime": "08:30 AM",
     "duration": "2.5 Hours (150 mins)",
-    "hallNumber": "Computer Lab 1 & 2",
     "totalMarks": 60,
     "passingMarks": 21,
+    "examMode": "Online",
     "syllabus": {
       "units": [
         {
@@ -394,10 +412,24 @@
         }
       ],
       "prescribedBook": "Computer Science with Python Class 8",
-      "generalInstructions": "Practical examination of 40 marks will be conducted separately as per lab roster."
+      "generalInstructions": "Online code execution sandbox is embedded for Python and HTML script verification."
     },
     "pattern": {
       "totalQuestions": 25,
+      "durationMinutes": 150,
+      "durationLabel": "2.5 Hours (150 mins)",
+      "examMode": "Online Computer-Based Test",
+      "sectionsSummary": "Technical MCQs (15m), Conceptual Short Answers (15m), HTML Web Coding (15m), and Python Scripts (15m).",
+      "onlineExamInstructions": [
+        "Code submissions are evaluated against standard test cases.",
+        "Ensure syntax indentation in Python code editor.",
+        "Tab switching or split screen will trigger a proctor alert."
+      ]
+    },
+    "marksDistribution": {
+      "totalMarks": 60,
+      "passingMarks": 21,
+      "scoringPolicy": "Automated code unit test grading + manual syntax evaluation.",
       "sections": [
         {
           "sectionName": "Section A (MCQs & Fill in Blanks)",
@@ -433,24 +465,16 @@
       "examDate": "2026-10-22",
       "dayOfWeek": "Thursday",
       "reportingTime": "08:30 AM",
+      "startTime": "09:00",
+      "endTime": "11:30",
       "readingTime": "08:45 AM - 09:00 AM (15 Minutes)",
       "writingTime": "09:00 AM - 11:30 AM (2.5 Hours)",
-      "hallNumber": "Computer Lab 1 & 2",
-      "seatRange": "Roll No. 801 to 845",
+      "hallOrPortal": "DCPEMS Online Exam Portal - Server 1",
+      "pdfUrl": "/sample_exam_schedule_term1.pdf",
+      "pdfName": "Computer_Class8_Midterm_Timetable_Schedule.pdf",
       "chiefInvigilator": "Mrs. Patil"
     },
-    "questionBank": {
-      "title": "Class 8 Computer Applications Question Bank & Coding Exercises 2026",
-      "fileSize": "2.1 MB",
-      "pdfUrl": "/sample_question_bank_computer_class8.pdf",
-      "sampleQuestions": [
-        "Explain Star Topology with a neat diagram. State two advantages and two disadvantages of Star Topology.",
-        "Differentiate between Hub and Switch in computer networks.",
-        "Write HTML code to create a student registration table with columns: Roll No, Name, Marks, Grade.",
-        "Write a Python program to check whether a given number is Prime or Composite.",
-        "Write a Python program to print the Fibonacci series up to n terms.",
-        "Predict the output of the given Python code snippet: x = 10; y = 25; for i in range(1, 4): x += i; print(x, y-x)."
-      ]
-    }
+    "timetablePdfUrl": "/sample_exam_schedule_term1.pdf",
+    "timetablePdfName": "Computer_Class8_Midterm_Timetable_Schedule.pdf"
   }
 ]

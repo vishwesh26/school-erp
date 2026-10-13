@@ -17,7 +17,7 @@ export interface ExamSyllabus {
   generalInstructions?: string;
 }
 
-export interface ExamPatternSection {
+export interface MarksDistributionSection {
   sectionName: string;
   questionCount: number;
   marksPerQuestion: number;
@@ -25,27 +25,34 @@ export interface ExamPatternSection {
   description: string;
 }
 
-export interface ExamPattern {
+export interface ExamMarksDistribution {
+  totalMarks: number;
+  passingMarks: number;
+  scoringPolicy?: string;
+  sections: MarksDistributionSection[];
+}
+
+export interface ExamPaperPattern {
   totalQuestions: number;
-  sections: ExamPatternSection[];
+  durationMinutes: number;
+  durationLabel: string;
+  examMode: "Online Computer-Based Test" | "Offline Pen-Paper" | "Online";
+  sectionsSummary: string;
+  onlineExamInstructions: string[];
 }
 
 export interface ExamTimetable {
-  examDate: string;
+  examDate: string; // YYYY-MM-DD
   dayOfWeek: string;
   reportingTime: string;
-  readingTime: string;
+  startTime: string;
+  endTime: string;
+  readingTime?: string;
   writingTime: string;
-  hallNumber: string;
-  seatRange?: string;
+  hallOrPortal: string;
+  pdfUrl?: string; // Uploaded timetable PDF
+  pdfName?: string;
   chiefInvigilator?: string;
-}
-
-export interface ExamQuestionBank {
-  title: string;
-  fileSize?: string;
-  pdfUrl?: string;
-  sampleQuestions: string[];
 }
 
 export interface ExamItem {
@@ -59,15 +66,16 @@ export interface ExamItem {
   examDate: string; // YYYY-MM-DD
   startTime: string; // HH:mm
   endTime: string; // HH:mm
-  reportingTime?: string;
   duration: string;
-  hallNumber?: string;
   totalMarks: number;
   passingMarks: number;
+  examMode: "Online" | "Offline";
   syllabus: ExamSyllabus;
-  pattern: ExamPattern;
+  pattern: ExamPaperPattern;
+  marksDistribution: ExamMarksDistribution;
   timetable: ExamTimetable;
-  questionBank: ExamQuestionBank;
+  timetablePdfUrl?: string;
+  timetablePdfName?: string;
   computedStatus?: "active" | "upcoming" | "past";
 }
 
@@ -112,15 +120,23 @@ export interface CreateExamInput {
   endTime: string;
   reportingTime?: string;
   duration: string;
-  hallNumber?: string;
+  hallOrPortal?: string;
   totalMarks: number;
   passingMarks: number;
+  examMode?: "Online" | "Offline";
+  // Syllabus
   syllabusUnitsText?: string;
   prescribedBook?: string;
-  patternSections?: ExamPatternSection[];
-  questionBankTitle?: string;
-  questionBankPdfUrl?: string;
-  sampleQuestionsText?: string;
+  generalInstructions?: string;
+  // Pattern & Online Conduct
+  sectionsSummary?: string;
+  onlineInstructionsText?: string;
+  // Marks Distribution
+  marksSections?: MarksDistributionSection[];
+  scoringPolicy?: string;
+  // Timetable PDF Upload
+  timetablePdfUrl?: string;
+  timetablePdfName?: string;
 }
 
 const DATA_FILE_PATH = path.join(process.cwd(), "data", "exams.json");
@@ -175,7 +191,7 @@ function computeStatus(examDate: string, todayStr: string): "active" | "upcoming
   }
 }
 
-/** Get all exams with Syllabus, Pattern, Timetable, Questions Bank */
+/** Get all exams with Syllabus, Pattern, Marks Distribution & Timetable PDF */
 export async function getExams(filters?: {
   classId?: number | string;
   className?: string;
@@ -185,7 +201,7 @@ export async function getExams(filters?: {
   const fileExams = await loadExamsFromFile();
   const todayStr = getTodayDateStr();
 
-  // Also query Supabase Exam table to sync any external database rows
+  // Sync any external database rows from Supabase
   let mergedExams: ExamItem[] = [...fileExams];
   try {
     const supabase = createClient();
@@ -196,7 +212,9 @@ export async function getExams(filters?: {
     if (dbExams && dbExams.length > 0) {
       dbExams.forEach((dbE: any) => {
         const idKey = `db-exam-${dbE.id}`;
-        const alreadyExists = mergedExams.some((e) => String(e.id) === String(dbE.id) || e.id === idKey);
+        const alreadyExists = mergedExams.some(
+          (e) => String(e.id) === String(dbE.id) || e.id === idKey
+        );
 
         if (!alreadyExists && dbE.lesson) {
           const dateOnly = dbE.startTime ? dbE.startTime.slice(0, 10) : todayStr;
@@ -205,7 +223,7 @@ export async function getExams(filters?: {
 
           mergedExams.push({
             id: idKey,
-            title: dbE.title || `${dbE.lesson?.subject?.name || "Subject"} Examination`,
+            title: dbE.title || `${dbE.lesson?.subject?.name || "Subject"} Examination (Online)`,
             subjectId: dbE.lesson?.subjectId,
             subjectName: dbE.lesson?.subject?.name || "General",
             classId: dbE.lesson?.classId,
@@ -217,54 +235,61 @@ export async function getExams(filters?: {
             startTime: timeOnly,
             endTime: endOnly,
             duration: "3 Hours (180 mins)",
-            hallNumber: "Exam Hall 1, Main Campus",
             totalMarks: 80,
             passingMarks: 28,
+            examMode: "Online",
             syllabus: {
               units: [
                 {
-                  unitName: "Unit 1: Core Concepts & Principles",
+                  unitName: "Unit 1: Theory & Core Concepts",
                   weightage: 40,
-                  topics: ["Fundamental Theory", "Key Applications", "Standard Formulas"],
+                  topics: ["Definitions", "Theorems", "Standard Formulas"],
                 },
                 {
-                  unitName: "Unit 2: Advanced Analysis & Problem Solving",
+                  unitName: "Unit 2: Applied Analysis & Problem Solving",
                   weightage: 40,
-                  topics: ["Analytical Problems", "Case Scenarios", "Practical Exercises"],
+                  topics: ["Case Scenarios", "Calculations", "Practical Analysis"],
                 },
               ],
-              prescribedBook: "Standard Curriculum Textbook & Reference Guide",
+              prescribedBook: "Standard Prescribed Textbook",
             },
             pattern: {
               totalQuestions: 30,
+              durationMinutes: 180,
+              durationLabel: "3 Hours (180 mins)",
+              examMode: "Online Computer-Based Test",
+              sectionsSummary: "Section A: Objective MCQs (20 Marks), Section B: Short Answers (30 Marks), Section C: Case Analysis (30 Marks).",
+              onlineExamInstructions: [
+                "Full-screen browser mode is enforced.",
+                "Login 15 minutes before scheduled start time.",
+                "Timer auto-submits upon completion.",
+              ],
+            },
+            marksDistribution: {
+              totalMarks: 80,
+              passingMarks: 28,
+              scoringPolicy: "No negative marking. Step-wise grading applicable.",
               sections: [
                 {
-                  sectionName: "Section A (Objective & MCQs)",
-                  questionCount: 15,
+                  sectionName: "Section A (Objective MCQs)",
+                  questionCount: 20,
                   marksPerQuestion: 1,
-                  totalMarks: 15,
-                  description: "Multiple choice and short objective items.",
+                  totalMarks: 20,
+                  description: "Multiple choice questions with instant auto-grading.",
                 },
                 {
                   sectionName: "Section B (Short Answer)",
-                  questionCount: 7,
+                  questionCount: 10,
                   marksPerQuestion: 3,
-                  totalMarks: 21,
-                  description: "Conceptual and analytical questions.",
+                  totalMarks: 30,
+                  description: "Concise reasoning and formula steps.",
                 },
                 {
-                  sectionName: "Section C (Long Answer)",
-                  questionCount: 4,
-                  marksPerQuestion: 6,
-                  totalMarks: 24,
-                  description: "Comprehensive step-by-step problem solving.",
-                },
-                {
-                  sectionName: "Section D (Case Study)",
-                  questionCount: 4,
+                  sectionName: "Section C (Descriptive / Cases)",
+                  questionCount: 6,
                   marksPerQuestion: 5,
-                  totalMarks: 20,
-                  description: "Applied scenarios with contextual data.",
+                  totalMarks: 30,
+                  description: "Comprehensive analytical problem-solving.",
                 },
               ],
             },
@@ -272,19 +297,11 @@ export async function getExams(filters?: {
               examDate: dateOnly,
               dayOfWeek: DAY_NAMES[new Date(dateOnly).getDay()] || "Scheduled",
               reportingTime: "08:30 AM",
+              startTime: timeOnly,
+              endTime: endOnly,
               readingTime: "08:45 AM - 09:00 AM (15 Minutes)",
               writingTime: `${timeOnly} - ${endOnly}`,
-              hallNumber: "Exam Hall 1, Main Campus",
-            },
-            questionBank: {
-              title: `${dbE.lesson?.subject?.name || "General"} Official Question Bank & Model Paper`,
-              fileSize: "2.5 MB",
-              pdfUrl: "/sample_question_bank_general.pdf",
-              sampleQuestions: [
-                "Explain the fundamental theorem and provide two real-world examples.",
-                "Solve the practice problem showing all intermediate steps.",
-                "Differentiate between key principles discussed in chapter syllabus.",
-              ],
+              hallOrPortal: "DCPEMS Online Exam Portal - Server 1",
             },
           });
         }
@@ -300,7 +317,9 @@ export async function getExams(filters?: {
   if (filters?.classId) {
     const classIdStr = String(filters.classId);
     filtered = filtered.filter(
-      (e) => String(e.classId) === classIdStr || (filters.className && e.className.toLowerCase() === filters.className.toLowerCase())
+      (e) =>
+        String(e.classId) === classIdStr ||
+        (filters.className && e.className.toLowerCase() === filters.className.toLowerCase())
     );
   } else if (filters?.className) {
     filtered = filtered.filter(
@@ -318,7 +337,6 @@ export async function getExams(filters?: {
     );
   }
 
-  // Enrich with computedStatus
   const enriched: ExamItem[] = filtered.map((e) => ({
     ...e,
     computedStatus: computeStatus(e.examDate, todayStr),
@@ -346,7 +364,7 @@ export async function getExams(filters?: {
   };
 }
 
-/** Fetch Exam Calendar Data for month grid */
+/** Fetch Exam Calendar Data */
 export async function getExamCalendarData(params?: {
   year?: number;
   month?: number;
@@ -356,11 +374,11 @@ export async function getExamCalendarData(params?: {
 }): Promise<ExamCalendarData> {
   const now = new Date();
   const year = params?.year || now.getFullYear();
-  const month = params?.month || now.getMonth() + 1; // 1-12
+  const month = params?.month || now.getMonth() + 1;
   const todayStr = getTodayDateStr();
 
   const daysInMonth = new Date(year, month, 0).getDate();
-  const firstDayOfWeek = new Date(year, month - 1, 1).getDay(); // 0 = Sun
+  const firstDayOfWeek = new Date(year, month - 1, 1).getDay();
 
   const { all: exams } = await getExams({
     classId: params?.classId,
@@ -427,7 +445,7 @@ export async function getExamCalendarData(params?: {
   };
 }
 
-/** Create a new Exam Schedule with Syllabus, Pattern, Timetable, Questions Bank */
+/** Create new Exam Schedule with Syllabus, Pattern, Marks Distribution, and Timetable PDF */
 export async function createExamScheduleAction(data: CreateExamInput) {
   try {
     if (!data.title?.trim()) {
@@ -446,32 +464,62 @@ export async function createExamScheduleAction(data: CreateExamInput) {
       ? data.syllabusUnitsText
           .split("\n")
           .filter((line) => line.trim())
-          .map((line, idx) => ({
+          .map((line) => ({
             unitName: line.trim(),
             weightage: 20,
-            topics: ["Comprehensive coverage of prescribed chapters and sample problems"],
+            topics: ["Key syllabus concepts, definitions, and model problem applications."],
           }))
       : [
           {
             unitName: "Unit 1: Mid-Term Curriculum Units",
             weightage: 40,
-            topics: ["Core theory, theorems, and definitions"],
+            topics: ["Core concepts, definitions, and theorems."],
           },
           {
-            unitName: "Unit 2: Applied & Problem Solving",
+            unitName: "Unit 2: Applied & Analytical Topics",
             weightage: 40,
-            topics: ["Case analyses and practical numerical exercises"],
+            topics: ["Practical applications and analytical problem solving."],
           },
         ];
 
-    // Parse sample questions
-    const sampleQuestions: string[] = data.sampleQuestionsText
-      ? data.sampleQuestionsText.split("\n").filter((q) => q.trim())
+    const onlineInstructions = data.onlineInstructionsText
+      ? data.onlineInstructionsText.split("\n").filter((l) => l.trim())
       : [
-          "State the fundamental laws and provide an illustrative example.",
-          "Solve the model question and verify against syllabus constraints.",
-          "Explain the process and diagrammatic representation.",
+          "Candidate must log in 15 minutes before start time.",
+          "Full screen browser window is mandatory during the online test.",
+          "Auto-submission occurs when examination time expires.",
         ];
+
+    const marksSections: MarksDistributionSection[] = data.marksSections || [
+      {
+        sectionName: "Section A (Objective & MCQs)",
+        questionCount: 20,
+        marksPerQuestion: 1,
+        totalMarks: 20,
+        description: "Multiple choice questions with automated evaluation.",
+      },
+      {
+        sectionName: "Section B (Short Answer)",
+        questionCount: 6,
+        marksPerQuestion: 3,
+        totalMarks: 18,
+        description: "Concise reasoning with step-by-step mathematical working.",
+      },
+      {
+        sectionName: "Section C (Long Answer)",
+        questionCount: 4,
+        marksPerQuestion: 6,
+        totalMarks: 24,
+        description: "In-depth problem solving and analytical proofs.",
+      },
+      {
+        sectionName: "Section D (Case-Based / Applied)",
+        questionCount: 3,
+        marksPerQuestion: 6,
+        totalMarks: 18,
+        description: "Real-world contextual scenario problems.",
+      },
+    ];
 
     const newExam: ExamItem = {
       id: newId,
@@ -484,63 +532,48 @@ export async function createExamScheduleAction(data: CreateExamInput) {
       examDate: data.examDate,
       startTime: data.startTime || "09:00",
       endTime: data.endTime || "12:00",
-      reportingTime: data.reportingTime || "08:30 AM",
       duration: data.duration || "3 Hours (180 mins)",
-      hallNumber: data.hallNumber || "Exam Hall 1, Main Campus",
       totalMarks: Number(data.totalMarks) || 80,
       passingMarks: Number(data.passingMarks) || 28,
+      examMode: data.examMode || "Online",
       syllabus: {
         units,
         prescribedBook: data.prescribedBook || "Standard Prescribed Textbook",
-        generalInstructions: "Calculators and smart devices are prohibited in exam hall.",
+        generalInstructions:
+          data.generalInstructions ||
+          "Online examination conducted via School Portal. Ensure stable connectivity.",
       },
       pattern: {
-        totalQuestions: 35,
-        sections: data.patternSections || [
-          {
-            sectionName: "Section A (Objective & MCQs)",
-            questionCount: 20,
-            marksPerQuestion: 1,
-            totalMarks: 20,
-            description: "Objective items and MCQs.",
-          },
-          {
-            sectionName: "Section B (Short Answer)",
-            questionCount: 6,
-            marksPerQuestion: 3,
-            totalMarks: 18,
-            description: "Conceptual questions with logical steps.",
-          },
-          {
-            sectionName: "Section C (Long Answer)",
-            questionCount: 4,
-            marksPerQuestion: 6,
-            totalMarks: 24,
-            description: "Detailed problem solving and proofs.",
-          },
-          {
-            sectionName: "Section D (Case Studies)",
-            questionCount: 3,
-            marksPerQuestion: 6,
-            totalMarks: 18,
-            description: "Contextual application questions.",
-          },
-        ],
+        totalQuestions: marksSections.reduce((sum, s) => sum + s.questionCount, 0) || 33,
+        durationMinutes: 180,
+        durationLabel: data.duration || "3 Hours (180 mins)",
+        examMode: "Online Computer-Based Test",
+        sectionsSummary:
+          data.sectionsSummary ||
+          `${marksSections.length} Sections: Objective, Short, Long & Applied Case Studies.`,
+        onlineExamInstructions: onlineInstructions,
+      },
+      marksDistribution: {
+        totalMarks: Number(data.totalMarks) || 80,
+        passingMarks: Number(data.passingMarks) || 28,
+        scoringPolicy: data.scoringPolicy || "No negative marking. Step-wise grading applicable.",
+        sections: marksSections,
       },
       timetable: {
         examDate: data.examDate,
         dayOfWeek,
         reportingTime: data.reportingTime || "08:30 AM",
+        startTime: data.startTime || "09:00",
+        endTime: data.endTime || "12:00",
         readingTime: "08:45 AM - 09:00 AM (15 Minutes)",
         writingTime: `${data.startTime || "09:00"} - ${data.endTime || "12:00"}`,
-        hallNumber: data.hallNumber || "Exam Hall 1, Main Campus",
+        hallOrPortal: data.hallOrPortal || "DCPEMS Online Exam Portal - Server 1",
+        pdfUrl: data.timetablePdfUrl,
+        pdfName: data.timetablePdfName,
+        chiefInvigilator: data.teacherName || "Assigned Faculty",
       },
-      questionBank: {
-        title: data.questionBankTitle || `${data.subjectName} Official Model Question Bank 2026`,
-        fileSize: "2.4 MB",
-        pdfUrl: data.questionBankPdfUrl || "/sample_question_bank_general.pdf",
-        sampleQuestions,
-      },
+      timetablePdfUrl: data.timetablePdfUrl,
+      timetablePdfName: data.timetablePdfName,
     };
 
     fileExams.unshift(newExam);
@@ -553,7 +586,7 @@ export async function createExamScheduleAction(data: CreateExamInput) {
     return { success: true, exam: newExam };
   } catch (err: any) {
     console.error("createExamScheduleAction error:", err);
-    return { success: false, error: err.message || "Failed to create exam schedule." };
+    return { success: false, error: err.message || "Failed to schedule exam." };
   }
 }
 
@@ -564,7 +597,6 @@ export async function deleteExamScheduleAction(examId: string | number) {
     const filtered = fileExams.filter((e) => String(e.id) !== String(examId));
 
     if (filtered.length === fileExams.length) {
-      // Check if it's a Supabase Exam ID
       if (typeof examId === "number" || !isNaN(Number(examId))) {
         const supabase = createClient();
         await supabase.from("Exam").delete().eq("id", Number(examId));
