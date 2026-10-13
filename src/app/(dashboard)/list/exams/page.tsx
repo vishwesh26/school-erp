@@ -1,11 +1,6 @@
-import FormContainer from "@/components/FormContainer";
-import Pagination from "@/components/Pagination";
-import Table from "@/components/Table";
-import TableSearch from "@/components/TableSearch";
 import { createClient } from "@/lib/supabase/server";
-import { ITEM_PER_PAGE } from "@/lib/settings";
-import { formatDate, formatClassName } from "@/lib/utils";
-import Image from "next/image";
+import { getExams } from "@/lib/examActions";
+import ExamHubView from "@/components/exams/ExamHubView";
 
 const ExamListPage = async ({
   searchParams,
@@ -13,112 +8,88 @@ const ExamListPage = async ({
   searchParams: { [key: string]: string | undefined };
 }) => {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const userId = user?.id;
   const role = user?.user_metadata?.role;
-  const currentUserId = userId;
 
-  const columns = [
-    {
-      header: "Subject Name",
-      accessor: "name",
-    },
-    {
-      header: "Class",
-      accessor: "class",
-    },
-    {
-      header: "Teacher",
-      accessor: "teacher",
-      className: "hidden md:table-cell",
-    },
-    {
-      header: "Date",
-      accessor: "date",
-      className: "hidden md:table-cell",
-    },
-    ...(role === "admin" || role === "teacher"
-      ? [
-        {
-          header: "Actions",
-          accessor: "action",
-        },
-      ]
-      : []),
-  ];
+  let effectiveRole = role || "student";
+  let studentClassId: number | null = null;
+  let studentClassName: string | undefined = undefined;
+  let teacherName: string | undefined = undefined;
 
-  const renderRow = (item: any) => (
-    <tr
-      key={item.id}
-      className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
-    >
-      <td className="flex items-center gap-4 p-4">{item.lesson?.subject?.name || 'N/A'}</td>
-      <td>{formatClassName(item.lesson?.class?.name) || 'N/A'}</td>
-      <td className="hidden md:table-cell">
-        {item.lesson?.teacher ? `${item.lesson.teacher.name || ""} ${item.lesson.teacher.surname || ""}`.trim() : 'N/A'}
-      </td>
-      <td className="hidden md:table-cell">
-        {formatDate(item.startTime, "en-US")}
-      </td>
-      <td>
-        <div className="flex items-center gap-2">
-          {(role === "admin" || role === "teacher") && (
-            <>
-              <FormContainer table="exam" type="update" data={item} />
-              <FormContainer table="exam" type="delete" id={item.id} />
-            </>
-          )}
-        </div>
-      </td>
-    </tr>
-  );
+  if (userId) {
+    if (role === "teacher") {
+      const { data: teacher } = await supabase
+        .from("Teacher")
+        .select("*")
+        .eq("id", userId)
+        .maybeSingle();
+      if (teacher) {
+        teacherName = `${teacher.name} ${teacher.surname || ""}`.trim();
+      }
+      effectiveRole = "teacher";
+    } else if (role === "admin") {
+      effectiveRole = "admin";
+    } else {
+      // Check if student
+      const { data: student } = await supabase
+        .from("Student")
+        .select("*, class:Class(*)")
+        .eq("id", userId)
+        .maybeSingle();
 
-  const { page, ...queryParams } = searchParams;
-  const p = page ? parseInt(page) : 1;
-
-  let query = supabase.from('Exam').select('*, lesson:Lesson(*, subject:Subject(*), class:Class(*), teacher:Teacher(*))', { count: 'exact' });
-
-  // Filter Logic
-  // Supabase filtering on related tables is tricky ("query.lesson.classId").
-  // We can filter `Exam` entries where `lessonId` matches a subquery, but JS client `.eq` applies to top level.
-  // Correct way: `!inner` join in select.
-  // e.g. .select('*, lesson!inner(*)') and then .eq('lesson.classId', value).
-
-  if (role === 'teacher') {
-    // query = query.eq('lesson.teacherId', currentUserId); // This requires !inner on lesson
+      if (student) {
+        effectiveRole = "student";
+        studentClassId = student.classId ?? null;
+        studentClassName = student.class?.name;
+      } else {
+        // Fallback check teacher
+        const { data: teacher } = await supabase
+          .from("Teacher")
+          .select("*")
+          .eq("id", userId)
+          .maybeSingle();
+        if (teacher) {
+          effectiveRole = "teacher";
+          teacherName = `${teacher.name} ${teacher.surname || ""}`.trim();
+        }
+      }
+    }
   }
 
-  const from = (p - 1) * ITEM_PER_PAGE;
-  const to = from + ITEM_PER_PAGE - 1;
-
-  const { data, count, error } = await query.range(from, to);
-
-  if (error) console.error(error);
+  const examData = await getExams({
+    classId: studentClassId ?? undefined,
+    className: studentClassName,
+    role: effectiveRole,
+  });
 
   return (
-    <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
-      {/* TOP */}
-      <div className="flex items-center justify-between">
-        <h1 className="hidden md:block text-lg font-semibold">All Exams</h1>
-        <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-          <TableSearch />
-          <div className="flex items-center gap-4 self-end">
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              <Image src="/filter.png" alt="" width={14} height={14} />
-            </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              <Image src="/sort.png" alt="" width={14} height={14} />
-            </button>
-            {(role === "admin" || role === "teacher") && (
-              <FormContainer table="exam" type="create" />
-            )}
-          </div>
+    <div className="p-4 sm:p-6 flex flex-col gap-5 max-w-[1600px] mx-auto w-full">
+      {/* PAGE HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            Examinations & Academic Assessment Hub
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
+            {effectiveRole === "student" && studentClassName
+              ? `Examination Timetable, Syllabus, Question Paper Patterns & Question Bank PDFs for Class ${studentClassName}`
+              : "Comprehensive Exam Calendar, Question Paper Patterns, Syllabus Breakdowns & Question Bank PDFs"}
+          </p>
         </div>
       </div>
-      {/* LIST */}
-      <Table columns={columns} renderRow={renderRow} data={data || []} />
-      {/* PAGINATION */}
-      <Pagination page={p} count={count || 0} />
+
+      {/* EXAM HUB VIEW (CALENDAR + TIMETABLE + SYLLABUS + PATTERN + QUESTION BANK PDF) */}
+      <ExamHubView
+        initialExams={examData}
+        role={effectiveRole}
+        classId={studentClassId ?? undefined}
+        className={studentClassName}
+        teacherName={teacherName}
+      />
     </div>
   );
 };

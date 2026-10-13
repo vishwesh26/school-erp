@@ -1,0 +1,456 @@
+[
+  {
+    "id": "exam-math-midterm",
+    "title": "Mid-Term Examination - Mathematics",
+    "subjectId": 6,
+    "subjectName": "Mathematics",
+    "classId": 43,
+    "className": "8A",
+    "teacherName": "Prof. Verma",
+    "examDate": "2026-10-14",
+    "startTime": "09:00",
+    "endTime": "12:00",
+    "reportingTime": "08:30 AM",
+    "duration": "3 Hours (180 mins)",
+    "hallNumber": "Exam Hall 2, Block A",
+    "totalMarks": 80,
+    "passingMarks": 28,
+    "syllabus": {
+      "units": [
+        {
+          "unitName": "Unit 1: Number Systems & Rational Numbers",
+          "weightage": 15,
+          "topics": [
+            "Properties of Rational Numbers (Closure, Commutativity, Associativity)",
+            "Representation of Rational Numbers on the Number Line",
+            "Finding Rational Numbers between two Rational Numbers"
+          ]
+        },
+        {
+          "unitName": "Unit 2: Linear Equations in One Variable",
+          "weightage": 20,
+          "topics": [
+            "Solving Linear Equations with Variable on One Side & Both Sides",
+            "Applications of Linear Equations in Word Problems (Age, Geometry, Coins)",
+            "Reducing Equations to Simpler Linear Form"
+          ]
+        },
+        {
+          "unitName": "Unit 3: Understanding Quadrilaterals & Geometry",
+          "weightage": 25,
+          "topics": [
+            "Polygons and Classification (Convex, Concave, Regular, Irregular)",
+            "Angle Sum Property of Polygons",
+            "Properties of Parallelograms, Rhombus, Rectangle, and Square"
+          ]
+        },
+        {
+          "unitName": "Unit 4: Squares, Square Roots & Exponents",
+          "weightage": 20,
+          "topics": [
+            "Square Numbers and Properties",
+            "Finding Square Roots using Prime Factorization and Long Division Method",
+            "Laws of Exponents with Integral Powers"
+          ]
+        }
+      ],
+      "prescribedBook": "NCERT Mathematics Class 8 & Exemplar Problems",
+      "generalInstructions": "Calculators are strictly prohibited. Graph sheets and geometrical instruments will be provided by invigilator."
+    },
+    "pattern": {
+      "totalQuestions": 38,
+      "sections": [
+        {
+          "sectionName": "Section A (Objective & MCQs)",
+          "questionCount": 20,
+          "marksPerQuestion": 1,
+          "totalMarks": 20,
+          "description": "Multiple Choice Questions (Q1 - Q18) and Assertion-Reasoning (Q19 - Q20). No negative marking."
+        },
+        {
+          "sectionName": "Section B (Very Short Answer)",
+          "questionCount": 5,
+          "marksPerQuestion": 2,
+          "totalMarks": 10,
+          "description": "Short answer questions requiring 2-3 logical steps with appropriate formulas."
+        },
+        {
+          "sectionName": "Section C (Short Answer)",
+          "questionCount": 6,
+          "marksPerQuestion": 3,
+          "totalMarks": 18,
+          "description": "Analytical problem-solving questions with step-by-step mathematical working."
+        },
+        {
+          "sectionName": "Section D (Long Answer)",
+          "questionCount": 4,
+          "marksPerQuestion": 5,
+          "totalMarks": 20,
+          "description": "Complex multi-step problems, geometric proofs, and real-world algebraic modelling."
+        },
+        {
+          "sectionName": "Section E (Case-Based / Applied)",
+          "questionCount": 3,
+          "marksPerQuestion": 4,
+          "totalMarks": 12,
+          "description": "Real-life scenario questions with sub-parts of 1, 1, and 2 marks with internal choice."
+        }
+      ]
+    },
+    "timetable": {
+      "examDate": "2026-10-14",
+      "dayOfWeek": "Wednesday",
+      "reportingTime": "08:30 AM",
+      "readingTime": "08:45 AM - 09:00 AM (15 Minutes)",
+      "writingTime": "09:00 AM - 12:00 PM (3 Hours)",
+      "hallNumber": "Exam Hall 2, Block A",
+      "seatRange": "Roll No. 801 to 845",
+      "chiefInvigilator": "Mr. R. K. Joshi"
+    },
+    "questionBank": {
+      "title": "Class 8 Mathematics Mid-Term Question Bank & Sample Papers 2026",
+      "fileSize": "2.8 MB",
+      "pdfUrl": "/sample_question_bank_math_class8.pdf",
+      "sampleQuestions": [
+        "Find five rational numbers between 2/3 and 4/5.",
+        "Solve the linear equation: 5x + 7/2 = 3/2 x - 14 and verify your solution.",
+        "The perimeter of a rectangular swimming pool is 154 m. Its length is 2 m more than twice its breadth. Find the length and breadth.",
+        "The four angles of a quadrilateral are in the ratio 3 : 5 : 9 : 13. Find all the angles of the quadrilateral.",
+        "Find the least number that must be added to 1300 so as to get a perfect square. Also find the square root of the perfect square.",
+        "A ladder 15 m long reaches a window which is 12 m above the ground on one side of a street. Keeping its foot at the same point, the ladder is turned to the other side of the street where it reaches a window 9 m high. Find the width of the street."
+      ]
+    }
+  },
+  {
+    "id": "exam-sci-midterm",
+    "title": "Mid-Term Examination - Science & Technology",
+    "subjectId": 7,
+    "subjectName": "Biology",
+    "classId": 43,
+    "className": "8A",
+    "teacherName": "Dr. Sharma",
+    "examDate": "2026-10-16",
+    "startTime": "09:00",
+    "endTime": "12:00",
+    "reportingTime": "08:30 AM",
+    "duration": "3 Hours (180 mins)",
+    "hallNumber": "Exam Hall 2, Block A",
+    "totalMarks": 80,
+    "passingMarks": 28,
+    "syllabus": {
+      "units": [
+        {
+          "unitName": "Unit 1: Cell - Structure and Functions",
+          "weightage": 20,
+          "topics": [
+            "Discovery of Cell, Cell Theory, and Unicellular vs Multicellular organisms",
+            "Plant Cell vs Animal Cell with well-labelled diagrams",
+            "Cell Organelles (Mitochondria, Chloroplast, Nucleus, Vacuoles, Cell Membrane)"
+          ]
+        },
+        {
+          "unitName": "Unit 2: Microorganisms - Friend and Foe",
+          "weightage": 20,
+          "topics": [
+            "Major groups of microorganisms (Bacteria, Fungi, Protozoa, Algae, Viruses)",
+            "Fermentation, Nitrogen Cycle, and Food Preservation methods",
+            "Common human diseases caused by microbes and preventive measures"
+          ]
+        },
+        {
+          "unitName": "Unit 3: Force, Pressure & Friction",
+          "weightage": 20,
+          "topics": [
+            "Contact and Non-contact forces, SI units of Force (Newton)",
+            "Atmospheric Pressure and Liquid Pressure depth variations",
+            "Types of friction (Static, Sliding, Rolling) and fluid friction (Drag)"
+          ]
+        },
+        {
+          "unitName": "Unit 4: Combustion, Flame & Conservation of Flora/Fauna",
+          "weightage": 20,
+          "topics": [
+            "Conditions necessary for combustion, Ignition Temperature",
+            "Zones of candle flame (Luminous, Non-luminous, Dark zone)",
+            "Deforestation consequences, Biosphere Reserves, National Parks & Sanctuaries"
+          ]
+        }
+      ],
+      "prescribedBook": "NCERT Science Class 8 & Lab Manual",
+      "generalInstructions": "Draw neat diagrams wherever applicable using HB pencil. Label all parts clearly."
+    },
+    "pattern": {
+      "totalQuestions": 39,
+      "sections": [
+        {
+          "sectionName": "Section A (Objective MCQs & Assertion)",
+          "questionCount": 20,
+          "marksPerQuestion": 1,
+          "totalMarks": 20,
+          "description": "MCQs, One-word answers, and Assertion-Reasoning."
+        },
+        {
+          "sectionName": "Section B (Short Answer I)",
+          "questionCount": 6,
+          "marksPerQuestion": 2,
+          "totalMarks": 12,
+          "description": "Scientific reasoning and concise explanations (30-50 words)."
+        },
+        {
+          "sectionName": "Section C (Short Answer II)",
+          "questionCount": 7,
+          "marksPerQuestion": 3,
+          "totalMarks": 21,
+          "description": "Mechanism explanations, comparisons, and biological cycles (50-80 words)."
+        },
+        {
+          "sectionName": "Section D (Long Answer with Diagrams)",
+          "questionCount": 3,
+          "marksPerQuestion": 5,
+          "totalMarks": 15,
+          "description": "Comprehensive structured questions with mandatory labelled diagrams."
+        },
+        {
+          "sectionName": "Section E (Competency & Case Studies)",
+          "questionCount": 3,
+          "marksPerQuestion": 4,
+          "totalMarks": 12,
+          "description": "Real-world scientific application scenarios with three sub-questions."
+        }
+      ]
+    },
+    "timetable": {
+      "examDate": "2026-10-16",
+      "dayOfWeek": "Friday",
+      "reportingTime": "08:30 AM",
+      "readingTime": "08:45 AM - 09:00 AM (15 Minutes)",
+      "writingTime": "09:00 AM - 12:00 PM (3 Hours)",
+      "hallNumber": "Exam Hall 2, Block A",
+      "seatRange": "Roll No. 801 to 845",
+      "chiefInvigilator": "Mrs. S. Kulkarni"
+    },
+    "questionBank": {
+      "title": "Class 8 Science Complete Question Bank & Diagram Guide 2026",
+      "fileSize": "3.4 MB",
+      "pdfUrl": "/sample_question_bank_science_class8.pdf",
+      "sampleQuestions": [
+        "Differentiate between plant cell and animal cell with well-labelled diagrams.",
+        "Explain the process of Nitrogen Fixation and draw a neat diagram of the Nitrogen Cycle.",
+        "Why is friction called a necessary evil? Give two examples each where friction is useful and where it is harmful.",
+        "Explain with an experiment why atmospheric pressure decreases with increasing altitude.",
+        "Explain the three zones of a candle flame. Which zone is the hottest and why do goldsmiths blow the outermost zone?",
+        "What are antibiotics? What precautions should be taken while taking antibiotics?"
+      ]
+    }
+  },
+  {
+    "id": "exam-eng-midterm",
+    "title": "Mid-Term Examination - English Literature & Grammar",
+    "subjectId": 2,
+    "subjectName": "Hindi",
+    "classId": 43,
+    "className": "8A",
+    "teacherName": "Mrs. Anjali Deshmukh",
+    "examDate": "2026-10-19",
+    "startTime": "09:00",
+    "endTime": "12:00",
+    "reportingTime": "08:30 AM",
+    "duration": "3 Hours (180 mins)",
+    "hallNumber": "Exam Hall 2, Block A",
+    "totalMarks": 80,
+    "passingMarks": 28,
+    "syllabus": {
+      "units": [
+        {
+          "unitName": "Section A: Reading Comprehension",
+          "weightage": 20,
+          "topics": [
+            "Unseen Factual Passage (350-400 words)",
+            "Unseen Discursive / Literary Passage with vocabulary testing"
+          ]
+        },
+        {
+          "unitName": "Section B: Writing Skills & Applied Grammar",
+          "weightage": 30,
+          "topics": [
+            "Formal Letter to Editor & Application to Principal",
+            "Notice Writing, Diary Entry, and Analytical Paragraph",
+            "Tenses, Active & Passive Voice, Direct & Indirect Speech, Subject-Verb Agreement"
+          ]
+        },
+        {
+          "unitName": "Section C: Literature Textbook & Supplementary",
+          "weightage": 30,
+          "topics": [
+            "The Best Christmas Present in the World, The Tsunami, Glimpses of the Past",
+            "Poems: The Ant and the Cricket, Geography Lesson, Macavity: The Mystery Cat",
+            "Supplementary: How the Camel got his hump, Children at work, The Selfish Giant"
+          ]
+        }
+      ],
+      "prescribedBook": "Honeydew & It So Happened (NCERT)",
+      "generalInstructions": "Strictly adhere to prescribed word limits in writing section. Neat handwriting and correct spelling carry weightage."
+    },
+    "pattern": {
+      "totalQuestions": 11,
+      "sections": [
+        {
+          "sectionName": "Section A: Reading Comprehension",
+          "questionCount": 2,
+          "marksPerQuestion": 10,
+          "totalMarks": 20,
+          "description": "Two unseen passages with MCQs, short answers, and vocabulary inference."
+        },
+        {
+          "sectionName": "Section B: Creative Writing Skills",
+          "questionCount": 4,
+          "marksPerQuestion": 5,
+          "totalMarks": 20,
+          "description": "Notice writing (4m), Diary entry (6m), Formal letter writing (10m)."
+        },
+        {
+          "sectionName": "Section C: Applied Grammar",
+          "questionCount": 5,
+          "marksPerQuestion": 2,
+          "totalMarks": 10,
+          "description": "Gap filling, error detection/correction, and sentence transformation."
+        },
+        {
+          "sectionName": "Section D: Literature & Supplementary Reader",
+          "questionCount": 6,
+          "marksPerQuestion": 5,
+          "totalMarks": 30,
+          "description": "Extract-based questions (10m), Short answer questions (12m), Long character sketch (8m)."
+        }
+      ]
+    },
+    "timetable": {
+      "examDate": "2026-10-19",
+      "dayOfWeek": "Monday",
+      "reportingTime": "08:30 AM",
+      "readingTime": "08:45 AM - 09:00 AM (15 Minutes)",
+      "writingTime": "09:00 AM - 12:00 PM (3 Hours)",
+      "hallNumber": "Exam Hall 2, Block A",
+      "seatRange": "Roll No. 801 to 845",
+      "chiefInvigilator": "Mr. S. Rao"
+    },
+    "questionBank": {
+      "title": "Class 8 English Mid-Term Sample Papers & Writing Formats 2026",
+      "fileSize": "1.9 MB",
+      "pdfUrl": "/sample_question_bank_english_class8.pdf",
+      "sampleQuestions": [
+        "You are the Sports Secretary of your school. Write a notice informing students about the upcoming Inter-House Football Tournament in about 50 words.",
+        "Write a letter to the Municipal Commissioner complaining about the poor condition of roads and frequent waterlogging in your locality.",
+        "What did Connie Macpherson think her visitor was? Why did she consider Christmas day the best present in the world?",
+        "How did Tilly Smith's geography lesson help save several lives on Phuket beach in Thailand?",
+        "Transform the sentences from Direct to Indirect Speech and rewrite correctly."
+      ]
+    }
+  },
+  {
+    "id": "exam-cs-midterm",
+    "title": "Mid-Term Examination - Computer Applications",
+    "subjectId": 16,
+    "subjectName": "Computer",
+    "classId": 43,
+    "className": "8A",
+    "teacherName": "Mrs. Patil",
+    "examDate": "2026-10-22",
+    "startTime": "09:00",
+    "endTime": "11:30",
+    "reportingTime": "08:30 AM",
+    "duration": "2.5 Hours (150 mins)",
+    "hallNumber": "Computer Lab 1 & 2",
+    "totalMarks": 60,
+    "passingMarks": 21,
+    "syllabus": {
+      "units": [
+        {
+          "unitName": "Unit 1: Computer Networking Fundamentals",
+          "weightage": 15,
+          "topics": [
+            "Network Topologies (Star, Ring, Bus, Mesh, Hybrid)",
+            "Network Devices (Hub, Switch, Router, Gateway, Bridge)",
+            "Client-Server Architecture and Peer-to-Peer Networks"
+          ]
+        },
+        {
+          "unitName": "Unit 2: HTML5, CSS & Web Design",
+          "weightage": 20,
+          "topics": [
+            "HTML5 Structural tags, Lists (Ordered, Unordered), Tables and Forms",
+            "CSS Styling: Inline, Internal, External stylesheets, Font & Background properties",
+            "Hyperlinks and Media Embedding (Images, Audio, Video)"
+          ]
+        },
+        {
+          "unitName": "Unit 3: Python Programming Basics",
+          "weightage": 25,
+          "topics": [
+            "Variables, Data types (int, float, str, bool), Operators in Python",
+            "Conditional Statements: if, if-else, if-elif-else ladder",
+            "Loops: for loop with range(), while loop, and basic string operations"
+          ]
+        }
+      ],
+      "prescribedBook": "Computer Science with Python Class 8",
+      "generalInstructions": "Practical examination of 40 marks will be conducted separately as per lab roster."
+    },
+    "pattern": {
+      "totalQuestions": 25,
+      "sections": [
+        {
+          "sectionName": "Section A (MCQs & Fill in Blanks)",
+          "questionCount": 15,
+          "marksPerQuestion": 1,
+          "totalMarks": 15,
+          "description": "Technical terminology, definitions, and protocol abbreviations."
+        },
+        {
+          "sectionName": "Section B (Short Technical Answers)",
+          "questionCount": 5,
+          "marksPerQuestion": 3,
+          "totalMarks": 15,
+          "description": "Conceptual comparisons (e.g., Hub vs Switch, Star vs Bus topology)."
+        },
+        {
+          "sectionName": "Section C (HTML Code Writing)",
+          "questionCount": 3,
+          "marksPerQuestion": 5,
+          "totalMarks": 15,
+          "description": "Write HTML and CSS code to design a specific webpage table or input form."
+        },
+        {
+          "sectionName": "Section D (Python Coding & Output Prediction)",
+          "questionCount": 3,
+          "marksPerQuestion": 5,
+          "totalMarks": 15,
+          "description": "Write Python script for mathematical series and predict output of code snippets."
+        }
+      ]
+    },
+    "timetable": {
+      "examDate": "2026-10-22",
+      "dayOfWeek": "Thursday",
+      "reportingTime": "08:30 AM",
+      "readingTime": "08:45 AM - 09:00 AM (15 Minutes)",
+      "writingTime": "09:00 AM - 11:30 AM (2.5 Hours)",
+      "hallNumber": "Computer Lab 1 & 2",
+      "seatRange": "Roll No. 801 to 845",
+      "chiefInvigilator": "Mrs. Patil"
+    },
+    "questionBank": {
+      "title": "Class 8 Computer Applications Question Bank & Coding Exercises 2026",
+      "fileSize": "2.1 MB",
+      "pdfUrl": "/sample_question_bank_computer_class8.pdf",
+      "sampleQuestions": [
+        "Explain Star Topology with a neat diagram. State two advantages and two disadvantages of Star Topology.",
+        "Differentiate between Hub and Switch in computer networks.",
+        "Write HTML code to create a student registration table with columns: Roll No, Name, Marks, Grade.",
+        "Write a Python program to check whether a given number is Prime or Composite.",
+        "Write a Python program to print the Fibonacci series up to n terms.",
+        "Predict the output of the given Python code snippet: x = 10; y = 25; for i in range(1, 4): x += i; print(x, y-x)."
+      ]
+    }
+  }
+]
