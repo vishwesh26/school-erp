@@ -120,10 +120,10 @@ const ExamCalendarView: React.FC<ExamCalendarViewProps> = ({
           </div>
           <div>
             <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-              Online Exam Schedule & Timetable Calendar
+              School Examination Timetable & Calendar
             </h2>
             <p className="text-xs text-slate-500 font-medium">
-              Click any calendar date to find upcoming exams, Syllabus, Paper Pattern, Marks Distribution, Timetable PDF & Question Bank
+              Click any calendar date to find upcoming exams, Syllabus, Paper Pattern, Marking Scheme, Timetable PDF & Question Bank
             </p>
           </div>
         </div>
@@ -169,7 +169,7 @@ const ExamCalendarView: React.FC<ExamCalendarViewProps> = ({
               {calendarData.stats.totalExams}
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Total Exams</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Total Papers</span>
               <span className="text-xs font-extrabold text-slate-800">{calendarData.monthName}</span>
             </div>
           </div>
@@ -179,8 +179,8 @@ const ExamCalendarView: React.FC<ExamCalendarViewProps> = ({
               {calendarData.stats.activeExams}
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#f16122] block">Today&apos;s Exams</span>
-              <span className="text-xs font-extrabold text-slate-800">Happening now</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#f16122] block">Today&apos;s Papers</span>
+              <span className="text-xs font-extrabold text-slate-800">In School Hall</span>
             </div>
           </div>
 
@@ -348,7 +348,7 @@ const ExamCalendarView: React.FC<ExamCalendarViewProps> = ({
             <div className="py-8 text-center text-slate-400">
               <p className="text-xs font-bold text-slate-500">No exams scheduled on this date.</p>
               <p className="text-[11px] text-slate-400 mt-0.5">
-                Select a highlighted date with exams to review syllabus, paper pattern, marks distribution, timetable PDF & reference question bank.
+                Select a highlighted date with exams to review syllabus, paper pattern, marking scheme, timetable PDF & reference question bank.
               </p>
             </div>
           ) : (
@@ -367,8 +367,8 @@ const ExamCalendarView: React.FC<ExamCalendarViewProps> = ({
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
                           Class {exam.className}
                         </span>
-                        <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          Online CBT
+                        <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200">
+                          📝 Pen & Paper
                         </span>
                       </div>
                       <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700">
@@ -381,13 +381,13 @@ const ExamCalendarView: React.FC<ExamCalendarViewProps> = ({
                     </h4>
 
                     <div className="text-xs text-slate-500 mt-1.5 space-y-0.5">
-                      <p>⏰ <strong>Writing Window:</strong> {exam.timetable?.writingTime || `${exam.startTime} - ${exam.endTime}`}</p>
-                      <p>💻 <strong>Portal / Room:</strong> {exam.timetable?.hallOrPortal || "Online Examination Portal"}</p>
-                      <p>🎯 <strong>Marks:</strong> {exam.totalMarks} (Passing: {exam.passingMarks})</p>
+                      <p>⏰ <strong>Writing Time:</strong> {exam.timetable?.writingTime || `${exam.startTime} - ${exam.endTime}`}</p>
+                      <p>🏛️ <strong>Exam Hall / Room:</strong> {exam.timetable?.hallOrPortal || "Examination Hall"}</p>
+                      <p>🎯 <strong>Total Marks:</strong> {exam.totalMarks} (Passing: {exam.passingMarks})</p>
                     </div>
                   </div>
 
-                  {/* 5 QUICK ACCESS BUTTONS: SYLLABUS, PATTERN, MARKS DISTRIBUTION, TIMETABLE PDF, Q-BANK PDF */}
+                  {/* 5 QUICK ACCESS BUTTONS: SYLLABUS, PATTERN, MARKING SCHEME, TIMETABLE PDF, Q-BANK PDF */}
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 pt-2 border-t border-slate-100">
                     <button
                       type="button"
@@ -408,7 +408,7 @@ const ExamCalendarView: React.FC<ExamCalendarViewProps> = ({
                       onClick={() => handleOpenDetail(exam, "marks")}
                       className="px-1.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-800 text-[11px] font-bold transition-all text-center border border-emerald-200 cursor-pointer"
                     >
-                      🎯 Marks
+                      🎯 Marking
                     </button>
                     <button
                       type="button"

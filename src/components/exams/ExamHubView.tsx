@@ -257,7 +257,7 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
               className="px-5 py-2.5 rounded-xl bg-[#f16122] hover:bg-[#d85218] text-white text-xs font-black transition-all shadow-md flex items-center gap-2 cursor-pointer"
             >
               <span className="text-base leading-none">+</span>
-              <span>Schedule Online Exam</span>
+              <span>Schedule School Exam</span>
             </button>
           )}
         </div>
@@ -354,8 +354,8 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
                           <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
                             Class {exam.className}
                           </span>
-                          <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            Online CBT
+                          <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200">
+                            📝 Pen & Paper
                           </span>
                         </div>
 
@@ -402,8 +402,8 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
                           <span className="text-slate-400">({exam.timetable?.writingTime || `${exam.startTime} - ${exam.endTime}`})</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span>💻</span>
-                          <span className="truncate">{exam.timetable?.hallOrPortal || "Online Examination Portal"}</span>
+                          <span>🏛️</span>
+                          <span className="truncate">{exam.timetable?.hallOrPortal || "Examination Hall"}</span>
                         </div>
                       </div>
                     </div>
@@ -434,7 +434,7 @@ const ExamHubView: React.FC<ExamHubViewProps> = ({
                           className="flex-1 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-800 text-[11px] font-bold transition-all text-center border border-emerald-200 flex items-center justify-center gap-1 cursor-pointer"
                         >
                           <span>🎯</span>
-                          <span>Marks</span>
+                          <span>Marking</span>
                         </button>
 
                         <button

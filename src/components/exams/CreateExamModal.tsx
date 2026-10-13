@@ -21,14 +21,14 @@ const DEFAULT_SECTIONS: MarksDistributionSection[] = [
     questionCount: 20,
     marksPerQuestion: 1,
     totalMarks: 20,
-    description: "Concept MCQs with instant automated scoring.",
+    description: "Objective MCQs and one-word questions on paper.",
   },
   {
     sectionName: "Section B (Short Answer)",
     questionCount: 6,
     marksPerQuestion: 3,
     totalMarks: 18,
-    description: "Short calculation and descriptive steps.",
+    description: "Short calculation and descriptive steps (30-50 words).",
   },
   {
     sectionName: "Section C (Long Answer)",
@@ -42,7 +42,7 @@ const DEFAULT_SECTIONS: MarksDistributionSection[] = [
     questionCount: 3,
     marksPerQuestion: 6,
     totalMarks: 18,
-    description: "Application of concepts in realistic scenarios.",
+    description: "Contextual application questions with internal choice.",
   },
 ];
 
@@ -69,7 +69,7 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
   const [endTime, setEndTime] = useState("12:00");
   const [reportingTime, setReportingTime] = useState("08:30 AM");
   const [duration, setDuration] = useState("3 Hours (180 mins)");
-  const [hallOrPortal, setHallOrPortal] = useState("DCPEMS Online Exam Portal (Computer Lab / Online)");
+  const [hallOrPortal, setHallOrPortal] = useState("Examination Hall 1, Block A");
   const [totalMarks, setTotalMarks] = useState(80);
   const [passingMarks, setPassingMarks] = useState(28);
 
@@ -90,21 +90,21 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
   );
   const [prescribedBook, setPrescribedBook] = useState("NCERT Textbook & Exemplar Problems");
   const [generalInstructions, setGeneralInstructions] = useState(
-    "Online examination conducted through student portal. Candidates must have rough sheets and calculators ready."
+    "Offline pen-and-paper examination conducted in the school exam hall. Printed question paper and answer booklet will be provided."
   );
 
-  // Exam Paper Pattern (Online conduct)
+  // Exam Paper Pattern (Offline conduct)
   const [sectionsSummary, setSectionsSummary] = useState(
-    "Divided into 4 Online Sections: Objective MCQs (20 Qs), Short Answer (6 Qs), Long Answer (4 Qs), and Applied Cases (3 Qs)."
+    "Physical Question Paper divided into 4 Sections: Objective MCQs (20 Qs), Short Answer (6 Qs), Long Answer (4 Qs), and Applied Cases (3 Qs)."
   );
-  const [onlineInstructionsText, setOnlineInstructionsText] = useState(
-    "Login 15 minutes before exam start time (08:45 AM).\nFull screen mode is mandatory during the entire test duration.\nSystem timer will automatically submit when time expires.\nEnsure a stable internet connection and webcam verification if prompted."
+  const [examHallInstructionsText, setExamHallInstructionsText] = useState(
+    "Report to the assigned examination hall 15 minutes before start time (08:45 AM).\nMandatory 15-minute question paper reading time before writing begins.\nWrite answers only using blue or black ballpoint pen on the answer booklet.\nSchool ID card and admit card must be visibly displayed on desk.\nElectronic devices, smartwatches, and unauthorized notes are strictly prohibited."
   );
 
   // Marks Distribution
   const [marksSections, setMarksSections] = useState<MarksDistributionSection[]>(DEFAULT_SECTIONS);
   const [scoringPolicy, setScoringPolicy] = useState(
-    "No negative marking for incorrect answers. Step-wise grading for descriptive sections."
+    "Step-wise marking scheme. Full working, formulas, and neatly labelled diagrams required."
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -276,7 +276,7 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
         hallOrPortal,
         totalMarks: Number(totalMarks) || 80,
         passingMarks: Number(passingMarks) || 28,
-        examMode: "Online",
+        examMode: "Offline",
         // PDF Timetable
         timetablePdfUrl: timetablePdfUrl || undefined,
         timetablePdfName: timetablePdfName || undefined,
@@ -288,10 +288,10 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
         syllabusUnitsText,
         prescribedBook,
         generalInstructions,
-        // Online Pattern
+        // Offline Paper Pattern & Exam Hall Guidelines
         sectionsSummary,
-        onlineInstructionsText,
-        // Marks Distribution
+        examHallInstructionsText,
+        // Marks Distribution / Marking Scheme
         marksSections,
         scoringPolicy,
       });
@@ -320,10 +320,10 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-                Schedule Online Exam & Resources
+                Schedule School Exam & Upload Resources
               </h3>
               <p className="text-xs text-slate-500 font-medium">
-                Upload Timetable PDF & Reference Question Bank, Configure Syllabus, Online Pattern & Marks
+                Upload Timetable PDF & Reference Question Bank for Offline Pen-and-Paper Examination
               </p>
             </div>
           </div>
@@ -362,7 +362,7 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
                   </span>
                 </div>
                 <p className="text-[11px] text-indigo-800">
-                  Official exam schedule document for students
+                  Official school exam schedule & datesheet document
                 </p>
               </div>
 
@@ -396,7 +396,7 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
                     Upload Timetable PDF
                   </span>
                   <span className="text-[9px] text-slate-400">
-                    Max size 10MB (.pdf)
+                    School Datesheet (.pdf, Max 10MB)
                   </span>
                   <input
                     type="file"
@@ -423,7 +423,7 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
                   </span>
                 </div>
                 <p className="text-[11px] text-emerald-800">
-                  Model questions & reference problems for student prep
+                  Model practice questions for student revision
                 </p>
               </div>
 
@@ -457,7 +457,7 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
                     Upload Question Bank PDF
                   </span>
                   <span className="text-[9px] text-slate-400">
-                    Practice & Reference Bank (.pdf)
+                    Reference & Model Practice (.pdf)
                   </span>
                   <input
                     type="file"
@@ -493,7 +493,7 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
               <input
                 type="text"
                 required
-                placeholder="e.g. Mid-Term Online Examination - Mathematics"
+                placeholder="e.g. Mid-Term Examination - Mathematics"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-semibold text-slate-900 focus:border-[#4e282c] focus:outline-hidden"
@@ -549,7 +549,7 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
 
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">
-                Duration Label
+                Duration
               </label>
               <input
                 type="text"
@@ -562,7 +562,7 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
 
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">
-                Test Writing Window (Start & End)
+                Paper Writing Hours (Start & End)
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -583,19 +583,19 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
 
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">
-                Online Portal / Login Window
+                Reporting Time & Exam Hall / Room
               </label>
               <div className="flex items-center gap-2">
                 <input
                   type="text"
-                  placeholder="Login: 08:30 AM"
+                  placeholder="Report: 08:30 AM"
                   value={reportingTime}
                   onChange={(e) => setReportingTime(e.target.value)}
                   className="w-1/2 px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold"
                 />
                 <input
                   type="text"
-                  placeholder="Online Exam Portal"
+                  placeholder="Exam Hall 1, Block A"
                   value={hallOrPortal}
                   onChange={(e) => setHallOrPortal(e.target.value)}
                   className="w-1/2 px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold"
@@ -626,51 +626,51 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
             </div>
           </div>
 
-          {/* 3. EXAM PAPER PATTERN (ONLINE EXAM CONDUCT) */}
+          {/* 3. EXAM PAPER PATTERN (OFFLINE QUESTION PAPER CONDUCT) */}
           <div className="border-t border-slate-100 pt-5 flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
                 <span>📋</span>
-                <span>Exam Paper Pattern (Online Conduct)</span>
+                <span>Question Paper Pattern & Layout</span>
               </label>
-              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200">
-                Online Mode
+              <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200">
+                Offline (Pen & Paper)
               </span>
             </div>
 
             <div>
               <label className="text-xs font-bold text-slate-600 block mb-1">
-                Paper Blueprint / Structure Summary
+                Question Paper Structure Summary
               </label>
               <input
                 type="text"
                 value={sectionsSummary}
                 onChange={(e) => setSectionsSummary(e.target.value)}
-                placeholder="e.g. Divided into 4 Online Sections: Objective MCQs, Short Answers, Long Answers & Case Studies."
+                placeholder="e.g. Physical Question Paper divided into 4 Sections: Objective MCQs (20 Qs), Short Answer (6 Qs), Long Answer (4 Qs), and Applied Cases (3 Qs)."
                 className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-900"
               />
             </div>
 
             <div>
               <label className="text-xs font-bold text-slate-600 block mb-1">
-                Online Examination Instructions & Proctoring Rules (One per line)
+                Exam Hall Guidelines & Stationery Instructions (One per line)
               </label>
               <textarea
                 rows={3}
-                value={onlineInstructionsText}
-                onChange={(e) => setOnlineInstructionsText(e.target.value)}
+                value={examHallInstructionsText}
+                onChange={(e) => setExamHallInstructionsText(e.target.value)}
                 placeholder="Rule 1&#10;Rule 2&#10;Rule 3"
                 className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-900 focus:outline-hidden"
               />
             </div>
           </div>
 
-          {/* 4. MARKS DISTRIBUTION SECTIONS */}
+          {/* 4. MARKING SCHEME / MARKS DISTRIBUTION */}
           <div className="border-t border-slate-100 pt-5 flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
                 <span>🎯</span>
-                <span>Section-Wise Marks Distribution</span>
+                <span>Marking Scheme & Section Breakdown</span>
               </label>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-slate-500">
@@ -747,13 +747,13 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
 
             <div>
               <label className="text-xs font-bold text-slate-600 block mb-1">
-                Scoring Policy & Rules
+                Evaluation & Marking Policy
               </label>
               <input
                 type="text"
                 value={scoringPolicy}
                 onChange={(e) => setScoringPolicy(e.target.value)}
-                placeholder="No negative marking for incorrect answers. Step-wise grading for descriptive sections."
+                placeholder="Step-wise marking scheme. Full working and diagrams must be shown."
                 className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-900"
               />
             </div>
@@ -814,7 +814,7 @@ const CreateExamModal: React.FC<CreateExamModalProps> = ({
               disabled={isSubmitting}
               className="px-6 py-2.5 rounded-xl bg-[#4e282c] hover:bg-[#3d1f23] text-white text-xs font-black shadow-md flex items-center gap-2 cursor-pointer"
             >
-              {isSubmitting ? "Publishing Online Schedule..." : "Publish Exam & Timetable"}
+              {isSubmitting ? "Publishing Schedule..." : "Publish Exam & Timetable"}
             </button>
           </div>
         </form>

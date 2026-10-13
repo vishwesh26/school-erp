@@ -36,9 +36,10 @@ export interface ExamPaperPattern {
   totalQuestions: number;
   durationMinutes: number;
   durationLabel: string;
-  examMode: "Online Computer-Based Test" | "Offline Pen-Paper" | "Online";
+  examMode: "Offline Pen-Paper Examination" | "Offline Pen-Paper" | "Offline" | "Online";
   sectionsSummary: string;
-  onlineExamInstructions: string[];
+  examHallInstructions: string[];
+  onlineExamInstructions?: string[];
 }
 
 export interface ExamTimetable {
@@ -127,15 +128,16 @@ export interface CreateExamInput {
   hallOrPortal?: string;
   totalMarks: number;
   passingMarks: number;
-  examMode?: "Online" | "Offline";
+  examMode?: "Offline" | "Online";
   // Syllabus
   syllabusUnitsText?: string;
   prescribedBook?: string;
   generalInstructions?: string;
-  // Pattern & Online Conduct
+  // Offline Paper Pattern & Exam Hall Guidelines
   sectionsSummary?: string;
+  examHallInstructionsText?: string;
   onlineInstructionsText?: string;
-  // Marks Distribution
+  // Marks Distribution / Marking Scheme
   marksSections?: MarksDistributionSection[];
   scoringPolicy?: string;
   // Timetable PDF Upload
@@ -245,7 +247,7 @@ export async function getExams(filters?: {
             duration: "3 Hours (180 mins)",
             totalMarks: 80,
             passingMarks: 28,
-            examMode: "Online",
+            examMode: "Offline",
             syllabus: {
               units: [
                 {
@@ -265,12 +267,17 @@ export async function getExams(filters?: {
               totalQuestions: 30,
               durationMinutes: 180,
               durationLabel: "3 Hours (180 mins)",
-              examMode: "Online Computer-Based Test",
+              examMode: "Offline Pen-Paper Examination",
               sectionsSummary: "Section A: Objective MCQs (20 Marks), Section B: Short Answers (30 Marks), Section C: Case Analysis (30 Marks).",
+              examHallInstructions: [
+                "Report to assigned examination hall 15 minutes before the exam.",
+                "15 minutes mandatory question paper reading time before writing.",
+                "Use only blue or black ballpoint pen. Bring geometry box.",
+                "Electronic devices, smartwatches, and notes strictly prohibited.",
+              ],
               onlineExamInstructions: [
-                "Full-screen browser mode is enforced.",
-                "Login 15 minutes before scheduled start time.",
-                "Timer auto-submits upon completion.",
+                "Report to assigned examination hall 15 minutes before the exam.",
+                "15 minutes mandatory question paper reading time before writing.",
               ],
             },
             marksDistribution: {
@@ -309,7 +316,7 @@ export async function getExams(filters?: {
               endTime: endOnly,
               readingTime: "08:45 AM - 09:00 AM (15 Minutes)",
               writingTime: `${timeOnly} - ${endOnly}`,
-              hallOrPortal: "DCPEMS Online Exam Portal - Server 1",
+              hallOrPortal: "Examination Hall 1, Block A",
             },
           });
         }
@@ -490,12 +497,15 @@ export async function createExamScheduleAction(data: CreateExamInput) {
           },
         ];
 
-    const onlineInstructions = data.onlineInstructionsText
-      ? data.onlineInstructionsText.split("\n").filter((l) => l.trim())
+    const examHallInstructions = data.examHallInstructionsText || data.onlineInstructionsText
+      ? (data.examHallInstructionsText || data.onlineInstructionsText)!
+          .split("\n")
+          .filter((l) => l.trim())
       : [
-          "Candidate must log in 15 minutes before start time.",
-          "Full screen browser window is mandatory during the online test.",
-          "Auto-submission occurs when examination time expires.",
+          "Report to the assigned examination hall 15 minutes before start time.",
+          "Mandatory 15-minute question paper reading time before writing begins.",
+          "Write answers only using blue or black ballpoint pen on the answer booklet.",
+          "Electronic devices, smartwatches, and unauthorized notes are strictly prohibited.",
         ];
 
     const marksSections: MarksDistributionSection[] = data.marksSections || [
@@ -504,7 +514,7 @@ export async function createExamScheduleAction(data: CreateExamInput) {
         questionCount: 20,
         marksPerQuestion: 1,
         totalMarks: 20,
-        description: "Multiple choice questions with automated evaluation.",
+        description: "Multiple choice questions and one-word answers.",
       },
       {
         sectionName: "Section B (Short Answer)",
@@ -543,28 +553,29 @@ export async function createExamScheduleAction(data: CreateExamInput) {
       duration: data.duration || "3 Hours (180 mins)",
       totalMarks: Number(data.totalMarks) || 80,
       passingMarks: Number(data.passingMarks) || 28,
-      examMode: data.examMode || "Online",
+      examMode: data.examMode || "Offline",
       syllabus: {
         units,
         prescribedBook: data.prescribedBook || "Standard Prescribed Textbook",
         generalInstructions:
           data.generalInstructions ||
-          "Online examination conducted via School Portal. Ensure stable connectivity.",
+          "Physical written examination conducted in school exam hall. Printed question paper and answer sheets will be provided.",
       },
       pattern: {
         totalQuestions: marksSections.reduce((sum, s) => sum + s.questionCount, 0) || 33,
         durationMinutes: 180,
         durationLabel: data.duration || "3 Hours (180 mins)",
-        examMode: "Online Computer-Based Test",
+        examMode: "Offline Pen-Paper Examination",
         sectionsSummary:
           data.sectionsSummary ||
-          `${marksSections.length} Sections: Objective, Short, Long & Applied Case Studies.`,
-        onlineExamInstructions: onlineInstructions,
+          `${marksSections.length} Printed Sections: Objective, Short, Long & Applied Case Studies.`,
+        examHallInstructions,
+        onlineExamInstructions: examHallInstructions,
       },
       marksDistribution: {
         totalMarks: Number(data.totalMarks) || 80,
         passingMarks: Number(data.passingMarks) || 28,
-        scoringPolicy: data.scoringPolicy || "No negative marking. Step-wise grading applicable.",
+        scoringPolicy: data.scoringPolicy || "Step-wise marking applicable for all sections. Full working must be shown.",
         sections: marksSections,
       },
       timetable: {
@@ -575,7 +586,7 @@ export async function createExamScheduleAction(data: CreateExamInput) {
         endTime: data.endTime || "12:00",
         readingTime: "08:45 AM - 09:00 AM (15 Minutes)",
         writingTime: `${data.startTime || "09:00"} - ${data.endTime || "12:00"}`,
-        hallOrPortal: data.hallOrPortal || "DCPEMS Online Exam Portal - Server 1",
+        hallOrPortal: data.hallOrPortal || "Examination Hall 1, Block A",
         pdfUrl: data.timetablePdfUrl,
         pdfName: data.timetablePdfName,
         chiefInvigilator: data.teacherName || "Assigned Faculty",

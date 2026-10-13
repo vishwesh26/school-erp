@@ -76,8 +76,8 @@ const ExamListPage = async ({
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
             {effectiveRole === "student" && studentClassName
-              ? `Examination Timetable PDF, Syllabus, Online Paper Patterns, Marks Distribution & Reference Question Banks for Class ${studentClassName}`
-              : "Comprehensive Online Exam Calendar, Paper Patterns, Syllabus Breakdowns, Marks Distribution, Timetable & Reference Question Bank PDFs"}
+              ? `School Examination Timetable PDF, Syllabus, Question Paper Patterns, Marking Scheme & Reference Question Banks for Class ${studentClassName}`
+              : "School Examination Calendar, Question Paper Patterns, Syllabus Breakdowns, Marking Schemes, Timetable & Reference Question Bank PDFs"}
           </p>
         </div>
       </div>

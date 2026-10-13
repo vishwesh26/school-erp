@@ -1,7 +1,7 @@
 [
   {
     "id": "exam-math-midterm",
-    "title": "Mid-Term Examination - Mathematics (Online)",
+    "title": "Mid-Term Examination - Mathematics",
     "subjectId": 6,
     "subjectName": "Mathematics",
     "classId": 43,
@@ -13,7 +13,7 @@
     "duration": "3 Hours (180 mins)",
     "totalMarks": 80,
     "passingMarks": 28,
-    "examMode": "Online",
+    "examMode": "Offline",
     "syllabus": {
       "units": [
         {
@@ -54,32 +54,33 @@
         }
       ],
       "prescribedBook": "NCERT Mathematics Class 8 & Exemplar Problems",
-      "generalInstructions": "Online exam will be administered via the student examination portal. Rough calculation sheets should be maintained."
+      "generalInstructions": "Physical pen-and-paper examination. Question paper and standardized answer booklet will be distributed in the school examination hall."
     },
     "pattern": {
       "totalQuestions": 38,
       "durationMinutes": 180,
       "durationLabel": "3 Hours (180 mins)",
-      "examMode": "Online Computer-Based Test",
-      "sectionsSummary": "Divided into 5 Online Sections: Objective MCQs (20 Qs), Short Answer (11 Qs), Long Answer (4 Qs), and Applied Cases (3 Qs).",
-      "onlineExamInstructions": [
-        "Login 15 minutes before exam start time (08:45 AM).",
-        "Full screen mode is mandatory during the entire test duration.",
-        "System timer will automatically submit when time expires.",
-        "Ensure a stable internet connection and webcam verification if prompted."
+      "examMode": "Offline Pen-Paper Examination",
+      "sectionsSummary": "Physical Question Paper divided into 5 Sections: Section A (Objective MCQs 20 Qs), Section B (Short Answer 5 Qs), Section C (Short Answer 6 Qs), Section D (Long Answer 4 Qs), and Section E (Case-Based 3 Qs).",
+      "examHallInstructions": [
+        "Report to the assigned examination hall 15 minutes before the exam begins (08:45 AM).",
+        "Mandatory 15-minute question paper reading time from 08:45 AM to 09:00 AM.",
+        "Use only blue or black ballpoint pens. Pencils and geometric instruments allowed for diagrams.",
+        "School ID card and hall ticket must be placed on the desk throughout the examination.",
+        "No electronic gadgets, smartwatches, or mathematical tables permitted unless provided."
       ]
     },
     "marksDistribution": {
       "totalMarks": 80,
       "passingMarks": 28,
-      "scoringPolicy": "No negative marking for incorrect answers. Step-wise grading for descriptive sections.",
+      "scoringPolicy": "Step-wise marking scheme. Full mathematical working must be shown for descriptive problems.",
       "sections": [
         {
           "sectionName": "Section A (Objective & MCQs)",
           "questionCount": 20,
           "marksPerQuestion": 1,
           "totalMarks": 20,
-          "description": "20 Multiple Choice Questions (1 mark each). Instant automated grading."
+          "description": "20 Multiple Choice Questions (1 mark each). Write option letter and correct answer."
         },
         {
           "sectionName": "Section B (Very Short Answer)",
@@ -107,7 +108,7 @@
           "questionCount": 3,
           "marksPerQuestion": 4,
           "totalMarks": 12,
-          "description": "Contextual real-world mathematical application scenarios."
+          "description": "Contextual real-world mathematical application scenarios with internal choice."
         }
       ]
     },
@@ -119,7 +120,7 @@
       "endTime": "12:00",
       "readingTime": "08:45 AM - 09:00 AM (15 Minutes)",
       "writingTime": "09:00 AM - 12:00 PM (3 Hours)",
-      "hallOrPortal": "DCPEMS Online Exam Portal - Server 1",
+      "hallOrPortal": "Examination Hall 1, Block A (Desk 1 - 40)",
       "pdfUrl": "/sample_exam_schedule_term1.pdf",
       "pdfName": "Maths_Class8_Midterm_Timetable_Schedule.pdf",
       "chiefInvigilator": "Prof. Verma"
@@ -132,7 +133,7 @@
   },
   {
     "id": "exam-sci-midterm",
-    "title": "Mid-Term Examination - Science & Technology (Online)",
+    "title": "Mid-Term Examination - Science & Technology",
     "subjectId": 7,
     "subjectName": "Biology",
     "classId": 43,
@@ -144,7 +145,7 @@
     "duration": "3 Hours (180 mins)",
     "totalMarks": 80,
     "passingMarks": 28,
-    "examMode": "Online",
+    "examMode": "Offline",
     "syllabus": {
       "units": [
         {
@@ -185,25 +186,25 @@
         }
       ],
       "prescribedBook": "NCERT Science Class 8 & Lab Manual",
-      "generalInstructions": "Online assessment includes interactive diagram tagging and multiple-choice questions."
+      "generalInstructions": "Written examination with mandatory scientific diagrams and step-wise reasoning. Answer booklets provided."
     },
     "pattern": {
       "totalQuestions": 39,
       "durationMinutes": 180,
       "durationLabel": "3 Hours (180 mins)",
-      "examMode": "Online Computer-Based Test",
-      "sectionsSummary": "5 Sections covering Online MCQs (20 marks), Short Scientific Reasoning (33 marks), Long Descriptive (15 marks), and Competency Case Studies (12 marks).",
-      "onlineExamInstructions": [
-        "Login credentials will be validated via Student Roll Number.",
-        "Keep rough paper and pen ready for numerical derivations.",
-        "Diagram questions allow uploading clear image snapshots if required.",
-        "Auto-submission occurs when timer reaches 00:00."
+      "examMode": "Offline Pen-Paper Examination",
+      "sectionsSummary": "Physical Question Paper covering Section A (MCQs & Assertion 20 Qs), Section B (Short Answer 6 Qs), Section C (Short Answer 7 Qs), Section D (Long Answer 3 Qs), and Section E (Competency Cases 3 Qs).",
+      "examHallInstructions": [
+        "Report to Examination Hall 2 at least 15 minutes prior to the exam (08:45 AM).",
+        "Question paper reading time: 08:45 AM - 09:00 AM. No writing permitted during this window.",
+        "Draw scientific diagrams neatly using HB pencil and ruler with proper labels.",
+        "Calculators and smart gadgets are strictly banned in the examination hall."
       ]
     },
     "marksDistribution": {
       "totalMarks": 80,
       "passingMarks": 28,
-      "scoringPolicy": "Zero negative marking. Full marks for correct scientific reasoning and labelled parts.",
+      "scoringPolicy": "Step marking applicable. Marks awarded for correct scientific reasoning, formula substitution, and labelled diagrams.",
       "sections": [
         {
           "sectionName": "Section A (Objective MCQs & Assertion)",
@@ -250,7 +251,7 @@
       "endTime": "12:00",
       "readingTime": "08:45 AM - 09:00 AM (15 Minutes)",
       "writingTime": "09:00 AM - 12:00 PM (3 Hours)",
-      "hallOrPortal": "DCPEMS Online Exam Portal - Server 2",
+      "hallOrPortal": "Examination Hall 2, Science Wing (Desk 1 - 40)",
       "pdfUrl": "/sample_exam_schedule_term1.pdf",
       "pdfName": "Science_Class8_Midterm_Timetable_Schedule.pdf",
       "chiefInvigilator": "Dr. Sharma"
@@ -263,7 +264,7 @@
   },
   {
     "id": "exam-eng-midterm",
-    "title": "Mid-Term Examination - English Literature & Grammar (Online)",
+    "title": "Mid-Term Examination - English Literature & Grammar",
     "subjectId": 2,
     "subjectName": "Hindi",
     "classId": 43,
@@ -275,7 +276,7 @@
     "duration": "3 Hours (180 mins)",
     "totalMarks": 80,
     "passingMarks": 28,
-    "examMode": "Online",
+    "examMode": "Offline",
     "syllabus": {
       "units": [
         {
@@ -306,25 +307,25 @@
         }
       ],
       "prescribedBook": "Honeydew & It So Happened (NCERT)",
-      "generalInstructions": "Online essay and letter responses should be typed directly into the provided text editor."
+      "generalInstructions": "Pen-and-paper written exam covering Reading, Creative Writing, Grammar, and Literature textbooks."
     },
     "pattern": {
       "totalQuestions": 11,
       "durationMinutes": 180,
       "durationLabel": "3 Hours (180 mins)",
-      "examMode": "Online Computer-Based Test",
-      "sectionsSummary": "Reading Comprehension (20m), Writing Skills (20m), Applied Grammar (10m), and Literature Analysis (30m).",
-      "onlineExamInstructions": [
-        "Check keyboard functionality before starting the examination.",
-        "Word counter is displayed for all writing tasks.",
-        "Grammar section provides instant drop-down options.",
-        "Save answers regularly using the Next Question button."
+      "examMode": "Offline Pen-Paper Examination",
+      "sectionsSummary": "Physical Paper containing 4 Sections: Section A (Reading 20m), Section B (Writing Skills 20m), Section C (Grammar 10m), and Section D (Literature 30m).",
+      "examHallInstructions": [
+        "Reach assigned classroom 15 minutes before scheduled start time.",
+        "Read unseen comprehension passages carefully during the 15-minute reading period.",
+        "Strict adherence to word limits for letters, notices, and analytical paragraphs.",
+        "Maintain legible handwriting and clear margins on answer sheets."
       ]
     },
     "marksDistribution": {
       "totalMarks": 80,
       "passingMarks": 28,
-      "scoringPolicy": "Evaluation based on content accuracy, grammatical correctness, and expression.",
+      "scoringPolicy": "Evaluation based on content accuracy, grammatical correctness, vocabulary, and neat presentation.",
       "sections": [
         {
           "sectionName": "Section A: Reading Comprehension",
@@ -364,7 +365,7 @@
       "endTime": "12:00",
       "readingTime": "08:45 AM - 09:00 AM (15 Minutes)",
       "writingTime": "09:00 AM - 12:00 PM (3 Hours)",
-      "hallOrPortal": "DCPEMS Online Exam Portal - Server 1",
+      "hallOrPortal": "Room 204, Senior Wing (Floor 2)",
       "pdfUrl": "/sample_exam_schedule_term1.pdf",
       "pdfName": "English_Class8_Midterm_Timetable_Schedule.pdf",
       "chiefInvigilator": "Mrs. Anjali Deshmukh"
@@ -377,7 +378,7 @@
   },
   {
     "id": "exam-cs-midterm",
-    "title": "Mid-Term Examination - Computer Applications (Online)",
+    "title": "Mid-Term Examination - Computer Applications",
     "subjectId": 16,
     "subjectName": "Computer",
     "classId": 43,
@@ -389,7 +390,7 @@
     "duration": "2.5 Hours (150 mins)",
     "totalMarks": 60,
     "passingMarks": 21,
-    "examMode": "Online",
+    "examMode": "Offline",
     "syllabus": {
       "units": [
         {
@@ -421,24 +422,25 @@
         }
       ],
       "prescribedBook": "Computer Science with Python Class 8",
-      "generalInstructions": "Online code execution sandbox is embedded for Python and HTML script verification."
+      "generalInstructions": "Physical written theory paper on Python scripting syntax, HTML5 web tags, and computer networks."
     },
     "pattern": {
       "totalQuestions": 25,
       "durationMinutes": 150,
       "durationLabel": "2.5 Hours (150 mins)",
-      "examMode": "Online Computer-Based Test",
-      "sectionsSummary": "Technical MCQs (15m), Conceptual Short Answers (15m), HTML Web Coding (15m), and Python Scripts (15m).",
-      "onlineExamInstructions": [
-        "Code submissions are evaluated against standard test cases.",
-        "Ensure syntax indentation in Python code editor.",
-        "Tab switching or split screen will trigger a proctor alert."
+      "examMode": "Offline Pen-Paper Examination",
+      "sectionsSummary": "Printed Question Paper covering Section A (MCQs 15m), Section B (Short Technical Answers 15m), Section C (HTML Tag Coding 15m), and Section D (Python Logic & Tracing 15m).",
+      "examHallInstructions": [
+        "Report to Examination Hall 3 at 08:45 AM.",
+        "Write clean code snippets and specify correct Python indentation on answer sheet.",
+        "Trace loop iterations and dry-run tables clearly in the rough work margin.",
+        "Smartwatches and electronic storage devices are strictly prohibited."
       ]
     },
     "marksDistribution": {
       "totalMarks": 60,
       "passingMarks": 21,
-      "scoringPolicy": "Automated code unit test grading + manual syntax evaluation.",
+      "scoringPolicy": "Step-wise marking for program logic, syntax accuracy, and dry-run traces.",
       "sections": [
         {
           "sectionName": "Section A (MCQs & Fill in Blanks)",
@@ -478,7 +480,7 @@
       "endTime": "11:30",
       "readingTime": "08:45 AM - 09:00 AM (15 Minutes)",
       "writingTime": "09:00 AM - 11:30 AM (2.5 Hours)",
-      "hallOrPortal": "DCPEMS Online Exam Portal - Server 1",
+      "hallOrPortal": "Examination Hall 3, Block B (Room 108)",
       "pdfUrl": "/sample_exam_schedule_term1.pdf",
       "pdfName": "Computer_Class8_Midterm_Timetable_Schedule.pdf",
       "chiefInvigilator": "Mrs. Patil"
