@@ -24,7 +24,7 @@ const ExamListPage = async ({
     if (role === "teacher") {
       const { data: teacher } = await supabase
         .from("Teacher")
-        .select("*")
+        .select("name, surname")
         .eq("id", userId)
         .maybeSingle();
       if (teacher) {
@@ -37,19 +37,19 @@ const ExamListPage = async ({
       // Check if student
       const { data: student } = await supabase
         .from("Student")
-        .select("*, class:Class(*)")
+        .select("classId, class:Class(name)")
         .eq("id", userId)
         .maybeSingle();
 
       if (student) {
         effectiveRole = "student";
         studentClassId = student.classId ?? null;
-        studentClassName = student.class?.name;
+        studentClassName = (student.class as any)?.name;
       } else {
         // Fallback check teacher
         const { data: teacher } = await supabase
           .from("Teacher")
-          .select("*")
+          .select("name, surname")
           .eq("id", userId)
           .maybeSingle();
         if (teacher) {

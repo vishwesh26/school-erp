@@ -3,6 +3,42 @@ import { NextResponse, type NextRequest } from "next/server";
 import { routeAccessMap } from "./lib/settings";
 
 export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  // Check if route matches any protected route
+  let matchingRoute: string | null = null;
+  for (const route of Object.keys(routeAccessMap)) {
+    const pattern = new RegExp(`^${route}`);
+    if (pattern.test(pathname)) {
+      matchingRoute = route;
+      break;
+    }
+  }
+
+  // Quick check for Supabase session cookies
+  const allCookies = request.cookies.getAll();
+  const hasAuthCookie = allCookies.some(
+    (c) => c.name.startsWith("sb-") && c.name.includes("-auth-token")
+  );
+
+  // 1. If user is visiting /sign-in and has no session cookie, allow immediately with zero Supabase calls
+  if (pathname === "/sign-in" && !hasAuthCookie) {
+    let response = NextResponse.next({
+      request: {
+        headers: request.headers,
+      },
+    });
+    response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0");
+    return response;
+  }
+
+  // 2. If user is accessing a protected route without any session cookie, redirect to /sign-in immediately with zero Supabase calls
+  if (matchingRoute && !hasAuthCookie) {
+    const redirectResponse = NextResponse.redirect(new URL("/sign-in", request.url));
+    redirectResponse.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0");
+    return redirectResponse;
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,

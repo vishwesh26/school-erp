@@ -35,7 +35,7 @@ const StudentPage = async () => {
   if (classId) {
     const { data: assignments } = await supabase
       .from("Assignment")
-      .select("*, subject:Subject(*), teacher:Teacher(*)")
+      .select("*, subject:Subject(name), teacher:Teacher(id, name, surname)")
       .eq("classId", classId)
       .order("dueDate", { ascending: false })
       .limit(6);

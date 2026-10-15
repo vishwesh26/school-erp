@@ -99,7 +99,7 @@ export default async function DashboardLayout({
 
       {/* RIGHT MAIN WORKSPACE */}
       <div className="flex-1 bg-[#F7F8FA] overflow-y-auto flex flex-col scrollbar-thin scrollbar-thumb-slate-300">
-        <Navbar />
+        <Navbar userInfo={userInfo} />
         {children}
       </div>
     </div>

@@ -2,57 +2,70 @@ import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
-const Navbar = async () => {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+interface NavbarProps {
+  userInfo?: {
+    name: string;
+    role: string;
+    img?: string | null;
+    identifier?: string | null;
+  };
+}
 
-  let name = "John Doe";
-  let role = user?.user_metadata?.role;
-  let img: string | null = null;
+const Navbar = async ({ userInfo }: NavbarProps = {}) => {
+  let name = userInfo?.name || "John Doe";
+  let role = userInfo?.role;
+  let img: string | null = userInfo?.img || null;
 
-  if (role && user?.id) {
-    const tableName = role.charAt(0).toUpperCase() + role.slice(1);
+  if (!userInfo) {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    try {
-      if (role === "parent") {
-        const { data: parentData } = await supabase
-          .from("Parent")
-          .select("id, name, surname")
-          .or(`id.eq.${user.id},email.eq.${user.email || ""}`)
-          .maybeSingle();
+    role = user?.user_metadata?.role;
 
-        if (parentData) {
-          name = `${parentData.name} ${parentData.surname || ""}`.trim();
+    if (role && user?.id) {
+      const tableName = role.charAt(0).toUpperCase() + role.slice(1);
+
+      try {
+        if (role === "parent") {
+          const { data: parentData } = await supabase
+            .from("Parent")
+            .select("id, name, surname")
+            .or(`id.eq.${user.id},email.eq.${user.email || ""}`)
+            .maybeSingle();
+
+          if (parentData) {
+            name = `${parentData.name} ${parentData.surname || ""}`.trim();
+          }
+
+          // Fetch child photo if available
+          const { data: childData } = await supabase
+            .from("Student")
+            .select("img")
+            .or(`parentId.eq.${user.id},parentId.eq.${parentData?.id || ""}`)
+            .not("img", "is", null)
+            .limit(1)
+            .maybeSingle();
+
+          if (childData?.img) {
+            img = childData.img;
+          }
+        } else {
+          const { data } = await supabase
+            .from(tableName)
+            .select("name, surname, img")
+            .eq("id", user.id)
+            .maybeSingle();
+
+          if (data) {
+            name = `${data.name} ${data.surname || ""}`.trim();
+            img = data.img || null;
+          }
         }
-
-        // Fetch child photo if available
-        const { data: childData } = await supabase
-          .from("Student")
-          .select("img")
-          .or(`parentId.eq.${user.id},parentId.eq.${parentData?.id || ""}`)
-          .not("img", "is", null)
-          .limit(1)
-          .maybeSingle();
-
-        if (childData?.img) {
-          img = childData.img;
-        }
-      } else {
-        const { data } = await supabase
-          .from(tableName)
-          .select("name, surname, img")
-          .eq("id", user.id)
-          .maybeSingle();
-
-        if (data) {
-          name = `${data.name} ${data.surname || ""}`.trim();
-          img = data.img || null;
-        }
+      } catch (err) {
+        console.error("Error fetching navbar user details:", err);
       }
-    } catch (err) {
-      console.error("Error fetching navbar user details:", err);
     }
   }
 
