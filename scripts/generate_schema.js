@@ -111,7 +111,7 @@ CREATE INDEX IF NOT EXISTS idx_result_exam ON public."Result" ("examId");
 CREATE INDEX IF NOT EXISTS idx_result_assignment ON public."Result" ("assignmentId");
 CREATE INDEX IF NOT EXISTS idx_lesson_class_teacher ON public."Lesson" ("classId", "teacherId");
 CREATE INDEX IF NOT EXISTS idx_assignment_class ON public."Assignment" ("classId");
-CREATE INDEX IF NOT EXISTS idx_exam_class ON public."Exam" ("classId");
+CREATE INDEX IF NOT EXISTS idx_exam_lesson ON public."Exam" ("lessonId");
 CREATE INDEX IF NOT EXISTS idx_studentfee_student ON public."StudentFee" ("studentId");
 CREATE INDEX IF NOT EXISTS idx_bookissue_student ON public."BookIssue" ("studentId");
 CREATE INDEX IF NOT EXISTS idx_announcement_date ON public."Announcement" ("date");
