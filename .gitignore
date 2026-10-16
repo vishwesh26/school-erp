@@ -35,3 +35,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# csv & dump data
+*.csv
+old_schema_definitions.json
