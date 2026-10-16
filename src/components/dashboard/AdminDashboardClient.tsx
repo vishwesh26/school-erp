@@ -132,7 +132,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
   );
 
   return (
-    <div className="p-3.5 sm:p-6 flex flex-col gap-5 max-w-[1600px] mx-auto w-full">
+    <div className="p-2.5 sm:p-6 flex flex-col gap-4 sm:gap-5 max-w-[1600px] mx-auto w-full">
       {/* 1. TOP HEADER BANNER (DEMO 1 & 2 STYLE) */}
       <DashboardHeader
         name="Administrator"
@@ -147,11 +147,11 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
 
       {/* 2. TAB CONTENT */}
       {activeTab === "dashboard" && (
-        <div className="flex flex-col gap-6 animate-fade-in">
+        <div className="flex flex-col gap-4 sm:gap-6 animate-fade-in">
           {/* USER CARDS ROW */}
           <div>
-            <div className="flex items-center justify-between mb-3 px-1">
-              <h2 className="text-xs font-black uppercase tracking-widest text-[#4e282c]/70 flex items-center gap-2">
+            <div className="flex items-center justify-between mb-2.5 px-1">
+              <h2 className="text-[11px] sm:text-xs font-black uppercase tracking-widest text-[#4e282c]/70 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#4e282c] animate-pulse"></span>
                 School Community Overview
               </h2>
@@ -160,7 +160,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
           </div>
 
           {/* QUICK LAUNCHER TILES (PREVIEW ON DASHBOARD) */}
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-xs p-4 sm:p-6">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-100 shadow-xs p-3.5 sm:p-6">
             <QuickLauncherGrid
               tiles={filteredTiles.slice(0, 8)}
               columns={4}
@@ -169,23 +169,23 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
           </div>
 
           {/* MAIN CHARTS & WIDGETS */}
-          <div className="flex gap-5 flex-col lg:flex-row">
+          <div className="flex gap-4 sm:gap-5 flex-col lg:flex-row">
             {/* LEFT: CHARTS */}
-            <div className="w-full lg:w-2/3 flex flex-col gap-5">
-              <div className="flex gap-5 flex-col lg:flex-row">
+            <div className="w-full lg:w-2/3 flex flex-col gap-4 sm:gap-5">
+              <div className="flex gap-4 sm:gap-5 flex-col lg:flex-row">
                 {/* COUNT CHART */}
-                <div className="w-full lg:w-1/3 h-[450px]">
+                <div className="w-full lg:w-1/3 h-[300px] sm:h-[380px] lg:h-[450px]">
                   {countChartSlot}
                 </div>
                 {/* ATTENDANCE CHART */}
-                <div className="w-full lg:w-2/3 h-[450px]">
+                <div className="w-full lg:w-2/3 h-[300px] sm:h-[380px] lg:h-[450px]">
                   {attendanceChartSlot}
                 </div>
               </div>
             </div>
 
             {/* RIGHT: CALENDAR & ANNOUNCEMENTS */}
-            <div className="w-full lg:w-1/3 flex flex-col gap-5">
+            <div className="w-full lg:w-1/3 flex flex-col gap-4 sm:gap-5">
               {eventCalendarSlot}
               {announcementsSlot}
             </div>
@@ -195,7 +195,7 @@ const AdminDashboardClient: React.FC<AdminDashboardClientProps> = ({
 
       {/* 3. FULL LAUNCHER TAB (DEMO 2 STYLE) */}
       {activeTab === "launcher" && (
-        <div className="bg-white rounded-3xl border border-slate-100 shadow-xs p-4 sm:p-6 animate-fade-in">
+        <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-100 shadow-xs p-3.5 sm:p-6 animate-fade-in">
           <QuickLauncherGrid
             tiles={filteredTiles}
             columns={4}

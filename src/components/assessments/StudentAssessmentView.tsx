@@ -170,7 +170,7 @@ const StudentAssessmentView: React.FC<StudentAssessmentViewProps> = ({
       {/* 2. TABS & SEARCH */}
       <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-100 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         {/* TAB BUTTONS */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 no-scrollbar">
           <button
             type="button"
             onClick={() => setActiveTab("active")}

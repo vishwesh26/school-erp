@@ -3,7 +3,7 @@
 import { Calendar, momentLocalizer, View, Views } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import FormModal from "./FormModal";
 import { adjustScheduleToCurrentWeek, formatClassName } from "@/lib/utils";
 
@@ -35,6 +35,12 @@ const BigCalendar = ({
   const [view, setView] = useState<View>(Views.WORK_WEEK);
   const [date, setDate] = useState<Date>(new Date());
   const [selectedEvent, setSelectedEvent] = useState<LessonEvent | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setView(Views.DAY);
+    }
+  }, []);
 
   const handleOnChangeView = (selectedView: View) => {
     setView(selectedView);

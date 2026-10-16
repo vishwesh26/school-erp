@@ -364,7 +364,7 @@ export default function StudentAttendanceCalendarView({
                     </div>
                 ) : (
                     <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-3 sm:p-5 flex flex-col gap-4">
-                        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
                             <div>
                                 <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
                                     {calendarData?.monthName} {selectedYear}
@@ -373,13 +373,13 @@ export default function StudentAttendanceCalendarView({
                                     Click any day cell to view attendance details and session info
                                 </p>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500" />
                                 <span className="text-xs font-bold text-slate-700">
                                     {stats.monthPresentDays} Present
                                 </span>
                                 <span className="text-slate-300">•</span>
-                                <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+                                <span className="w-2 h-2 rounded-full bg-rose-500" />
                                 <span className="text-xs font-bold text-slate-700">
                                     {stats.monthAbsentDays} Absent
                                 </span>
@@ -471,7 +471,16 @@ export default function StudentAttendanceCalendarView({
                                             <span
                                                 className={`w-full text-center py-0.5 rounded-lg text-[9px] sm:text-[10px] font-bold tracking-tight truncate shadow-2xs ${badgeColor}`}
                                             >
-                                                {badgeText}
+                                                <span className="hidden sm:inline">{badgeText}</span>
+                                                <span className="sm:hidden font-black">
+                                                    {item.status === "present"
+                                                        ? "P"
+                                                        : item.status === "absent"
+                                                        ? "A"
+                                                        : item.isSunday
+                                                        ? "Sun"
+                                                        : "—"}
+                                                </span>
                                             </span>
                                         </div>
                                     </button>

@@ -45,33 +45,33 @@ const QuickLauncherGrid: React.FC<QuickLauncherGridProps> = ({
         </div>
       )}
 
-      <div className={`grid ${colClass} gap-3 sm:gap-4`}>
+      <div className={`grid ${colClass} gap-2.5 sm:gap-4`}>
         {tiles.map((tile) => {
           const content = (
-            <div className="relative w-full h-full bg-white rounded-2xl border border-slate-100 shadow-xs hover:shadow-md transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] group p-4 sm:p-5 flex flex-col items-center justify-center text-center cursor-pointer overflow-hidden">
+            <div className="relative w-full h-full bg-white rounded-2xl border border-slate-100 shadow-xs hover:shadow-md transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] group p-3 sm:p-5 flex flex-col items-center justify-center text-center cursor-pointer overflow-hidden">
               {/* SHIMMER LIGHT ON HOVER */}
               <span className="absolute inset-0 bg-gradient-to-r from-transparent via-[#fdece7]/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
 
               {/* BADGE INDICATOR */}
               {tile.badge !== undefined && (
-                <span className="absolute top-2.5 right-2.5 text-[10px] font-black px-2 py-0.5 rounded-full bg-[#f16122] text-white shadow-xs">
+                <span className="absolute top-2 right-2 text-[9px] sm:text-[10px] font-black px-1.5 sm:px-2 py-0.5 rounded-full bg-[#f16122] text-white shadow-xs">
                   {tile.badge}
                 </span>
               )}
 
               {/* ICON CONTAINER WITH PASTEL ACCENT BLOB (DEMO 2 STYLE) */}
-              <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-[#f4eaea] via-[#fdece7] to-[#FEFCE8] flex items-center justify-center p-2.5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-2xs border border-[#4e282c]/10">
+              <div className="relative w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#f4eaea] via-[#fdece7] to-[#FEFCE8] flex items-center justify-center p-2 sm:p-2.5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-2xs border border-[#4e282c]/10">
                 <Image
                   src={tile.icon}
                   alt={tile.title}
-                  width={30}
-                  height={30}
-                  className="object-contain transition-transform duration-300 group-hover:scale-105"
+                  width={26}
+                  height={26}
+                  className="object-contain transition-transform duration-300 group-hover:scale-105 w-6 h-6 sm:w-7 sm:h-7"
                 />
               </div>
 
               {/* TITLE */}
-              <span className="text-xs sm:text-sm font-extrabold text-slate-800 tracking-tight mt-3 line-clamp-1 group-hover:text-[#4e282c] transition-colors">
+              <span className="text-[11px] sm:text-sm font-extrabold text-slate-800 tracking-tight mt-2 sm:mt-3 line-clamp-1 group-hover:text-[#4e282c] transition-colors">
                 {tile.title}
               </span>
             </div>

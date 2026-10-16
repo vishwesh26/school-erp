@@ -186,50 +186,50 @@ const TeacherDashboardClient: React.FC<TeacherDashboardClientProps> = ({
       {activeTab === "dashboard" && (
         <div className="flex flex-col gap-6 animate-fade-in">
           {/* STATS CARDS */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
             {/* WEEKLY LESSONS */}
-            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-3.5 hover:shadow-sm transition-all border-l-4 border-l-[#4e282c]">
-              <div className="w-11 h-11 rounded-xl bg-[#f4eaea] flex items-center justify-center flex-shrink-0 shadow-2xs">
-                <Image src="/singleLesson.png" alt="" width={24} height={24} className="w-6 h-6 object-contain" />
+            <div className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-2.5 sm:gap-3.5 hover:shadow-sm transition-all border-l-4 border-l-[#4e282c]">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-[#f4eaea] flex items-center justify-center flex-shrink-0 shadow-2xs">
+                <Image src="/singleLesson.png" alt="" width={24} height={24} className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
               </div>
               <div className="min-w-0">
                 <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">{lessonCount}</h3>
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5">Lessons / Week</span>
+                <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5 truncate">Lessons / Week</span>
               </div>
             </div>
 
             {/* SUPERVISED CLASS */}
-            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-3.5 hover:shadow-sm transition-all border-l-4 border-l-[#f16122]">
-              <div className="w-11 h-11 rounded-xl bg-[#fdece7] flex items-center justify-center flex-shrink-0 shadow-2xs">
-                <Image src="/singleClass.png" alt="" width={24} height={24} className="w-6 h-6 object-contain" />
+            <div className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-2.5 sm:gap-3.5 hover:shadow-sm transition-all border-l-4 border-l-[#f16122]">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-[#fdece7] flex items-center justify-center flex-shrink-0 shadow-2xs">
+                <Image src="/singleClass.png" alt="" width={24} height={24} className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
               </div>
               <div className="min-w-0">
                 <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight truncate">
                   {supervisedClassName || "Subject Teacher"}
                 </h3>
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5">Assigned Supervision</span>
+                <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5 truncate">Assigned Supervision</span>
               </div>
             </div>
 
             {/* ACTIVE HOMEWORK */}
-            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-3.5 hover:shadow-sm transition-all border-l-4 border-l-[#FAE27C]">
-              <div className="w-11 h-11 rounded-xl bg-[#FEFCE8] flex items-center justify-center flex-shrink-0 shadow-2xs">
-                <Image src="/assignment.png" alt="" width={24} height={24} className="w-6 h-6 object-contain" />
+            <div className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-2.5 sm:gap-3.5 hover:shadow-sm transition-all border-l-4 border-l-[#FAE27C]">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-[#FEFCE8] flex items-center justify-center flex-shrink-0 shadow-2xs">
+                <Image src="/assignment.png" alt="" width={24} height={24} className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
               </div>
               <div className="min-w-0">
                 <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">{homeworkItems.length}</h3>
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5">Assigned Tasks</span>
+                <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5 truncate">Assigned Tasks</span>
               </div>
             </div>
 
             {/* CLASS STUDENTS */}
-            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-3.5 hover:shadow-sm transition-all border-l-4 border-l-emerald-500">
-              <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0 shadow-2xs">
-                <Image src="/student.png" alt="" width={24} height={24} className="w-6 h-6 object-contain" />
+            <div className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-2.5 sm:gap-3.5 hover:shadow-sm transition-all border-l-4 border-l-emerald-500">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0 shadow-2xs">
+                <Image src="/student.png" alt="" width={24} height={24} className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
               </div>
               <div className="min-w-0">
                 <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">{classStudents.length || "-"}</h3>
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5">Students Enrolled</span>
+                <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5 truncate">Students Enrolled</span>
               </div>
             </div>
           </div>

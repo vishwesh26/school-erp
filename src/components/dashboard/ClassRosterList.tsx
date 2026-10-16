@@ -117,7 +117,7 @@ const ClassRosterList: React.FC<ClassRosterListProps> = ({
                 {/* VIEW ACTION */}
                 <Link
                   href={`/list/students/${student.id}`}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-xl bg-white text-slate-600 hover:text-[#4e282c] shadow-2xs border border-slate-200/60"
+                  className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity p-2 rounded-xl bg-white text-slate-600 hover:text-[#4e282c] shadow-2xs border border-slate-200/60 flex-shrink-0"
                   title="View Student"
                 >
                   <svg

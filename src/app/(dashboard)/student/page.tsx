@@ -88,7 +88,7 @@ const StudentPage = async () => {
       assessmentData={assessmentData}
       attendanceSlot={
         <Suspense fallback={<div className="h-6 w-16 bg-slate-100 animate-pulse rounded" />}>
-          <StudentAttendanceCard id={userId!} />
+          <StudentAttendanceCard id={userId!} showLabel={false} />
         </Suspense>
       }
       scheduleSlot={

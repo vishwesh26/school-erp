@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Menu from "@/components/Menu";
 import Navbar from "@/components/Navbar";
+import MobileBottomNav from "@/components/dashboard/MobileBottomNav";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -81,14 +82,14 @@ export default async function DashboardLayout({
   return (
     <div className="h-screen flex flex-col lg:flex-row overflow-hidden bg-[#F7F8FA]">
       {/* SIDEBAR FOR DESKTOP / TOP DRAWER CONTAINER */}
-      <div className="w-full lg:w-[17%] xl:w-[15%] p-3.5 sm:p-4 border-b lg:border-r border-slate-100 flex flex-col items-center gap-3 bg-white z-[60] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200">
-        <Link href="/" className="flex items-center justify-center py-1 w-full">
+      <div className="w-full lg:w-[17%] xl:w-[15%] p-2.5 sm:p-4 border-b lg:border-r border-slate-100 flex flex-col items-center gap-2 sm:gap-3 bg-white z-[60] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200">
+        <Link href="/" className="flex items-center justify-center py-0.5 sm:py-1 w-full">
           <Image
             src="/logo.png"
             alt="Dr. Cyrus Poonawalla English Medium School"
             width={60}
             height={60}
-            className="w-14 h-14 object-contain hover:scale-105 transition-transform duration-200"
+            className="w-10 h-10 sm:w-14 sm:h-14 object-contain hover:scale-105 transition-transform duration-200"
             priority
           />
         </Link>
@@ -98,10 +99,13 @@ export default async function DashboardLayout({
       </div>
 
       {/* RIGHT MAIN WORKSPACE */}
-      <div className="flex-1 bg-[#F7F8FA] overflow-y-auto flex flex-col scrollbar-thin scrollbar-thumb-slate-300">
+      <div className="flex-1 bg-[#F7F8FA] overflow-y-auto flex flex-col scrollbar-thin scrollbar-thumb-slate-300 pb-20 lg:pb-6">
         <Navbar userInfo={userInfo} />
         {children}
       </div>
+
+      {/* MOBILE BOTTOM NAVIGATION */}
+      <MobileBottomNav role={role} />
     </div>
   );
 }

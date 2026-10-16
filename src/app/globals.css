@@ -253,3 +253,12 @@
     @apply transition-all duration-150 ease-in-out hover:bg-gradient-to-r hover:from-amber-50/40 hover:to-orange-50/30;
   }
 }
+
+/* Hide scrollbar for touch scrolling containers */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

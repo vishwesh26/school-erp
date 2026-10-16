@@ -163,57 +163,57 @@ const StudentDashboardClient: React.FC<StudentDashboardClientProps> = ({
       {activeTab === "dashboard" && (
         <div className="flex flex-col gap-6 animate-fade-in">
           {/* SUMMARY CARDS IN PASTEL THEME */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
             {/* ATTENDANCE CARD */}
             <div
               onClick={() => setShowAttendanceCalendar(true)}
-              className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-3.5 hover:shadow-md hover:border-slate-200 transition-all border-l-4 border-l-[#4e282c] cursor-pointer group"
+              className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-2.5 sm:gap-3.5 hover:shadow-md hover:border-slate-200 transition-all border-l-4 border-l-[#4e282c] cursor-pointer group"
               title="Click to view full Attendance Calendar"
             >
-              <div className="w-11 h-11 rounded-xl bg-[#f4eaea] flex items-center justify-center flex-shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
-                <Image src="/singleAttendance.png" alt="" width={24} height={24} className="w-6 h-6 object-contain" />
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-[#f4eaea] flex items-center justify-center flex-shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                <Image src="/singleAttendance.png" alt="" width={24} height={24} className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
               </div>
               <div className="min-w-0 flex-1">
                 {attendanceSlot}
                 <div className="flex items-center justify-between gap-1 mt-0.5">
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block">Attendance</span>
-                  <span className="text-[10px] font-black text-[#f16122] bg-[#fdece7] px-1.5 py-0.5 rounded-md group-hover:bg-[#f16122] group-hover:text-white transition-colors shadow-2xs">
-                    Calendar ↗
+                  <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block truncate">Attendance</span>
+                  <span className="text-[9px] sm:text-[10px] font-black text-[#f16122] bg-[#fdece7] px-1.5 py-0.5 rounded-md group-hover:bg-[#f16122] group-hover:text-white transition-colors shadow-2xs flex-shrink-0">
+                    ↗
                   </span>
                 </div>
               </div>
             </div>
 
             {/* GRADE CARD */}
-            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-3.5 hover:shadow-sm transition-all border-l-4 border-l-[#f16122]">
-              <div className="w-11 h-11 rounded-xl bg-[#fdece7] flex items-center justify-center flex-shrink-0 shadow-2xs">
-                <Image src="/singleBranch.png" alt="" width={24} height={24} className="w-6 h-6 object-contain" />
+            <div className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-2.5 sm:gap-3.5 hover:shadow-sm transition-all border-l-4 border-l-[#f16122]">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-[#fdece7] flex items-center justify-center flex-shrink-0 shadow-2xs">
+                <Image src="/singleBranch.png" alt="" width={24} height={24} className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
               </div>
               <div className="min-w-0">
                 <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight truncate">{gradeLevel}</h3>
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5">Academic Grade</span>
+                <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5 truncate">Academic Grade</span>
               </div>
             </div>
 
             {/* LESSONS CARD */}
-            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-3.5 hover:shadow-sm transition-all border-l-4 border-l-[#FAE27C]">
-              <div className="w-11 h-11 rounded-xl bg-[#FEFCE8] flex items-center justify-center flex-shrink-0 shadow-2xs">
-                <Image src="/singleLesson.png" alt="" width={24} height={24} className="w-6 h-6 object-contain" />
+            <div className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-2.5 sm:gap-3.5 hover:shadow-sm transition-all border-l-4 border-l-[#FAE27C]">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-[#FEFCE8] flex items-center justify-center flex-shrink-0 shadow-2xs">
+                <Image src="/singleLesson.png" alt="" width={24} height={24} className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
               </div>
               <div className="min-w-0">
                 <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">{lessonCount}</h3>
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5">Lessons / Week</span>
+                <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5 truncate">Lessons / Week</span>
               </div>
             </div>
 
             {/* CLASS CARD */}
-            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-3.5 hover:shadow-sm transition-all border-l-4 border-l-sky-500">
-              <div className="w-11 h-11 rounded-xl bg-sky-50 flex items-center justify-center flex-shrink-0 shadow-2xs">
-                <Image src="/singleClass.png" alt="" width={24} height={24} className="w-6 h-6 object-contain" />
+            <div className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-2.5 sm:gap-3.5 hover:shadow-sm transition-all border-l-4 border-l-sky-500">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-sky-50 flex items-center justify-center flex-shrink-0 shadow-2xs">
+                <Image src="/singleClass.png" alt="" width={24} height={24} className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
               </div>
               <div className="min-w-0">
                 <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight truncate">{className}</h3>
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5">Assigned Class</span>
+                <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5 truncate">Assigned Class</span>
               </div>
             </div>
           </div>

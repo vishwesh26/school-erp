@@ -81,32 +81,32 @@ const UserCard = async ({
   return (
     <Link
       href={config.link}
-      className={`rounded-3xl ${config.bg} p-4 sm:p-5 flex-1 min-w-[130px] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-sm hover:shadow-md cursor-pointer border ${config.border} relative overflow-hidden group block`}
+      className={`rounded-2xl sm:rounded-3xl ${config.bg} p-3.5 sm:p-5 flex-1 min-w-[125px] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-sm hover:shadow-md cursor-pointer border ${config.border} relative overflow-hidden group block`}
     >
       {/* Decorative ambient glow */}
       <div className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-white/10 blur-xl group-hover:scale-150 transition-transform duration-500 pointer-events-none" />
 
       <div className="flex justify-between items-center relative z-10">
         <span
-          className={`text-[10px] font-black ${config.badge} backdrop-blur-md px-2.5 py-1 rounded-full tracking-wider uppercase border border-white/20 shadow-2xs`}
+          className={`text-[9px] sm:text-[10px] font-black ${config.badge} backdrop-blur-md px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full tracking-wider uppercase border border-white/20 shadow-2xs`}
         >
           {currentYear?.name ? currentYear.name.replace("-", "/") : "2026/27"}
         </span>
 
-        <div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center p-1.5 transition-transform group-hover:rotate-12">
+        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white/15 flex items-center justify-center p-1 sm:p-1.5 transition-transform group-hover:rotate-12">
           <Image
             src={config.icon}
             alt=""
             width={16}
             height={16}
-            className="invert brightness-200 object-contain"
+            className="invert brightness-200 object-contain w-3.5 h-3.5 sm:w-4 sm:h-4"
           />
         </div>
       </div>
 
-      <div className="relative z-10 mt-3.5">
-        <h1 className="text-2xl sm:text-3xl font-black tracking-tight">{count || 0}</h1>
-        <h2 className="capitalize text-xs font-extrabold opacity-90 mt-1 uppercase tracking-wider">
+      <div className="relative z-10 mt-2.5 sm:mt-3.5">
+        <h1 className="text-xl sm:text-3xl font-black tracking-tight">{count || 0}</h1>
+        <h2 className="capitalize text-[10px] sm:text-xs font-extrabold opacity-90 mt-0.5 sm:mt-1 uppercase tracking-wider">
           Total {type}s
         </h2>
       </div>

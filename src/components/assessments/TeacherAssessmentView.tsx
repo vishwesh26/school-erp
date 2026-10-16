@@ -99,56 +99,56 @@ const TeacherAssessmentView: React.FC<TeacherAssessmentViewProps> = ({
   return (
     <div className="flex flex-col gap-6 animate-fade-in w-full">
       {/* 1. TOP SUMMARY CARDS */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
         {/* TOTAL QUIZZES */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-3.5 border-l-4 border-l-[#4e282c]">
-          <div className="w-11 h-11 rounded-xl bg-[#f4eaea] flex items-center justify-center flex-shrink-0">
-            <Image src="/exam.png" alt="" width={24} height={24} className="w-6 h-6 object-contain" />
+        <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-2.5 sm:gap-3.5 border-l-4 border-l-[#4e282c]">
+          <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-[#f4eaea] flex items-center justify-center flex-shrink-0">
+            <Image src="/exam.png" alt="" width={24} height={24} className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
           </div>
-          <div>
+          <div className="min-w-0">
             <h3 className="text-base sm:text-xl font-black text-slate-900">{quizzes.length}</h3>
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5">
+            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5 truncate">
               Total Quizzes
             </span>
           </div>
         </div>
 
         {/* ACTIVE TODAY */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-3.5 border-l-4 border-l-[#f16122]">
-          <div className="w-11 h-11 rounded-xl bg-[#fdece7] flex items-center justify-center flex-shrink-0">
-            <span className="text-xl">⚡</span>
+        <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-2.5 sm:gap-3.5 border-l-4 border-l-[#f16122]">
+          <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-[#fdece7] flex items-center justify-center flex-shrink-0">
+            <span className="text-lg sm:text-xl">⚡</span>
           </div>
-          <div>
+          <div className="min-w-0">
             <h3 className="text-base sm:text-xl font-black text-slate-900">{activeQuizzes.length}</h3>
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5">
+            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5 truncate">
               Active Today
             </span>
           </div>
         </div>
 
         {/* UPCOMING */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-3.5 border-l-4 border-l-indigo-500">
-          <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
-            <span className="text-xl">🕒</span>
+        <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-2.5 sm:gap-3.5 border-l-4 border-l-indigo-500">
+          <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
+            <span className="text-lg sm:text-xl">🕒</span>
           </div>
-          <div>
+          <div className="min-w-0">
             <h3 className="text-base sm:text-xl font-black text-slate-900">{upcomingQuizzes.length}</h3>
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5">
+            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5 truncate">
               Upcoming
             </span>
           </div>
         </div>
 
         {/* SUBMISSIONS */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-3.5 border-l-4 border-l-emerald-500">
-          <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
-            <Image src="/result.png" alt="" width={24} height={24} className="w-6 h-6 object-contain" />
+        <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-100 shadow-xs flex items-center gap-2.5 sm:gap-3.5 border-l-4 border-l-emerald-500">
+          <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+            <Image src="/result.png" alt="" width={24} height={24} className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
           </div>
-          <div>
+          <div className="min-w-0">
             <h3 className="text-base sm:text-xl font-black text-slate-900">
               {quizzes.reduce((sum, q) => sum + (q.submissions?.length || 0), 0)}
             </h3>
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5">
+            <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mt-0.5 truncate">
               Submissions
             </span>
           </div>
@@ -158,7 +158,7 @@ const TeacherAssessmentView: React.FC<TeacherAssessmentViewProps> = ({
       {/* 2. ACTIONS & FILTER BAR */}
       <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-100 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         {/* TAB BUTTONS */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 no-scrollbar">
           <button
             type="button"
             onClick={() => setActiveTab("upcoming")}
