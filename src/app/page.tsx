@@ -2,17 +2,28 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
 const HomePage = async () => {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) {
+        if (!user) {
+            redirect("/sign-in");
+        }
+
+        const role = user.user_metadata?.role;
+
+        if (role) {
+            redirect(`/${role}`);
+        }
+    } catch (err: any) {
+        if (
+            err?.message === "NEXT_REDIRECT" ||
+            (typeof err?.digest === "string" && err.digest.includes("NEXT_REDIRECT"))
+        ) {
+            throw err;
+        }
+        console.error("Home page auth error:", err);
         redirect("/sign-in");
-    }
-
-    const role = user.user_metadata?.role;
-
-    if (role) {
-        redirect(`/${role}`);
     }
 
     return (
