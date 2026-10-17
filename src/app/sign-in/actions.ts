@@ -282,6 +282,36 @@ export async function login(prevState: any, formData: FormData) {
                 lastError = error;
             }
 
+            // Attempt 1b: Seamless legacy password sync - If failed on new DB, check if old Supabase matches
+            const oldUrl = process.env.OLD_SUPABASE_URL;
+            const oldKey = process.env.OLD_SUPABASE_SERVICE_ROLE_KEY;
+            if (oldUrl && oldKey) {
+                try {
+                    const oldSupabase = createAdminClient(oldUrl, oldKey);
+                    const { data: oldAuth, error: oldAuthErr } = await oldSupabase.auth.signInWithPassword({
+                        email: cand.email,
+                        password: rawPassword,
+                    });
+                    if (!oldAuthErr && oldAuth?.user) {
+                        // Password is valid in old database! Sync it to new Supabase
+                        await adminSupabase.auth.admin.updateUserById(oldAuth.user.id, {
+                            password: rawPassword,
+                            email_confirm: true,
+                        });
+                        const retryAuth = await supabase.auth.signInWithPassword({
+                            email: cand.email,
+                            password: rawPassword,
+                        });
+                        if (!retryAuth.error && retryAuth.data?.user) {
+                            authData = retryAuth.data;
+                            break;
+                        }
+                    }
+                } catch (legacySyncErr) {
+                    console.warn("Legacy password sync check:", legacySyncErr);
+                }
+            }
+
             // Attempt 2: If student candidate and direct password failed, test adaptive student password patterns
             if (cand.studentId) {
                 try {
