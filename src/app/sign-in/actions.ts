@@ -27,9 +27,20 @@ export async function login(prevState: any, formData: FormData) {
         const lowerInput = cleanInput.toLowerCase();
         const digitsOnly = cleanInput.replace(/\D/g, '');
 
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://oyyrdhcrmeplpxvbjdyb.supabase.co';
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+        if (!serviceRoleKey) {
+            console.error("Missing SUPABASE_SERVICE_ROLE_KEY on server. Please add .env to your Hostinger deployment.");
+            return {
+                success: false,
+                error: "Hostinger deployment is missing environment variables. Please upload your .env file to Hostinger or configure SUPABASE_SERVICE_ROLE_KEY."
+            };
+        }
+
         const adminSupabase = createAdminClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!
+            supabaseUrl,
+            serviceRoleKey
         );
 
         const candidateList: CandidateUser[] = [];
