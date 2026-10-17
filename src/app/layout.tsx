@@ -20,7 +20,12 @@ export const metadata: Metadata = {
   title: "DCPEMS School ERP | Management Dashboard",
   description: "Official Enterprise Resource Planning portal for Dr Cyrus Poonawalla English Medium School.",
   icons: {
-    icon: "/logo.png",
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/logo.png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/logo.png",
   },
 };
 
