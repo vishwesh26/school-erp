@@ -16,7 +16,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."AcademicYear"', 'id'), COALESCE((SELECT MAX("id") FROM public."AcademicYear"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."AcademicYear"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."AcademicYear"', 'id'), COALESCE((SELECT MAX("id") FROM public."AcademicYear"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
   -- Table: StudentStatus
   BEGIN
@@ -24,7 +30,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."StudentStatus"', 'id'), COALESCE((SELECT MAX("id") FROM public."StudentStatus"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."StudentStatus"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."StudentStatus"', 'id'), COALESCE((SELECT MAX("id") FROM public."StudentStatus"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
   -- Table: LedgerGroup
   BEGIN
@@ -32,7 +44,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."LedgerGroup"', 'id'), COALESCE((SELECT MAX("id") FROM public."LedgerGroup"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."LedgerGroup"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."LedgerGroup"', 'id'), COALESCE((SELECT MAX("id") FROM public."LedgerGroup"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
   -- Table: FeeCategory
   BEGIN
@@ -40,7 +58,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."FeeCategory"', 'id'), COALESCE((SELECT MAX("id") FROM public."FeeCategory"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."FeeCategory"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."FeeCategory"', 'id'), COALESCE((SELECT MAX("id") FROM public."FeeCategory"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
   -- Table: Class
   BEGIN
@@ -48,7 +72,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."Class"', 'id'), COALESCE((SELECT MAX("id") FROM public."Class"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."Class"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."Class"', 'id'), COALESCE((SELECT MAX("id") FROM public."Class"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
   -- Table: Subject
   BEGIN
@@ -56,7 +86,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."Subject"', 'id'), COALESCE((SELECT MAX("id") FROM public."Subject"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."Subject"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."Subject"', 'id'), COALESCE((SELECT MAX("id") FROM public."Subject"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
   -- Table: StudentHistory
   BEGIN
@@ -64,7 +100,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."StudentHistory"', 'id'), COALESCE((SELECT MAX("id") FROM public."StudentHistory"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."StudentHistory"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."StudentHistory"', 'id'), COALESCE((SELECT MAX("id") FROM public."StudentHistory"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
   -- Table: Lesson
   BEGIN
@@ -72,7 +114,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."Lesson"', 'id'), COALESCE((SELECT MAX("id") FROM public."Lesson"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."Lesson"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."Lesson"', 'id'), COALESCE((SELECT MAX("id") FROM public."Lesson"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
   -- Table: Exam
   BEGIN
@@ -80,7 +128,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."Exam"', 'id'), COALESCE((SELECT MAX("id") FROM public."Exam"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."Exam"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."Exam"', 'id'), COALESCE((SELECT MAX("id") FROM public."Exam"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
   -- Table: Assignment
   BEGIN
@@ -88,7 +142,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."Assignment"', 'id'), COALESCE((SELECT MAX("id") FROM public."Assignment"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."Assignment"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."Assignment"', 'id'), COALESCE((SELECT MAX("id") FROM public."Assignment"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
   -- Table: Result
   BEGIN
@@ -96,7 +156,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."Result"', 'id'), COALESCE((SELECT MAX("id") FROM public."Result"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."Result"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."Result"', 'id'), COALESCE((SELECT MAX("id") FROM public."Result"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
   -- Table: Attendance
   BEGIN
@@ -104,7 +170,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."Attendance"', 'id'), COALESCE((SELECT MAX("id") FROM public."Attendance"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."Attendance"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."Attendance"', 'id'), COALESCE((SELECT MAX("id") FROM public."Attendance"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
   -- Table: Event
   BEGIN
@@ -112,7 +184,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."Event"', 'id'), COALESCE((SELECT MAX("id") FROM public."Event"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."Event"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."Event"', 'id'), COALESCE((SELECT MAX("id") FROM public."Event"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
   -- Table: Announcement
   BEGIN
@@ -120,7 +198,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."Announcement"', 'id'), COALESCE((SELECT MAX("id") FROM public."Announcement"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."Announcement"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."Announcement"', 'id'), COALESCE((SELECT MAX("id") FROM public."Announcement"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
   -- Table: Book
   BEGIN
@@ -128,7 +212,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."Book"', 'id'), COALESCE((SELECT MAX("id") FROM public."Book"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."Book"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."Book"', 'id'), COALESCE((SELECT MAX("id") FROM public."Book"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
   -- Table: BookIssue
   BEGIN
@@ -136,7 +226,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."BookIssue"', 'id'), COALESCE((SELECT MAX("id") FROM public."BookIssue"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."BookIssue"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."BookIssue"', 'id'), COALESCE((SELECT MAX("id") FROM public."BookIssue"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
   -- Table: StudentFee
   BEGIN
@@ -144,7 +240,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."StudentFee"', 'id'), COALESCE((SELECT MAX("id") FROM public."StudentFee"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."StudentFee"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."StudentFee"', 'id'), COALESCE((SELECT MAX("id") FROM public."StudentFee"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
   -- Table: Payment
   BEGIN
@@ -152,7 +254,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."Payment"', 'id'), COALESCE((SELECT MAX("id") FROM public."Payment"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."Payment"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."Payment"', 'id'), COALESCE((SELECT MAX("id") FROM public."Payment"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
   -- Table: Expense
   BEGIN
@@ -160,7 +268,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."Expense"', 'id'), COALESCE((SELECT MAX("id") FROM public."Expense"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."Expense"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."Expense"', 'id'), COALESCE((SELECT MAX("id") FROM public."Expense"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
   -- Table: Ledger
   BEGIN
@@ -168,7 +282,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."Ledger"', 'id'), COALESCE((SELECT MAX("id") FROM public."Ledger"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."Ledger"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."Ledger"', 'id'), COALESCE((SELECT MAX("id") FROM public."Ledger"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
   -- Table: Voucher
   BEGIN
@@ -176,7 +296,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."Voucher"', 'id'), COALESCE((SELECT MAX("id") FROM public."Voucher"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."Voucher"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."Voucher"', 'id'), COALESCE((SELECT MAX("id") FROM public."Voucher"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
   -- Table: VoucherEntry
   BEGIN
@@ -184,7 +310,13 @@ BEGIN
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."VoucherEntry"', 'id'), COALESCE((SELECT MAX("id") FROM public."VoucherEntry"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."VoucherEntry"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."VoucherEntry"', 'id'), COALESCE((SELECT MAX("id") FROM public."VoucherEntry"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
 END $$;
 

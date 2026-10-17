@@ -200,7 +200,13 @@ for (const t of intIdTables) {
   EXCEPTION WHEN others THEN
     NULL;
   END;
-  PERFORM setval(pg_get_serial_sequence('public."${t}"', 'id'), COALESCE((SELECT MAX("id") FROM public."${t}"), 1));
+  BEGIN
+    IF pg_get_serial_sequence('public."${t}"', 'id') IS NOT NULL THEN
+      PERFORM setval(pg_get_serial_sequence('public."${t}"', 'id'), COALESCE((SELECT MAX("id") FROM public."${t}"), 1));
+    END IF;
+  EXCEPTION WHEN others THEN
+    NULL;
+  END;
 
 `;
 }

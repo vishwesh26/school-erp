@@ -1,7 +1,7 @@
 {
   "css.lint.unknownAtRules": "ignore",
   "files.associations": {
-    "*.sql": "pgsql"
+    "*.sql": "sql"
   },
   "mssql.intelliSense.enableErrorChecking": false,
   "mssql.intelliSense.enableIntelliSense": false
