@@ -157,7 +157,8 @@ CREATE TABLE IF NOT EXISTS public."Subject" (
 -- Table: _SubjectToTeacher
 CREATE TABLE IF NOT EXISTS public."_SubjectToTeacher" (
   "A" integer NOT NULL,
-  "B" text NOT NULL
+  "B" text NOT NULL,
+  PRIMARY KEY ("A", "B")
 );
 
 -- Table: Student
@@ -291,7 +292,8 @@ CREATE TABLE IF NOT EXISTS public."Event" (
   "startTime" timestamp NOT NULL,
   "endTime" timestamp NOT NULL,
   "classId" integer,
-  "gradeId" integer
+  "gradeId" integer,
+  PRIMARY KEY ("id")
 );
 
 -- Table: Announcement
