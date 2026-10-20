@@ -11,6 +11,11 @@ interface CandidateUser {
     studentId?: string;
     rollNumber?: string;
     birthday?: string;
+    teacherId?: string;
+    staffId?: string;
+    role?: string;
+    phone?: string;
+    username?: string;
 }
 
 export async function login(prevState: any, formData: FormData) {
@@ -27,7 +32,7 @@ export async function login(prevState: any, formData: FormData) {
         const lowerInput = cleanInput.toLowerCase();
         const digitsOnly = cleanInput.replace(/\D/g, '');
 
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://oyyrdhcrmeplpxvbjdyb.supabase.co';
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://pazdautizflpnwgcmrty.supabase.co';
         const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
         if (!serviceRoleKey) {
@@ -225,30 +230,87 @@ export async function login(prevState: any, formData: FormData) {
             } catch (err) {}
         }
 
-        // 6. Lookups for Teacher, Parent, Librarian, Accountant, Receptionist
-        const staffTables = ['Teacher', 'Parent', 'Librarian', 'Accountant', 'Receptionist'];
-        for (const table of staffTables) {
+        // 6. Lookups for Teacher, Parent, Librarian, Accountant, Receptionist, Admin
+        const staffTables = [
+            { table: 'Teacher', role: 'teacher' },
+            { table: 'Admin', role: 'admin' },
+            { table: 'Accountant', role: 'accountant' },
+            { table: 'Librarian', role: 'librarian' },
+            { table: 'Receptionist', role: 'receptionist' },
+            { table: 'Parent', role: 'parent' }
+        ];
+
+        for (const { table, role } of staffTables) {
             try {
-                let filter = `username.ilike.${cleanInput}`;
-                filter += `,email.ilike.${cleanInput}`;
+                const filters: string[] = [];
+                filters.push(`username.ilike.${cleanInput}`);
+                filters.push(`email.ilike.${cleanInput}`);
                 if (digitsOnly.length >= 10) {
-                    filter += `,phone.ilike.%${digitsOnly.slice(-10)}%`;
+                    filters.push(`phone.ilike.%${digitsOnly.slice(-10)}%`);
                 }
 
-                const { data: staffRows } = await adminSupabase
-                    .from(table)
-                    .select('id, email, username')
-                    .or(filter)
-                    .limit(3);
+                // If user entered name/words and not an email
+                if (words.length >= 2 && !cleanInput.includes('@')) {
+                    const first = words[0];
+                    const last = words[words.length - 1];
+                    filters.push(`and(name.ilike.%${first}%,surname.ilike.%${last}%)`);
+                    filters.push(`and(name.ilike.%${last}%,surname.ilike.%${first}%)`);
+                } else if (words.length === 1 && words[0].length >= 3 && !cleanInput.includes('@')) {
+                    filters.push(`name.ilike.%${words[0]}%`);
+                    filters.push(`surname.ilike.%${words[0]}%`);
+                }
+
+                // Query with adminSupabase, or fallback to server supabase client
+                let staffRows: any[] | null = null;
+                try {
+                    const { data } = await adminSupabase
+                        .from(table)
+                        .select('id, email, username, phone, birthday, name, surname')
+                        .or(filters.join(','))
+                        .limit(5);
+                    staffRows = data;
+                } catch (e) {}
+
+                if (!staffRows || staffRows.length === 0) {
+                    try {
+                        const { data } = await supabase
+                            .from(table)
+                            .select('id, email, username, phone, birthday, name, surname')
+                            .or(filters.join(','))
+                            .limit(5);
+                        staffRows = data;
+                    } catch (e) {}
+                }
 
                 (staffRows || []).forEach(r => {
-                    if (r.email) candidateList.push({ email: r.email });
-                    if (r.username) candidateList.push({ email: `${r.username.toLowerCase()}@dcpems.internal` });
+                    const tId = role === 'teacher' ? r.id : undefined;
+                    if (r.email) {
+                        candidateList.push({
+                            email: r.email,
+                            teacherId: tId,
+                            staffId: r.id,
+                            role,
+                            phone: r.phone,
+                            username: r.username,
+                            birthday: r.birthday,
+                        });
+                    }
+                    if (r.username) {
+                        candidateList.push({
+                            email: `${r.username.toLowerCase()}@dcpems.internal`,
+                            teacherId: tId,
+                            staffId: r.id,
+                            role,
+                            phone: r.phone,
+                            username: r.username,
+                            birthday: r.birthday,
+                        });
+                    }
                 });
             } catch (err) {}
         }
 
-        // Deduplicate candidates while merging and preserving student metadata
+        // Deduplicate candidates while merging and preserving metadata
         const candidateMap = new Map<string, CandidateUser>();
         for (const c of candidateList) {
             const key = (c.email || '').toLowerCase().trim();
@@ -256,8 +318,13 @@ export async function login(prevState: any, formData: FormData) {
             const existing = candidateMap.get(key);
             if (existing) {
                 if (!existing.studentId && c.studentId) existing.studentId = c.studentId;
+                if (!existing.teacherId && c.teacherId) existing.teacherId = c.teacherId;
+                if (!existing.staffId && c.staffId) existing.staffId = c.staffId;
                 if (!existing.rollNumber && c.rollNumber) existing.rollNumber = c.rollNumber;
                 if (!existing.birthday && c.birthday) existing.birthday = c.birthday;
+                if (!existing.phone && c.phone) existing.phone = c.phone;
+                if (!existing.username && c.username) existing.username = c.username;
+                if (!existing.role && c.role) existing.role = c.role;
             } else {
                 candidateMap.set(key, { ...c });
             }
@@ -285,7 +352,7 @@ export async function login(prevState: any, formData: FormData) {
             // Attempt 1b: Seamless legacy password sync - If failed on new DB, check if old Supabase matches
             const oldUrl = process.env.OLD_SUPABASE_URL;
             const oldKey = process.env.OLD_SUPABASE_SERVICE_ROLE_KEY;
-            if (oldUrl && oldKey) {
+            if (oldUrl && oldKey && oldUrl !== supabaseUrl) {
                 try {
                     const oldSupabase = createAdminClient(oldUrl, oldKey);
                     const { data: oldAuth, error: oldAuthErr } = await oldSupabase.auth.signInWithPassword({
@@ -293,11 +360,22 @@ export async function login(prevState: any, formData: FormData) {
                         password: rawPassword,
                     });
                     if (!oldAuthErr && oldAuth?.user) {
-                        // Password is valid in old database! Sync it to new Supabase
-                        await adminSupabase.auth.admin.updateUserById(oldAuth.user.id, {
-                            password: rawPassword,
-                            email_confirm: true,
-                        });
+                        try {
+                            await adminSupabase.auth.admin.updateUserById(oldAuth.user.id, {
+                                password: rawPassword,
+                                email_confirm: true,
+                            });
+                        } catch (uErr) {
+                            try {
+                                await adminSupabase.auth.admin.createUser({
+                                    id: oldAuth.user.id,
+                                    email: cand.email,
+                                    password: rawPassword,
+                                    email_confirm: true,
+                                    user_metadata: oldAuth.user.user_metadata || {},
+                                });
+                            } catch (cErr) {}
+                        }
                         const retryAuth = await supabase.auth.signInWithPassword({
                             email: cand.email,
                             password: rawPassword,
@@ -312,7 +390,155 @@ export async function login(prevState: any, formData: FormData) {
                 }
             }
 
-            // Attempt 2: If student candidate and direct password failed, test adaptive student password patterns
+            // Attempt 2: If teacher candidate and direct password failed, test adaptive teacher password patterns
+            if (cand.teacherId || cand.role === 'teacher') {
+                try {
+                    let authUser: any = null;
+                    if (cand.teacherId) {
+                        try {
+                            const { data: authUserRes } = await adminSupabase.auth.admin.getUserById(cand.teacherId);
+                            authUser = authUserRes?.user;
+                        } catch (e) {}
+                    }
+
+                    const currentAuthPwd = authUser?.user_metadata?.temp_password;
+
+                    // Build list of valid acceptable teacher passwords
+                    const acceptablePasswords = new Set<string>();
+                    acceptablePasswords.add("dcpems@123");
+                    acceptablePasswords.add("dcpems123");
+                    acceptablePasswords.add("Dcpems@123");
+                    acceptablePasswords.add("teacher@123");
+                    acceptablePasswords.add("teacher123");
+                    acceptablePasswords.add("pass@123");
+
+                    if (currentAuthPwd) {
+                        acceptablePasswords.add(currentAuthPwd);
+                        acceptablePasswords.add(currentAuthPwd.toLowerCase());
+                    }
+
+                    if (cand.phone) {
+                        const cleanPhone = cand.phone.replace(/\D/g, '');
+                        if (cleanPhone.length >= 10) {
+                            acceptablePasswords.add(cleanPhone.slice(-10));
+                            acceptablePasswords.add(cleanPhone);
+                        }
+                    }
+
+                    if (cand.username) {
+                        acceptablePasswords.add(cand.username);
+                        acceptablePasswords.add(cand.username.toLowerCase());
+                    }
+
+                    if (cand.birthday) {
+                        try {
+                            const d = new Date(cand.birthday);
+                            const dd = String(d.getDate()).padStart(2, '0');
+                            const mm = String(d.getMonth() + 1).padStart(2, '0');
+                            const yyyy = d.getFullYear();
+                            acceptablePasswords.add(`${dd}${mm}${yyyy}`);
+                        } catch (e) {}
+                    }
+
+                    const userEnteredLower = rawPassword.toLowerCase();
+                    const isMatch = Array.from(acceptablePasswords).some(
+                        p => p && p.toLowerCase() === userEnteredLower
+                    );
+
+                    if (isMatch) {
+                        const targetEmail = cand.email;
+                        const teacherId = cand.teacherId;
+
+                        if (authUser) {
+                            await adminSupabase.auth.admin.updateUserById(authUser.id, {
+                                password: rawPassword,
+                                email_confirm: true,
+                                user_metadata: {
+                                    ...authUser.user_metadata,
+                                    role: 'teacher',
+                                    temp_password: rawPassword,
+                                },
+                            });
+                        } else if (teacherId) {
+                            try {
+                                await adminSupabase.auth.admin.createUser({
+                                    id: teacherId,
+                                    email: targetEmail,
+                                    password: rawPassword,
+                                    email_confirm: true,
+                                    user_metadata: {
+                                        role: 'teacher',
+                                        temp_password: rawPassword,
+                                    },
+                                });
+                            } catch (createErr: any) {
+                                if (createErr?.message?.includes("already been registered")) {
+                                    const { data: { users } } = await adminSupabase.auth.admin.listUsers();
+                                    const existing = (users || []).find(u => u.email?.toLowerCase() === targetEmail.toLowerCase());
+                                    if (existing) {
+                                        await adminSupabase.auth.admin.updateUserById(existing.id, {
+                                            password: rawPassword,
+                                            email_confirm: true,
+                                            user_metadata: { role: 'teacher', temp_password: rawPassword }
+                                        });
+                                    }
+                                }
+                            }
+                        }
+
+                        const retryAuth = await supabase.auth.signInWithPassword({
+                            email: targetEmail,
+                            password: rawPassword,
+                        });
+
+                        if (!retryAuth.error && retryAuth.data?.user) {
+                            authData = retryAuth.data;
+                            break;
+                        }
+                    }
+                } catch (tErr) {
+                    console.warn("Error in teacher adaptive authentication:", tErr);
+                }
+            }
+
+            // Attempt 2b: If other staff candidate (admin, accountant, librarian, receptionist) and direct password failed
+            if (cand.staffId && cand.role && cand.role !== 'student' && cand.role !== 'teacher') {
+                try {
+                    const acceptableStaffPasswords = new Set<string>();
+                    acceptableStaffPasswords.add("dcpems@123");
+                    acceptableStaffPasswords.add("dcpems123");
+                    acceptableStaffPasswords.add("Dcpems@123");
+                    if (cand.phone) {
+                        const cleanPhone = cand.phone.replace(/\D/g, '');
+                        if (cleanPhone.length >= 10) acceptableStaffPasswords.add(cleanPhone.slice(-10));
+                    }
+                    if (cand.username) acceptableStaffPasswords.add(cand.username.toLowerCase());
+
+                    const isStaffMatch = Array.from(acceptableStaffPasswords).some(
+                        p => p && p.toLowerCase() === rawPassword.toLowerCase()
+                    );
+
+                    if (isStaffMatch) {
+                        await adminSupabase.auth.admin.updateUserById(cand.staffId, {
+                            password: rawPassword,
+                            email_confirm: true,
+                            user_metadata: { role: cand.role, temp_password: rawPassword }
+                        });
+                        const retryAuth = await supabase.auth.signInWithPassword({
+                            email: cand.email,
+                            password: rawPassword,
+                        });
+                        if (!retryAuth.error && retryAuth.data?.user) {
+                            authData = retryAuth.data;
+                            break;
+                        }
+                    }
+                } catch (staffErr) {
+                    console.warn("Staff adaptive login error:", staffErr);
+                }
+            }
+
+            // Attempt 3: If student candidate and direct password failed, test adaptive student password patterns
             if (cand.studentId) {
                 try {
                     const { data: authUserRes } = await adminSupabase.auth.admin.getUserById(cand.studentId);

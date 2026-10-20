@@ -1,7 +1,7 @@
 import { createBrowserClient } from '@supabase/ssr'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://oyyrdhcrmeplpxvbjdyb.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_WF0sXuygGq0_lz4kBUO7dQ_c_aTU6Jy';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://pazdautizflpnwgcmrty.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhemRhdXRpemZscG53Z2NtcnR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4MTAxMDEsImV4cCI6MjA4MTM4NjEwMX0.1EbvsBWpDhI1AUWlAjfGzJLvpqrlzqgqIvDCdBWD1pQ';
 
 export function createClient() {
     return createBrowserClient(
