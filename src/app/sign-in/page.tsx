@@ -38,6 +38,8 @@ export default function LoginPage() {
   const state = rawState || { success: false, error: "" };
   const [showPassword, setShowPassword] = useState(false);
 
+  const [selectedRole, setSelectedRole] = useState<'all' | 'teacher' | 'student' | 'parent'>('all');
+
   useEffect(() => {
     if (state?.error) {
       console.error("Login failed:", state.error);
@@ -54,11 +56,11 @@ export default function LoginPage() {
       {/* Main Container */}
       <div className="relative w-full max-w-md z-10 my-auto">
         {/* Card Frame */}
-        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/40 p-6 sm:p-8 flex flex-col gap-6 transition-all duration-300">
+        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/40 p-6 sm:p-8 flex flex-col gap-5 transition-all duration-300">
           
           {/* School Header / Crest */}
           <div className="flex flex-col items-center text-center">
-            <div className="relative mb-3 group">
+            <div className="relative mb-2.5 group">
               <div className="absolute -inset-1.5 bg-gradient-to-r from-[#4e282c] to-[#f16122] rounded-full blur opacity-40 group-hover:opacity-75 transition duration-300"></div>
               <div 
                 className="relative w-20 h-20 sm:w-22 sm:h-22 rounded-full overflow-hidden bg-white p-1 shadow-md border border-gray-100 flex items-center justify-center"
@@ -91,10 +93,75 @@ export default function LoginPage() {
           {/* Login Form */}
           <form action={formAction} className="flex flex-col gap-4">
             
+            {/* Role Selection Tabs */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between text-xs font-semibold text-gray-700 px-0.5">
+                <span>Login Role</span>
+                <span className="text-[10px] text-gray-500 font-medium">
+                  {selectedRole === 'all' && 'Auto-detect (Staff prioritized)'}
+                  {selectedRole === 'teacher' && 'Teacher / Staff workspace'}
+                  {selectedRole === 'student' && 'Student study portal'}
+                  {selectedRole === 'parent' && 'Parent oversight portal'}
+                </span>
+              </div>
+              <div className="grid grid-cols-4 p-1 bg-gray-100/90 rounded-xl border border-gray-200/80 text-xs font-semibold text-gray-600 gap-1">
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole('all')}
+                  className={`py-1.5 px-1 rounded-lg text-center transition-all duration-150 cursor-pointer ${
+                    selectedRole === 'all'
+                      ? "bg-white text-gray-900 shadow-xs font-bold border border-gray-200"
+                      : "hover:text-gray-900 hover:bg-white/50"
+                  }`}
+                >
+                  ✨ Auto
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole('teacher')}
+                  className={`py-1.5 px-1 rounded-lg text-center transition-all duration-150 cursor-pointer ${
+                    selectedRole === 'teacher'
+                      ? "bg-[#4e282c] text-white shadow-xs font-bold"
+                      : "hover:text-gray-900 hover:bg-white/50"
+                  }`}
+                >
+                  👩‍🏫 Staff
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole('student')}
+                  className={`py-1.5 px-1 rounded-lg text-center transition-all duration-150 cursor-pointer ${
+                    selectedRole === 'student'
+                      ? "bg-[#f16122] text-white shadow-xs font-bold"
+                      : "hover:text-gray-900 hover:bg-white/50"
+                  }`}
+                >
+                  🎓 Student
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole('parent')}
+                  className={`py-1.5 px-1 rounded-lg text-center transition-all duration-150 cursor-pointer ${
+                    selectedRole === 'parent'
+                      ? "bg-amber-600 text-white shadow-xs font-bold"
+                      : "hover:text-gray-900 hover:bg-white/50"
+                  }`}
+                >
+                  👨‍👩‍👧 Parent
+                </button>
+              </div>
+              <input type="hidden" name="role" value={selectedRole} />
+            </div>
+
             {/* Username / Email Input */}
             <div className="flex flex-col gap-1.5">
               <label htmlFor="email" className="text-xs sm:text-sm font-semibold text-gray-700 flex items-center justify-between">
-                <span>Email or Username / Roll No</span>
+                <span>
+                  {selectedRole === 'teacher' ? 'Staff Email, Username, or Phone' :
+                   selectedRole === 'student' ? 'Student Roll No or Class-Roll' :
+                   selectedRole === 'parent' ? 'Parent Mobile or Email' :
+                   'Email or Username / Roll No'}
+                </span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -106,15 +173,30 @@ export default function LoginPage() {
                   id="email"
                   name="email"
                   type="text"
-                  placeholder="e.g. 10A-001 or name@email.com"
+                  placeholder={
+                    selectedRole === 'teacher' ? "e.g. teacher@gmail.com, phone, or username" :
+                    selectedRole === 'student' ? "e.g. 7A-002 or 002" :
+                    selectedRole === 'parent' ? "e.g. 9876543210 or parent@email.com" :
+                    "e.g. 10A-001, email, or mobile"
+                  }
                   required
                   autoComplete="username"
                   className="w-full pl-11 pr-4 py-3 rounded-xl bg-gray-50/80 border border-gray-200 text-gray-900 placeholder-gray-400 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#f16122] focus:border-transparent focus:bg-white transition-all"
                 />
               </div>
               <p className="text-[11px] text-gray-500 pl-1 leading-relaxed">
-                Students: <span className="font-medium text-gray-700">Class-Roll (e.g. 3B-004)</span> or Roll No<br />
-                Teachers & Staff: <span className="font-medium text-gray-700">Username, Email, Phone, or Name</span> (Default: <code className="text-[#f16122] font-semibold">dcpems@123</code>)
+                {selectedRole === 'teacher' ? (
+                  <>Logging in as <span className="font-semibold text-gray-800">Teacher / Staff</span>. Opens your faculty workspace.</>
+                ) : selectedRole === 'student' ? (
+                  <>Logging in as <span className="font-semibold text-gray-800">Student</span>. Use your Class-Roll (e.g. 3B-004) or Roll No.</>
+                ) : selectedRole === 'parent' ? (
+                  <>Logging in as <span className="font-semibold text-gray-800">Parent</span>. View academic records for all your children.</>
+                ) : (
+                  <>
+                    Teachers & Staff: <span className="font-medium text-gray-700">Email, Phone, or Username</span> (Default: <code className="text-[#f16122] font-semibold">dcpems@123</code>)<br />
+                    Students: <span className="font-medium text-gray-700">Class-Roll (e.g. 3B-004)</span> or Roll No
+                  </>
+                )}
               </p>
             </div>
 
@@ -143,7 +225,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors focus:outline-none cursor-pointer"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
@@ -170,8 +252,16 @@ export default function LoginPage() {
               </div>
             )}
 
+            {/* Helpful note for dual-role teacher parents */}
+            <div className="p-2.5 rounded-xl bg-amber-50/90 border border-amber-200/70 text-[11px] text-amber-900 flex items-start gap-2">
+              <span className="shrink-0 text-sm leading-none mt-0.5">💡</span>
+              <span className="leading-snug">
+                <strong>Teacher with child enrolled?</strong> Keep on <strong>Auto</strong> or select <strong>Staff</strong> to open your faculty workspace, or select <strong>Student</strong> to open your child&apos;s portal.
+              </span>
+            </div>
+
             {/* Submit Action */}
-            <div className="mt-2">
+            <div className="mt-1">
               <SubmitButton />
             </div>
           </form>

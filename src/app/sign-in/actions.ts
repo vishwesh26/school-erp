@@ -48,7 +48,14 @@ export async function login(prevState: any, formData: FormData) {
             serviceRoleKey
         );
 
-        const candidateList: CandidateUser[] = [];
+        const rawRole = (formData.get('role') as string || "").trim().toLowerCase();
+
+        // Segregated candidate buckets to strictly prevent cross-role hijacking
+        // (e.g. When a teacher and student child share an email address or phone number)
+        const staffCandidates: CandidateUser[] = [];
+        const studentCandidates: CandidateUser[] = [];
+        const parentCandidates: CandidateUser[] = [];
+        const fallbackCandidates: CandidateUser[] = [];
 
         // Helper to register student candidates with actual auth email from Supabase Auth
         const registerStudentCandidates = async (students: any[]) => {
@@ -65,92 +72,135 @@ export async function login(prevState: any, formData: FormData) {
                     } catch (e) {}
 
                     if (actualAuthEmail) {
-                        candidateList.push({
+                        studentCandidates.push({
                             email: actualAuthEmail,
                             studentId: s.id,
                             rollNumber: s.rollNumber,
                             birthday: s.birthday,
+                            role: 'student',
                         });
                     }
 
                     if (defaultInternalEmail && defaultInternalEmail !== actualAuthEmail?.toLowerCase()) {
-                        candidateList.push({
+                        studentCandidates.push({
                             email: defaultInternalEmail,
                             studentId: s.id,
                             rollNumber: s.rollNumber,
                             birthday: s.birthday,
+                            role: 'student',
                         });
                     }
                 })
             );
         };
 
-        // 1. Email or internal email candidate
-        if (cleanInput.includes('@')) {
-            const emailVariants = new Set<string>();
-            emailVariants.add(cleanInput);
-            emailVariants.add(lowerInput);
+        const words = cleanInput.split(/\s+/).filter(Boolean);
 
-            // Handle gmail dot normalization (e.g. user.name@gmail.com -> username@gmail.com)
-            if (lowerInput.endsWith('@gmail.com')) {
-                const parts = lowerInput.split('@');
-                const noDots = parts[0].replace(/\./g, '') + '@gmail.com';
-                emailVariants.add(noDots);
-            }
+        // 1. Staff Lookup (Teacher, Admin, Accountant, Librarian, Receptionist)
+        // Teachers and staff are official employees. When an email or phone number belongs to staff,
+        // it must be identified and prioritized so the staff portal opens rather than a child's portal.
+        const staffTables = [
+            { table: 'Teacher', role: 'teacher' },
+            { table: 'Admin', role: 'admin' },
+            { table: 'Accountant', role: 'accountant' },
+            { table: 'Librarian', role: 'librarian' },
+            { table: 'Receptionist', role: 'receptionist' }
+        ];
 
-            const emailFilter = Array.from(emailVariants).map(e => `email.ilike.${e}`).join(',');
-
-            // Check if entered email matches Student.email
+        for (const { table, role } of staffTables) {
             try {
-                const { data: stByEmail } = await adminSupabase
-                    .from('Student')
-                    .select('id, username, rollNumber, birthday, email, parentId')
-                    .or(emailFilter)
-                    .limit(10);
-
-                await registerStudentCandidates(stByEmail || []);
-
-                // Sibling resolution: if student has a parent, also register sibling students
-                for (const s of (stByEmail || [])) {
-                    if (s.parentId) {
-                        const { data: siblings } = await adminSupabase
-                            .from('Student')
-                            .select('id, username, rollNumber, birthday, email')
-                            .eq('parentId', s.parentId)
-                            .neq('id', s.id);
-                        await registerStudentCandidates(siblings || []);
-                    }
+                const filters: string[] = [];
+                filters.push(`username.ilike.${cleanInput}`);
+                filters.push(`email.ilike.${cleanInput}`);
+                if (cleanInput.includes('@')) {
+                    filters.push(`email.ilike.${lowerInput}`);
                 }
-            } catch (err) {}
+                if (digitsOnly.length >= 10) {
+                    filters.push(`phone.ilike.%${digitsOnly.slice(-10)}%`);
+                }
 
-            // Check if entered email belongs to a Parent
-            try {
-                const { data: parentByEmail } = await adminSupabase
-                    .from('Parent')
-                    .select('id, email, students:Student(id, username, rollNumber, birthday)')
-                    .or(emailFilter)
-                    .limit(5);
+                if (words.length >= 2 && !cleanInput.includes('@')) {
+                    const first = words[0];
+                    const last = words[words.length - 1];
+                    filters.push(`and(name.ilike.%${first}%,surname.ilike.%${last}%)`);
+                    filters.push(`and(name.ilike.%${last}%,surname.ilike.%${first}%)`);
+                } else if (words.length === 1 && words[0].length >= 3 && !cleanInput.includes('@')) {
+                    filters.push(`name.ilike.%${words[0]}%`);
+                    filters.push(`surname.ilike.%${words[0]}%`);
+                }
 
-                const parentStudents = (parentByEmail || []).flatMap(p => p.students || []);
-                await registerStudentCandidates(parentStudents);
+                let staffRows: any[] | null = null;
+                try {
+                    const { data } = await adminSupabase
+                        .from(table)
+                        .select('id, email, username, phone, birthday, name, surname')
+                        .or(filters.join(','))
+                        .limit(5);
+                    staffRows = data;
+                } catch (e) {}
 
-                (parentByEmail || []).forEach(p => {
-                    if (p.email) candidateList.push({ email: p.email });
+                if (!staffRows || staffRows.length === 0) {
+                    try {
+                        const { data } = await supabase
+                            .from(table)
+                            .select('id, email, username, phone, birthday, name, surname')
+                            .or(filters.join(','))
+                            .limit(5);
+                        staffRows = data;
+                    } catch (e) {}
+                }
+
+                (staffRows || []).forEach(r => {
+                    const tId = role === 'teacher' ? r.id : undefined;
+                    if (r.email) {
+                        staffCandidates.push({
+                            email: r.email,
+                            teacherId: tId,
+                            staffId: r.id,
+                            role,
+                            phone: r.phone,
+                            username: r.username,
+                            birthday: r.birthday,
+                        });
+                    }
+                    if (r.username) {
+                        staffCandidates.push({
+                            email: `${r.username.toLowerCase()}@dcpems.internal`,
+                            teacherId: tId,
+                            staffId: r.id,
+                            role,
+                            phone: r.phone,
+                            username: r.username,
+                            birthday: r.birthday,
+                        });
+                    }
                 });
             } catch (err) {}
-
-            // Fallback for staff / teachers / direct auth users whose login email IS their real email
-            candidateList.push({ email: cleanInput });
-            if (cleanInput !== lowerInput) {
-                candidateList.push({ email: lowerInput });
-            }
-        } else {
-            // Default internal email format if no @ in input
-            candidateList.push({ email: `${lowerInput}@dcpems.internal` });
-            candidateList.push({ email: cleanInput });
         }
 
-        // 3. Class + Roll pattern (e.g. "1E-001", "3B-004", "NurseryA-005", "Nursery B 3", "Class 3B Roll 4")
+        // If email was entered, also check if Supabase Auth user directly matches a staff role
+        if (cleanInput.includes('@')) {
+            try {
+                const { data: { users } } = await adminSupabase.auth.admin.listUsers();
+                const matchedAuth = (users || []).find(u =>
+                    (u.email || '').toLowerCase() === lowerInput ||
+                    (u.email || '').toLowerCase() === cleanInput.toLowerCase()
+                );
+                if (matchedAuth) {
+                    const uRole = matchedAuth.user_metadata?.role;
+                    if (uRole && ['teacher', 'admin', 'accountant', 'librarian', 'receptionist'].includes(uRole)) {
+                        staffCandidates.push({
+                            email: matchedAuth.email || cleanInput,
+                            teacherId: uRole === 'teacher' ? matchedAuth.id : undefined,
+                            staffId: matchedAuth.id,
+                            role: uRole,
+                        });
+                    }
+                }
+            } catch (authFindErr) {}
+        }
+
+        // 2. Class + Roll pattern (e.g. "1E-001", "3B-004", "NurseryA-005", "Nursery B 3", "Class 3B Roll 4")
         const classRollMatch = cleanInput.match(/^(?:Class\s*)?([0-9]{1,2}\s*[A-Za-z]+|Nursery\s*[A-Za-z]?|LKG\s*[A-Za-z]?|UKG\s*[A-Za-z]?)[\s\-_,.:]*(?:Roll|No)?[\s\-_.:]*([0-9]+)$/i);
         if (classRollMatch) {
             const rawClass = classRollMatch[1].replace(/\s+/g, '');
@@ -182,7 +232,69 @@ export async function login(prevState: any, formData: FormData) {
             }
         }
 
-        // 4. Student lookup by username, rollNumber, phone, aadharNo, stateStudentId
+        // 3. Email Lookups for Students and Parents
+        if (cleanInput.includes('@')) {
+            const emailVariants = new Set<string>();
+            emailVariants.add(cleanInput);
+            emailVariants.add(lowerInput);
+
+            if (lowerInput.endsWith('@gmail.com')) {
+                const parts = lowerInput.split('@');
+                const noDots = parts[0].replace(/\./g, '') + '@gmail.com';
+                emailVariants.add(noDots);
+            }
+
+            const emailFilter = Array.from(emailVariants).map(e => `email.ilike.${e}`).join(',');
+
+            // Check if entered email matches Student.email (guardian / admission email)
+            try {
+                const { data: stByEmail } = await adminSupabase
+                    .from('Student')
+                    .select('id, username, rollNumber, birthday, email, parentId')
+                    .or(emailFilter)
+                    .limit(10);
+
+                await registerStudentCandidates(stByEmail || []);
+
+                // Sibling resolution
+                for (const s of (stByEmail || [])) {
+                    if (s.parentId) {
+                        const { data: siblings } = await adminSupabase
+                            .from('Student')
+                            .select('id, username, rollNumber, birthday, email')
+                            .eq('parentId', s.parentId)
+                            .neq('id', s.id);
+                        await registerStudentCandidates(siblings || []);
+                    }
+                }
+            } catch (err) {}
+
+            // Check if entered email belongs to a Parent
+            try {
+                const { data: parentByEmail } = await adminSupabase
+                    .from('Parent')
+                    .select('id, email, students:Student(id, username, rollNumber, birthday)')
+                    .or(emailFilter)
+                    .limit(5);
+
+                const parentStudents = (parentByEmail || []).flatMap(p => p.students || []);
+                await registerStudentCandidates(parentStudents);
+
+                (parentByEmail || []).forEach(p => {
+                    if (p.email) parentCandidates.push({ email: p.email, role: 'parent' });
+                });
+            } catch (err) {}
+
+            fallbackCandidates.push({ email: cleanInput });
+            if (cleanInput !== lowerInput) {
+                fallbackCandidates.push({ email: lowerInput });
+            }
+        } else {
+            fallbackCandidates.push({ email: `${lowerInput}@dcpems.internal` });
+            fallbackCandidates.push({ email: cleanInput });
+        }
+
+        // 4. Student lookup by username, rollNumber, phone, aadharNo
         try {
             const studentFilters: string[] = [];
             studentFilters.push(`username.ilike.${cleanInput}`);
@@ -215,7 +327,6 @@ export async function login(prevState: any, formData: FormData) {
         } catch (err) {}
 
         // 5. Name-based lookup for Student
-        const words = cleanInput.split(/\s+/).filter(Boolean);
         if (words.length >= 2 && !cleanInput.includes('@')) {
             try {
                 const first = words[0];
@@ -230,101 +341,67 @@ export async function login(prevState: any, formData: FormData) {
             } catch (err) {}
         }
 
-        // 6. Lookups for Teacher, Parent, Librarian, Accountant, Receptionist, Admin
-        const staffTables = [
-            { table: 'Teacher', role: 'teacher' },
-            { table: 'Admin', role: 'admin' },
-            { table: 'Accountant', role: 'accountant' },
-            { table: 'Librarian', role: 'librarian' },
-            { table: 'Receptionist', role: 'receptionist' },
-            { table: 'Parent', role: 'parent' }
-        ];
+        // 6. Parent Lookup by phone or username
+        try {
+            const parentFilters: string[] = [];
+            parentFilters.push(`username.ilike.${cleanInput}`);
+            if (digitsOnly.length >= 10) {
+                parentFilters.push(`phone.ilike.%${digitsOnly.slice(-10)}%`);
+            }
+            if (parentFilters.length > 0) {
+                const { data: pRows } = await adminSupabase
+                    .from('Parent')
+                    .select('id, email, username, phone, students:Student(id, username, rollNumber, birthday)')
+                    .or(parentFilters.join(','))
+                    .limit(5);
 
-        for (const { table, role } of staffTables) {
-            try {
-                const filters: string[] = [];
-                filters.push(`username.ilike.${cleanInput}`);
-                filters.push(`email.ilike.${cleanInput}`);
-                if (digitsOnly.length >= 10) {
-                    filters.push(`phone.ilike.%${digitsOnly.slice(-10)}%`);
-                }
-
-                // If user entered name/words and not an email
-                if (words.length >= 2 && !cleanInput.includes('@')) {
-                    const first = words[0];
-                    const last = words[words.length - 1];
-                    filters.push(`and(name.ilike.%${first}%,surname.ilike.%${last}%)`);
-                    filters.push(`and(name.ilike.%${last}%,surname.ilike.%${first}%)`);
-                } else if (words.length === 1 && words[0].length >= 3 && !cleanInput.includes('@')) {
-                    filters.push(`name.ilike.%${words[0]}%`);
-                    filters.push(`surname.ilike.%${words[0]}%`);
-                }
-
-                // Query with adminSupabase, or fallback to server supabase client
-                let staffRows: any[] | null = null;
-                try {
-                    const { data } = await adminSupabase
-                        .from(table)
-                        .select('id, email, username, phone, birthday, name, surname')
-                        .or(filters.join(','))
-                        .limit(5);
-                    staffRows = data;
-                } catch (e) {}
-
-                if (!staffRows || staffRows.length === 0) {
-                    try {
-                        const { data } = await supabase
-                            .from(table)
-                            .select('id, email, username, phone, birthday, name, surname')
-                            .or(filters.join(','))
-                            .limit(5);
-                        staffRows = data;
-                    } catch (e) {}
-                }
-
-                (staffRows || []).forEach(r => {
-                    const tId = role === 'teacher' ? r.id : undefined;
-                    if (r.email) {
-                        candidateList.push({
-                            email: r.email,
-                            teacherId: tId,
-                            staffId: r.id,
-                            role,
-                            phone: r.phone,
-                            username: r.username,
-                            birthday: r.birthday,
-                        });
-                    }
-                    if (r.username) {
-                        candidateList.push({
-                            email: `${r.username.toLowerCase()}@dcpems.internal`,
-                            teacherId: tId,
-                            staffId: r.id,
-                            role,
-                            phone: r.phone,
-                            username: r.username,
-                            birthday: r.birthday,
-                        });
-                    }
+                (pRows || []).forEach(p => {
+                    if (p.email) parentCandidates.push({ email: p.email, role: 'parent' });
                 });
-            } catch (err) {}
+            }
+        } catch (pErr) {}
+
+        // 7. ORDER AND COMBINE CANDIDATES
+        // This is the crucial resolution logic:
+        // - If user explicitly selected 'teacher' or 'staff': test staff candidates ONLY.
+        // - If user explicitly selected 'student': test student candidates ONLY.
+        // - If user explicitly selected 'parent': test parent candidates ONLY.
+        // - If auto-detect (default):
+        //     * If class-roll pattern (e.g. 3B-004), prioritize student candidates.
+        //     * OTHERWISE, STAFF CANDIDATES ALWAYS TAKE PRECEDENCE OVER STUDENT CANDIDATES!
+        //       This prevents teacher accounts from ever being hijacked by their enrolled children.
+        let candidateList: CandidateUser[] = [];
+
+        if (rawRole === 'teacher' || rawRole === 'staff') {
+            candidateList = [...staffCandidates, ...fallbackCandidates.filter(c => c.email.includes('@'))];
+        } else if (rawRole === 'student') {
+            candidateList = [...studentCandidates, ...fallbackCandidates];
+        } else if (rawRole === 'parent') {
+            candidateList = [...parentCandidates, ...fallbackCandidates];
+        } else {
+            // Auto-detect mode
+            if (classRollMatch) {
+                candidateList = [...studentCandidates, ...staffCandidates, ...parentCandidates, ...fallbackCandidates];
+            } else {
+                candidateList = [...staffCandidates, ...parentCandidates, ...studentCandidates, ...fallbackCandidates];
+            }
         }
 
-        // Deduplicate candidates while merging and preserving metadata
+        // Deduplicate candidates while preserving order and high-priority role/metadata
         const candidateMap = new Map<string, CandidateUser>();
         for (const c of candidateList) {
             const key = (c.email || '').toLowerCase().trim();
             if (!key) continue;
             const existing = candidateMap.get(key);
             if (existing) {
-                if (!existing.studentId && c.studentId) existing.studentId = c.studentId;
+                if (!existing.role && c.role) existing.role = c.role;
                 if (!existing.teacherId && c.teacherId) existing.teacherId = c.teacherId;
                 if (!existing.staffId && c.staffId) existing.staffId = c.staffId;
+                if (!existing.studentId && c.studentId) existing.studentId = c.studentId;
                 if (!existing.rollNumber && c.rollNumber) existing.rollNumber = c.rollNumber;
                 if (!existing.birthday && c.birthday) existing.birthday = c.birthday;
                 if (!existing.phone && c.phone) existing.phone = c.phone;
                 if (!existing.username && c.username) existing.username = c.username;
-                if (!existing.role && c.role) existing.role = c.role;
             } else {
                 candidateMap.set(key, { ...c });
             }
@@ -398,6 +475,13 @@ export async function login(prevState: any, formData: FormData) {
                         try {
                             const { data: authUserRes } = await adminSupabase.auth.admin.getUserById(cand.teacherId);
                             authUser = authUserRes?.user;
+                        } catch (e) {}
+                    }
+
+                    if (!authUser && cand.email) {
+                        try {
+                            const { data: { users } } = await adminSupabase.auth.admin.listUsers();
+                            authUser = (users || []).find(u => u.email?.toLowerCase() === cand.email.toLowerCase());
                         } catch (e) {}
                     }
 
@@ -539,7 +623,7 @@ export async function login(prevState: any, formData: FormData) {
             }
 
             // Attempt 3: If student candidate and direct password failed, test adaptive student password patterns
-            if (cand.studentId) {
+            if (cand.studentId && cand.role !== 'teacher' && !cand.teacherId && !cand.staffId) {
                 try {
                     const { data: authUserRes } = await adminSupabase.auth.admin.getUserById(cand.studentId);
                     const authUser = authUserRes?.user;
@@ -641,7 +725,20 @@ export async function login(prevState: any, formData: FormData) {
             };
         }
 
-        const role = authData.user?.user_metadata?.role;
+        let role = authData.user?.user_metadata?.role;
+        if (!role && authData.user?.id) {
+            const { data: tCheck } = await adminSupabase.from('Teacher').select('id').eq('id', authData.user.id).maybeSingle();
+            if (tCheck) {
+                role = 'teacher';
+                await adminSupabase.auth.admin.updateUserById(authData.user.id, { user_metadata: { role: 'teacher' } });
+            } else {
+                const { data: sCheck } = await adminSupabase.from('Student').select('id').eq('id', authData.user.id).maybeSingle();
+                if (sCheck) {
+                    role = 'student';
+                    await adminSupabase.auth.admin.updateUserById(authData.user.id, { user_metadata: { role: 'student' } });
+                }
+            }
+        }
         console.log("Successfully logged in user role:", role);
 
         revalidatePath('/', 'layout');

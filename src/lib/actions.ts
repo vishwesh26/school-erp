@@ -613,13 +613,29 @@ export const createStudent = async (
           if (users.length === 0) break;
           const matched = users.find(u => (u.email || '').toLowerCase() === authEmail.toLowerCase());
           if (matched) {
-            userId = matched.id;
-            await supabase.auth.admin.updateUserById(userId, {
-              password: authPassword,
-              user_metadata: { role: 'student' }
-            });
-            foundExisting = true;
-            break;
+            // Guard: If this email belongs to a teacher or staff member, DO NOT overwrite their role/password!
+            if (matched.user_metadata?.role && matched.user_metadata.role !== 'student') {
+              const internalAuthEmail = `${(data.username || `student_${Date.now()}`).toLowerCase().replace(/[^a-z0-9_-]/g, '')}@dcpems.internal`;
+              const { data: fallbackUser, error: fbErr } = await supabase.auth.admin.createUser({
+                email: internalAuthEmail,
+                password: authPassword,
+                user_metadata: { role: "student", parent_email: authEmail },
+                email_confirm: true
+              });
+              if (!fbErr && fallbackUser?.user) {
+                userId = fallbackUser.user.id;
+                foundExisting = true;
+                break;
+              }
+            } else {
+              userId = matched.id;
+              await supabase.auth.admin.updateUserById(userId, {
+                password: authPassword,
+                user_metadata: { role: 'student' }
+              });
+              foundExisting = true;
+              break;
+            }
           }
           if (users.length < 1000) break;
           page++;
